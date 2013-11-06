@@ -1,8 +1,9 @@
 /*
- * Author: Paul Reioux aka Faux123 <reioux@gmail.com>
+ * sound/soc/codecs/sound_control_3_gpl.c
+ *
+ * Copyright (C) 2013 Paul Reioux <reioux@gmail.com>
  *
  * WCD93xx sound control module
- * Copyright 2013 Paul Reioux
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and

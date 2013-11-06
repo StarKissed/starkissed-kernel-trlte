@@ -1,4 +1,8 @@
-/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
+/*
+ * drivers/cpufreq/cpufreq_yankactive.c
+ *
+ * Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2013 Paul Reioux <reioux@gmail.com>
  *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
