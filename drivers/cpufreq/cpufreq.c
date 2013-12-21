@@ -334,7 +334,7 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
 }
 EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
 
-/* Yank555.lu : CPU Hardlimit - Hook to force scaling_min/max_freq to be updated on Hardlimit change */
+// CPU Hardlimit - Hook to force scaling_min/max_freq to be updated on Hardlimit change */
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 extern void update_scaling_limits(unsigned int freq_min, unsigned int freq_max)
 {
@@ -484,7 +484,7 @@ static ssize_t store_##file_name					\
 
 #ifdef CONFIG_SEC_PM
 
-/* Yank555.lu : CPU Hardlimit - Enforce userspace dvfs lock */
+/* CPU Hardlimit - Enforce userspace dvfs lock */
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 static ssize_t store_scaling_min_freq
 (struct cpufreq_policy *policy, const char *buf, size_t count)
@@ -492,7 +492,7 @@ static ssize_t store_scaling_min_freq
 	unsigned int ret = -EINVAL;
 	struct cpufreq_policy new_policy;
 
-	// Yank555.lu - Enforce userspace dvfs lock
+	// Enforce userspace dvfs lock
 	switch (userspace_dvfs_lock_status()) {
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
 			return count;
@@ -534,7 +534,7 @@ static ssize_t store_scaling_max_freq
 	unsigned int ret = -EINVAL;
 	struct cpufreq_policy new_policy;
 
-	// Yank555.lu - Enforce userspace dvfs lock
+	// Enforce userspace dvfs lock
 	switch (userspace_dvfs_lock_status()) {
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
 			return count;
@@ -991,7 +991,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy, struct device *de
 	}
 	if (per_cpu(cpufreq_policy_save, dev->id).min) {
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-		/* Yank555.lu - Enforce hardlimit when restoring policy */
+		/* Enforce hardlimit when restoring policy */
 		policy->min = check_cpufreq_hardlimit(per_cpu(cpufreq_policy_save, cpu).min);
 #else
 		policy->min = per_cpu(cpufreq_policy_save, cpu).min;
@@ -1000,7 +1000,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy, struct device *de
 	}
 	if (per_cpu(cpufreq_policy_save, cpu).max) {
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-		/* Yank555.lu - Enforce hardlimit when restoring policy */
+		/* Enforce hardlimit when restoring policy */
 		policy->max = check_cpufreq_hardlimit(per_cpu(cpufreq_policy_save, cpu).max);
 #else
 		policy->max = per_cpu(cpufreq_policy_save, cpu).max;
@@ -2142,8 +2142,10 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
 
-	if (new_policy->min > policy->user_policy.max
-	    || new_policy->max < policy->user_policy.min) {
+	if (policy->min > data->user_policy.max
+		|| policy->max < data->user_policy.min) {
+		pr_debug("CPUFREQ: %s: pmin:%d, pmax:%d, min:%d, max:%d\n",
+			__func__, policy->min, policy->max, data->min, data->max);
 		ret = -EINVAL;
 		goto error_out;
 	}
@@ -2269,7 +2271,7 @@ int cpufreq_update_policy(unsigned int cpu)
 			check_cpufreq_hardlimit(policy->user_policy.max)
 		);
 	#endif
-	/* Yank555.lu - Enforce hardlimit */
+	/* Enforce hardlimit */
 	new_policy.min = check_cpufreq_hardlimit(policy->user_policy.min);
 	new_policy.max = check_cpufreq_hardlimit(policy->user_policy.max);
 #else
