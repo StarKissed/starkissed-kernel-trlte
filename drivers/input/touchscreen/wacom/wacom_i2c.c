@@ -393,8 +393,7 @@ static void wacom_i2c_enable(struct wacom_i2c *wac_i2c)
 			"%s\n", __func__);
 
 #ifdef BATTERY_SAVING_MODE
-	if (wac_i2c->battery_saving_mode
-		&& wac_i2c->pen_insert)
+	if (wac_i2c->pen_insert)
 		en = false;
 #endif
 
@@ -796,8 +795,7 @@ static void pen_insert_work(struct work_struct *work)
 
 #ifdef BATTERY_SAVING_MODE
 	if (wac_i2c->pen_insert) {
-		if (wac_i2c->battery_saving_mode)
-			wac_i2c->wacom_i2c_disable(wac_i2c);
+		wacom_i2c_disable(wac_i2c);
 	} else {
 		wac_i2c->wacom_i2c_enable(wac_i2c);
 	}
