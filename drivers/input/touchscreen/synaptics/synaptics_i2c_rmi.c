@@ -32,6 +32,10 @@
 #include <linux/regulator/consumer.h>
 #include <linux/qpnp/pin.h>
 
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+#include <linux/cpufreq_hardlimit.h>
+#endif
+
 #define DRIVER_NAME "synaptics_rmi4_i2c"
 
 #define SYNAPTICS_PM_GPIO_STATE_WAKE	0
