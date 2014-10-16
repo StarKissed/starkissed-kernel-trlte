@@ -179,3 +179,4 @@ obj-$(CONFIG_SENSORS_FINGERPRINT)	+= fingerprint/
 
 # SecFilter Driver
 obj-$(CONFIG_SEC_NET_FILTER)	+= secfilter/
+obj-$(CONFIG_ANDROID)		+= android/
