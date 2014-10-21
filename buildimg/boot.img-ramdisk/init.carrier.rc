@@ -1,0 +1,167 @@
+# Copyright (C) 2012 The Android Open Source Project
+#
+# IMPORTANT: Do not create world writable files or directories.
+# This is a common source of Android security bugs.
+#
+import init.fac.rc
+
+on early-boot
+    chown bluetooth net_bt_stack /dev/ttyHS0
+    chmod 0660 /dev/ttyHS0
+
+on init
+#Private Mode
+    mkdir /mnt/shell/privatemode 0700 system system
+    mkdir /storage/Private 0000 system system
+
+on fs
+#For Absolute Persistence Partition 
+       
+    mkdir /persdata 0755 system system 
+    mkdir /persdata/absolute 0750 system system 
+  
+    wait /dev/block/platform/msm_sdcc.1/by-name/persdata 
+    check_fs /dev/block/platform/msm_sdcc.1/by-name/persdata ext4 
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persdata /persdata/absolute nosuid nodev barrier=1 
+      
+    chown system system /persdata 
+    chmod 0755 /persdata 
+    chown system system /persdata/absolute 
+    chmod 0750 /persdata/absolute
+					
+					
+on post-fs-data
+#Private Mode
+    mkdir /data/privatemode 0770 system system
+    chown system system /data/privatemode
+    restorecon /data/privatemode
+
+on boot
+# Fingerprint
+    mkdir /dev/validity 0770 system system
+
+# permissions for bluetooth.
+    setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
+    chown bluetooth net_bt_stack ro.bt.bdaddr_path
+    chown radio net_bt_stack /efs/bluetooth/bt_addr
+    chmod 0640 /efs/bluetooth/bt_addr
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+
+# bluetooth LPM
+    chmod 0660 /proc/bluetooth/sleep/lpm
+    chmod 0220 /proc/bluetooth/sleep/btwrite
+    chown bluetooth net_bt_stack /proc/bluetooth/sleep/lpm
+    chown bluetooth net_bt_stack /proc/bluetooth/sleep/btwrite
+    chmod 0600 /dev/btlock
+    chown bluetooth bluetooth /dev/btlock
+
+# Define TCP buffer sizes for various networks
+#   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
+    setprop net.tcp.buffersize.default 6144,131070,1056768,6144,24576,165312
+    setprop net.tcp.buffersize.wifi    524288,1048576,4525824,524288,1048576,4525824
+    setprop net.tcp.buffersize.lte     786432,1572864,3840000,786432,1572864,3840000
+    setprop net.tcp.buffersize.umts    21135,131070,1056768,6144,24576,165312
+    setprop net.tcp.buffersize.hspa    18300,131070,1056768,6144,24576,393216
+    setprop net.tcp.buffersize.hsupa   6141,131070,1056768,6144,24576,393216
+    setprop net.tcp.buffersize.hsdpa   18300,131070,1056768,6144,24576,393216
+    setprop net.tcp.buffersize.hspap   31455,131070,1830912,6144,24576,1830912
+    setprop net.tcp.buffersize.edge    12288,39420,1056768,6144,24576,165312
+    setprop net.tcp.buffersize.gprs    12288,45000,1056768,6144,13140,165312
+
+# IPSec for VOLTE
+    chown root system /dev/socket
+    chmod 0775 /dev/socket
+
+###############################################################################
+# System LSI
+# Comment : add permission to device driver
+
+# NFC : Permissions for NFC
+    chmod 0660 /dev/sec-nfc
+# NFC : change owner
+    chown nfc nfc /dev/sec-nfc
+# NFC : create data/nfc for nv storage
+    mkdir /data/nfc 0700 nfc nfc
+    mkdir /data/nfc/param 0700 nfc nfc
+##############################################################################
+
+# permissions for bluetooth.
+
+# bluetooth LPM
+
+# bluetooth dhcp config
+
+# SSWAP
+    write /proc/sys/vm/swappiness 130
+
+# TODO: replace it with device's DEXPREOPT_BOOT_JARS
+
+#Private Mode
+service privatemode /system/bin/sdcard /data/privatemode /mnt/shell/privatemode 1000 1000
+    class late_start
+    oneshot
+
+# bootchecker
+service bootchecker /system/bin/bootchecker
+    class late_start
+    user system
+    group system log
+    oneshot
+
+# SENSOR FRAMEWORK : starts fingerprintService
+service vcsFPService /system/bin/vcsFPService
+    class late_start
+    user system
+    group system
+
+# IPSec for VOLTE
+service ipsec-daemon /system/bin/IPSecService
+    class main
+    socket ipsec_socket stream 660 system system
+    user system
+    group system net_raw inet net_admin    
+
+# SSWAP
+service swapon /sbin/sswap -s
+    class core
+    user root
+    group root
+    seclabel u:r:sswap:s0
+    oneshot
+
+#InsideSecure VPN Client
+service vpnclientpm /system/bin/vpnclientpm -u 1000 -g 1000 \
+     -O /data/data/com.ipsec.service/vpnclientpm.txt \
+     -D *Pm*=99,*Message*=99,*Ike*=99,*Eap*=99,*Sim*=99,*SshMilenage*=99,*Data*=99 \
+     -U rmnet,rmnet_usb,wlan,bt-pan,rndis,p2p,eth
+      socket vpnclientpm seqpacket 0600 system system
+      disabled
+on property:service.vpnclientpm.enable=1
+      start vpnclientpm
+on property:service.vpnclientpm.enable=0
+      stop vpnclientpm
+
+on property:init.svc.bootanim=stopped
+# permission for Input Device(Touchkey).
+    chown radio system /sys/class/sec/sec_touchkey/touch_sensitivity
+    chown radio system /sys/class/sec/sec_touchkey/touchkey_firm_update
+    chown system radio /sys/class/sec/sec_touchkey/glove_mode
+    chown system radio /sys/class/sec/sec_touchkey/flip_mode
+    chown system radio /sys/class/sec/sec_touchkey/1mm_mode
+    chown system radio /sys/class/sec/sec_touchkey/boost_level
+
+# Wacom
+    chown system radio /sys/class/sec/sec_epen/epen_firm_update
+    chown system radio /sys/class/sec/sec_epen/epen_reset
+    chown system radio /sys/class/sec/sec_epen/epen_reset_result
+    chown system radio /sys/class/sec/sec_epen/epen_checksum
+    chown system radio /sys/class/sec/sec_epen/epen_checksum_result
+    chown system radio /sys/class/sec/sec_epen/epen_saving_mode
+    chown system radio /sys/class/sec/sec_epen/epen_connection
+    chown system radio /sys/class/sec/sec_epen/epen_tuning_version
+    chown system radio /sys/class/sec/sec_epen/epen_firm_update_status
+    chown system radio /sys/class/sec/sec_epen/epen_firm_version
+    chown system radio /sys/class/sec/sec_epen/epen_delay_time
+    chown system radio /sys/class/sec/sec_epen/boost_level
