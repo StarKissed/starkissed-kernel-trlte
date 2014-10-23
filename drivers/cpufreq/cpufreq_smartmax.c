@@ -1002,8 +1002,8 @@ static int cpufreq_smartmax_boost_task(void *data) {
 		if (!policy)
 			continue;
 
-		if (lock_policy_rwsem_write(0) < 0)
-			continue;
+//		if (lock_policy_rwsem_write(0) < 0)
+//			continue;
 
 		mutex_lock(&this_smartmax->timer_mutex);
 
@@ -1019,7 +1019,7 @@ static int cpufreq_smartmax_boost_task(void *data) {
 		}
 		mutex_unlock(&this_smartmax->timer_mutex);
 				
-		unlock_policy_rwsem_write(0);
+//		unlock_policy_rwsem_write(0);
 	}
 
 	return 0;
