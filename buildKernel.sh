@@ -62,6 +62,7 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
     cp -r  output/boot.img $KERNELREPO/trltetmo/boot.img
     cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
     scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
+    rm -R $KERNELREPO/gooserver/$IMAGEFILE
 
 #    if cat /etc/issue | grep Ubuntu; then
 #        tar -H ustar -c output/boot.img > output/boot.tar
@@ -69,7 +70,6 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
 #        tar --format ustar -c output/boot.img > output/boot.tar
 #    fi
     tar cvf output/boot.tar output/boot.img
-    rm -R $KERNELREPO/gooserver/$IMAGEFILE
     cp -r output/boot.tar $KERNELREPO/trltetmo/boot.tar
     cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
     scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/trltetmo/kernel
