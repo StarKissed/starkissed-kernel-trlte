@@ -3,6 +3,7 @@
  * Primarily based on Noop, deadline, and SIO IO schedulers.
  *
  * Copyright (C) 2012 Brandon Berhent <bbedward@gmail.com>
+ *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * FCFS, dispatches are back-inserted, deadlines ensure fairness.
  * Should work best with devices where there is no travel delay.
@@ -156,13 +157,20 @@ static int zen_dispatch_requests(struct request_queue *q, int force)
 	return 1;
 }
 
-static void *zen_init_queue(struct request_queue *q)
+static int zen_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct zen_data *zdata;
+    struct elevator_queue *eq;
+    
+    eq = elevator_alloc(q, e);
+    if (!eq)
+        return -ENOMEM;
 
 	zdata = kmalloc_node(sizeof(*zdata), GFP_KERNEL, q->node);
-	if (!zdata)
-		return NULL;
+    if (!zdata) {
+        kobject_put(&eq->kobj);
+        return -ENOMEM;
+    }
 	INIT_LIST_HEAD(&zdata->fifo_list[SYNC]);
 	INIT_LIST_HEAD(&zdata->fifo_list[ASYNC]);
 
@@ -170,7 +178,7 @@ static void *zen_init_queue(struct request_queue *q)
 	zdata->fifo_expire[ASYNC] = async_expire;
 	zdata->fifo_batch = fifo_batch;
 
-	return zdata;
+	return 0;
 }
 
 static void zen_exit_queue(struct elevator_queue *e)
@@ -249,7 +257,7 @@ static struct elevator_type iosched_zen = {
 		.elevator_add_req_fn		= zen_add_request,
 		.elevator_former_req_fn         = elv_rb_former_request,
 		.elevator_latter_req_fn         = elv_rb_latter_request,
-		.elevator_init_fn		= (void *)zen_init_queue,
+		.elevator_init_fn		= zen_init_queue,
 		.elevator_exit_fn		= zen_exit_queue,
 	},
 	.elevator_attrs = zen_attrs,
@@ -259,9 +267,7 @@ static struct elevator_type iosched_zen = {
 
 static int __init zen_init(void)
 {
-	elv_register(&iosched_zen);
-
-	return 0;
+	return elv_register(&iosched_zen);
 }
 
 static void __exit zen_exit(void)

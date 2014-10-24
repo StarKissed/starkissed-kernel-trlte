@@ -3,6 +3,7 @@
  * Based on Noop, Deadline and V(R) IO schedulers.
  *
  * Copyright (C) 2012 Miguel Boton <mboton@gmail.com>
+ *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  *
  * This algorithm does not do any kind of sorting, as it is aimed for
@@ -242,15 +243,22 @@ sio_latter_request(struct request_queue *q, struct request *rq)
 	return list_entry(rq->queuelist.next, struct request, queuelist);
 }
 
-static void *
-sio_init_queue(struct request_queue *q)
+static int
+sio_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct sio_data *sd;
+    struct elevator_queue *eq;
+    
+    eq = elevator_alloc(q, e);
+    if (!eq)
+        return -ENOMEM;
 
 	/* Allocate structure */
 	sd = kmalloc_node(sizeof(*sd), GFP_KERNEL, q->node);
-	if (!sd)
-		return NULL;
+    if (!sd) {
+        kobject_put(&eq->kobj);
+		return -ENOMEM;
+    }
 
 	/* Initialize fifo lists */
 	INIT_LIST_HEAD(&sd->fifo_list[SYNC][READ]);
@@ -266,7 +274,7 @@ sio_init_queue(struct request_queue *q)
 	sd->fifo_expire[ASYNC][WRITE] = async_write_expire;
 	sd->fifo_batch = fifo_batch;
 
-	return sd;
+	return 0;
 }
 
 static void
@@ -367,7 +375,7 @@ static struct elevator_type iosched_sio = {
 #endif
 		.elevator_former_req_fn		= sio_former_request,
 		.elevator_latter_req_fn		= sio_latter_request,
-		.elevator_init_fn		= (void *)sio_init_queue,
+		.elevator_init_fn		= sio_init_queue,
 		.elevator_exit_fn		= sio_exit_queue,
 	},
 

@@ -85,9 +85,6 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
     KERNELFILE=boot.$PUNCHCARD.tar
 
     cp -r  output/boot.img $KERNELREPO/trltetmo/boot.img
-    cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
-    scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
-    rm -R $KERNELREPO/gooserver/$IMAGEFILE
 
 #    if cat /etc/issue | grep Ubuntu; then
 #        tar -H ustar -c output/boot.img > output/boot.tar
@@ -96,17 +93,20 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
 #    fi
     tar cvf output/boot.tar output/boot.img
     cp -r output/boot.tar $KERNELREPO/trltetmo/boot.tar
-    cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
-    scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/trltetmo/kernel
-    rm -R $KERNELREPO/gooserver/$KERNELFILE
     cp -r output/boot.tar output/boot.tar.md5
     if cat /etc/issue | grep Ubuntu; then
         md5sum -t output/boot.tar.md5 >> output/boot.tar.md5
     else
         md5 -r output/boot.tar.md5 >> output/boot.tar.md5
     fi
-# gzip output/boot.tar.md5 -c -v > output/boot.tar.md5.gz
     cp -r output/boot.tar.md5 $KERNELREPO/trltetmo/boot.tar.md5
+
+    cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
+    scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
+    rm -R $KERNELREPO/gooserver/$IMAGEFILE
+    cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
+    scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/trltetmo/kernel
+    rm -R $KERNELREPO/gooserver/$KERNELFILE
     cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
     scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/trltetmo/kernel
     rm -R $KERNELREPO/gooserver/$KERNELFILE.md5

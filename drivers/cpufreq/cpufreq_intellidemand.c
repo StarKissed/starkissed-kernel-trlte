@@ -6,6 +6,7 @@
  *                      Jun Nakajima <jun.nakajima@intel.com>
  *            (C)  2013 The Linux Foundation. All rights reserved.
  *            (C)  2013 Paul Reioux
+ *            (C)  2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

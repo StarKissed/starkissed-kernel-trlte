@@ -15,6 +15,7 @@
  *  Copyright (C)  2001 Russell King
  *            (C)  2003 Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>.
  *                      Jun Nakajima <jun.nakajima@intel.com>
+ *            (C)  2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * smartassV2:
  * Author: Erasmux

@@ -2,6 +2,7 @@
  * IOPS based IO scheduler. Based on CFQ.
  *  Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
  *  Shaohua Li <shli@kernel.org>
+ *            (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  */
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -629,14 +630,21 @@ static void fiops_kick_queue(struct work_struct *work)
 	spin_unlock_irq(q->queue_lock);
 }
 
-static void *fiops_init_queue(struct request_queue *q)
+static int fiops_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct fiops_data *fiopsd;
 	int i;
+    struct elevator_queue *eq;
+    
+    eq = elevator_alloc(q, e);
+    if (!eq)
+        return -ENOMEM;
 
 	fiopsd = kzalloc_node(sizeof(*fiopsd), GFP_KERNEL, q->node);
-	if (!fiopsd)
-		return NULL;
+    if (!fiopsd) {
+        kobject_put(&eq->kobj);
+        return -ENOMEM;
+    }
 
 	fiopsd->queue = q;
 
@@ -650,7 +658,7 @@ static void *fiops_init_queue(struct request_queue *q)
 	fiopsd->sync_scale = VIOS_SYNC_SCALE;
 	fiopsd->async_scale = VIOS_ASYNC_SCALE;
 
-	return fiopsd;
+	return 0;
 }
 
 static void fiops_init_icq(struct io_cq *icq)
@@ -740,7 +748,7 @@ static struct elevator_type iosched_fiops = {
 		.elevator_former_req_fn =	elv_rb_former_request,
 		.elevator_latter_req_fn =	elv_rb_latter_request,
 		.elevator_init_icq_fn =		fiops_init_icq,
-		.elevator_init_fn =		(void *)fiops_init_queue,
+		.elevator_init_fn =		fiops_init_queue,
 		.elevator_exit_fn =		fiops_exit_queue,
 	},
 	.icq_size	=	sizeof(struct fiops_ioc),
