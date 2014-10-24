@@ -367,7 +367,7 @@ static struct elevator_type iosched_sio = {
 #endif
 		.elevator_former_req_fn		= sio_former_request,
 		.elevator_latter_req_fn		= sio_latter_request,
-		.elevator_init_fn		= sio_init_queue,
+		.elevator_init_fn		= (void *)sio_init_queue,
 		.elevator_exit_fn		= sio_exit_queue,
 	},
 

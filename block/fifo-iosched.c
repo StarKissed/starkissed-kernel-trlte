@@ -61,7 +61,7 @@ static struct elevator_type elevator_fifo = {
 		.elevator_dispatch_fn		= fifo_dispatch,
 		.elevator_add_req_fn		= fifo_add_request,
 		.elevator_allow_merge_fn 	= fifo_deny_merge,
-		.elevator_init_fn		= fifo_init_queue,
+		.elevator_init_fn		= (void *)fifo_init_queue,
 		.elevator_exit_fn		= fifo_exit_queue,
 	},
 	.elevator_name = "fifo",

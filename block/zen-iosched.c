@@ -249,7 +249,7 @@ static struct elevator_type iosched_zen = {
 		.elevator_add_req_fn		= zen_add_request,
 		.elevator_former_req_fn         = elv_rb_former_request,
 		.elevator_latter_req_fn         = elv_rb_latter_request,
-		.elevator_init_fn		= zen_init_queue,
+		.elevator_init_fn		= (void *)zen_init_queue,
 		.elevator_exit_fn		= zen_exit_queue,
 	},
 	.elevator_attrs = zen_attrs,

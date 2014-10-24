@@ -425,7 +425,7 @@ static struct elevator_type iosched_vr = {
 #endif
 .elevator_former_req_fn = elv_rb_former_request,
 .elevator_latter_req_fn = elv_rb_latter_request,
-.elevator_init_fn = vr_init_queue,
+.elevator_init_fn = (void *)vr_init_queue,
 .elevator_exit_fn = vr_exit_queue,
 },
 

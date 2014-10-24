@@ -740,7 +740,7 @@ static struct elevator_type iosched_fiops = {
 		.elevator_former_req_fn =	elv_rb_former_request,
 		.elevator_latter_req_fn =	elv_rb_latter_request,
 		.elevator_init_icq_fn =		fiops_init_icq,
-		.elevator_init_fn =		fiops_init_queue,
+		.elevator_init_fn =		(void *)fiops_init_queue,
 		.elevator_exit_fn =		fiops_exit_queue,
 	},
 	.icq_size	=	sizeof(struct fiops_ioc),
