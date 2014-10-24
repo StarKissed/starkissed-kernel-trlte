@@ -295,7 +295,7 @@ config CPU_FREQ_GOV_SMARTMAX
 
 config CPUFREQ_HARDLIMIT
 	bool "CPU Frequency max. hardlimit"
-	default y
+	default n
 	depends on CPU_FREQ
 	help
 	  Enforce a CPU hardlimit on mpdecision by refusing writes to sysfs
