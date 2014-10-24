@@ -891,7 +891,7 @@ static ssize_t store_powersave_bias(struct kobject *a, struct attribute *b,
 				}
 skip_this_cpu:
 //				unlock_policy_rwsem_write(cpu);
-                continue;
+                break;
 			}
 		}
 		intellidemand_powersave_bias_init();
@@ -934,7 +934,7 @@ skip_this_cpu:
 			}
 skip_this_cpu_bypass:
 //			unlock_policy_rwsem_write(cpu);
-            continue;
+            break;
 		}
 	}
 
@@ -1892,7 +1892,8 @@ static void dbs_refresh_callback(struct work_struct *work)
 	policy = this_dbs_info->cur_policy;
 	if (!policy) {
 		/* CPU not using intellidemand governor */
-		goto bail_incorrect_governor;
+//		goto bail_incorrect_governor;
+        goto bail_acq_sema_failed;
 	}
 
 	if (policy->cur < policy->max) {
@@ -1908,9 +1909,8 @@ static void dbs_refresh_callback(struct work_struct *work)
 				&this_dbs_info->prev_cpu_wall, 0);
 	}
 
-bail_incorrect_governor:
+//bail_incorrect_governor:
 //	unlock_policy_rwsem_write(cpu);
-    goto bail_acq_sema_failed;
 
 bail_acq_sema_failed:
 	put_online_cpus();
@@ -1982,7 +1982,8 @@ static int dbs_sync_thread(void *data)
 		policy = this_dbs_info->cur_policy;
 		if (!policy) {
 			/* CPU not using intellidemand governor */
-			goto bail_incorrect_governor;
+//			goto bail_incorrect_governor;
+            goto bail_acq_sema_failed;
 		}
 		delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
 
@@ -2011,9 +2012,8 @@ static int dbs_sync_thread(void *data)
 			mutex_unlock(&this_dbs_info->timer_mutex);
 		}
 
-bail_incorrect_governor:
+//bail_incorrect_governor:
 //		unlock_policy_rwsem_write(cpu);
-        goto bail_acq_sema_failed;
 bail_acq_sema_failed:
 		put_online_cpus();
 		atomic_set(&this_dbs_info->src_sync_cpu, -1);
@@ -2294,8 +2294,8 @@ static int cpufreq_gov_dbs_up_task(void *data)
 		this_dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
 		policy = this_dbs_info->cur_policy;
 		if (!policy) {
-			
-			goto bail_incorrect_governor;
+//			goto bail_incorrect_governor;
+            goto bail_acq_sema_failed;
 		}
 
 		mutex_lock(&this_dbs_info->timer_mutex);
@@ -2310,9 +2310,8 @@ static int cpufreq_gov_dbs_up_task(void *data)
 
 		mutex_unlock(&this_dbs_info->timer_mutex);
 
-bail_incorrect_governor:
+//bail_incorrect_governor:
 //		unlock_policy_rwsem_write(cpu);
-        goto bail_acq_sema_failed;
 
 bail_acq_sema_failed:
 		put_online_cpus();
