@@ -22,6 +22,6 @@ on property:service.adb.tcp.port=-1
     stop adbd
     start adbd
 
-service sysinit /system/bin/logwrapper /system/xbin/run-parts /system/etc/init.d
+service sysinit /sbin/busybox run-parts /system/etc/init.d
     disabled
     oneshot
