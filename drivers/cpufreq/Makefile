@@ -4,6 +4,8 @@ obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
 obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
 # CPUfreq limit
 obj-$(CONFIG_CPU_FREQ_LIMIT)		+= cpufreq_limit.o
+# CPUfreq hardlimit
+obj-$(CONFIG_CPUFREQ_HARDLIMIT)         += cpufreq_hardlimit.o
 
 # CPUfreq governors 
 obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE)	+= cpufreq_performance.o
