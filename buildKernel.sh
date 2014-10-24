@@ -101,16 +101,20 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
     fi
     cp -r output/boot.tar.md5 $KERNELREPO/trltetmo/boot.tar.md5
 
-    cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
-    scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
-    rm -R $KERNELREPO/gooserver/$IMAGEFILE
-    cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
-    scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/trltetmo/kernel
-    rm -R $KERNELREPO/gooserver/$KERNELFILE
-    cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
-    scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/trltetmo/kernel
-    rm -R $KERNELREPO/gooserver/$KERNELFILE.md5
-#fi
+    echo "Publish Kernel?"
+    read publish
+
+    if [ $publish == "y" ]; then
+        cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
+        scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
+        rm -R $KERNELREPO/gooserver/$IMAGEFILE
+        cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
+        scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/trltetmo/kernel
+        rm -R $KERNELREPO/gooserver/$KERNELFILE
+        cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
+        scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/trltetmo/kernel
+        rm -R $KERNELREPO/gooserver/$KERNELFILE.md5
+    fi
 
 fi
 

@@ -786,7 +786,7 @@ int hardlimit_init(void)
 #endif
 		/* Only register to powersuspend and delayed work if we were able to create the sysfs interface */
 		register_power_suspend(&cpufreq_hardlimit_suspend_data);
-		INIT_DELAYED_WORK_DEFERRABLE(&stop_wakeup_kick_work, stop_wakeup_kick);
+		INIT_DEFERRABLE_WORK(&stop_wakeup_kick_work, stop_wakeup_kick);
 	}
 
         return (hardlimit_retval);
