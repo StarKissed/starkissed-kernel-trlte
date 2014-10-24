@@ -200,8 +200,8 @@ on property:init.svc.bootanim=stopped
 
 on property:sys.qseecomd.enable=true
     start imsqmidaemon
-    insmod /system/lib/modules/adsprpc.ko
-    insmod /system/lib/modules/mhi.ko
+    insmod /lib/modules/adsprpc.ko
+    insmod /lib/modules/mhi.ko
     write /dev/kmsg "insmod mhi.ko"
 
 service imsqmidaemon /system/bin/imsqmidaemon

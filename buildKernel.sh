@@ -37,6 +37,31 @@ make -j$CPU_JOB_NUM -C $(pwd) O=$(pwd)/out CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
 if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
 
+    MODULEOUT=$KERNELSPEC/buildimg/boot.img-ramdisk
+
+    if [ `find . -name "*.ko" | grep -c ko` > 0 ]; then
+
+        find . -name "*.ko" | xargs ${TOOLCHAIN_PREFIX}strip --strip-unneeded
+
+        if [ ! -d $MODULEOUT ]; then
+            mkdir $MODULEOUT
+        fi
+        if [ ! -d $MODULEOUT/lib ]; then
+            mkdir $MODULEOUT/lib
+        fi
+        if [ ! -d $MODULEOUT/lib/modules ]; then
+            mkdir $MODULEOUT/lib/modules
+        else
+            rm -r $MODULEOUT/lib/modules
+            mkdir $MODULEOUT/lib/modules
+        fi
+
+        for j in $(find . -name "*.ko"); do
+            cp -R "${j}" $MODULEOUT/lib/modules
+        done
+
+    fi
+
     cp -R $(pwd)/out/arch/arm/boot/zImage $KERNELSPEC/buildimg/zImage
 
     cd buildimg
