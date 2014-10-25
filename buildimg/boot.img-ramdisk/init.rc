@@ -24,12 +24,16 @@ on early-init
 
     start ueventd
 
+# Configure SEAndroid booleans and enforcing mode
+     setsebool debugfs 1
+
 # create mountpoints
     mkdir /mnt 0775 root system
 
 on init
     ffu
-
+setenforce 0
+setprop ro.boot.selinux 0
 sysclktz 0
 
 loglevel 3
