@@ -473,7 +473,11 @@ void __init apq8084_add_drivers(void)
 	else
 		msm_clock_init(&apq8084_clock_init_data);
 	tsens_tm_init_driver();
-	msm_thermal_device_init();
+#ifdef CONFIG_INTELLI_THERMAL
+    msm_thermal_init(NULL);
+#else
+    msm_thermal_device_init();
+#endif
 }
 
 static void __init apq8084_map_io(void)
