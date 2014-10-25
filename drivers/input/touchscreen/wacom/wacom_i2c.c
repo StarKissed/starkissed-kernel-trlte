@@ -106,17 +106,9 @@ static int wacom_i2c_set_query_data(struct wacom_i2c *wac_i2c, unsigned char *qu
 		wac_i2c->wac_dt_data->y_invert = 1;
 #endif
 
-    kfree(data);
-
-#ifdef CONFIG_TOUCH_WAKE
-#include <linux/touch_wake.h>
-#endif
+	kfree(data);
 
 	return 0;
-
-#ifdef CONFIG_TOUCH_WAKE
-static struct wacom_i2c *touchwake_pen_data = NULL;
-#endif
 
 }
 
@@ -398,22 +390,12 @@ static void wacom_i2c_enable(struct wacom_i2c *wac_i2c)
 	bool en = true;
 
 	dev_info(&wac_i2c->client->dev,
-				"%s\n", __func__);
+			"%s\n", __func__);
 
 #ifdef BATTERY_SAVING_MODE
-// Always disable digitizer when pen is inserted
-//	if (wac_i2c->battery_saving_mode
-//		&& wac_i2c->pen_insert)
-	if (wac_i2c->pen_insert) {
+	if (wac_i2c->battery_saving_mode
+		&& wac_i2c->pen_insert)
 		en = false;
-#ifdef CONFIG_TOUCH_WAKE
-		#ifdef TOUCHWAKE_DEBUG_PRINT
-		pr_info("[TOUCHWAKE] Wacom i2c not enabled (pen is inserted)\n");
-	} else {
-		pr_info("[TOUCHWAKE] Wacom i2c enabled (pen not inserted)\n");
-		#endif
-#endif
-	}
 #endif
 
 	if (en) {
@@ -427,64 +409,20 @@ static void wacom_i2c_enable(struct wacom_i2c *wac_i2c)
 
 static void wacom_i2c_disable(struct wacom_i2c *wac_i2c)
 {
-#ifdef CONFIG_TOUCH_WAKE
-	// Don't change state if touchwake handles this
-	if (!touchwake_is_active()) {
-		#ifdef TOUCHWAKE_DEBUG_PRINT
-		pr_info("[TOUCHWAKE] Wacom i2c disabled\n");
-		#endif
-#endif
-		if (wac_i2c->power_enable) {
-			wacom_enable_irq(wac_i2c, false);
 
 	cancel_delayed_work_sync(&wac_i2c->resume_work);
 
 	if (wac_i2c->power_enable) {
-        wac_i2c->wacom_enable_irq(wac_i2c, false);
-        /* release pen, if it is pressed */
-        if (wac_i2c->pen_pressed || wac_i2c->side_pressed
-            || wac_i2c->pen_prox)
-            forced_release(wac_i2c);
-        wac_i2c->wac_pdata->wacom_stop(wac_i2c);
-		}
-#ifdef CONFIG_TOUCH_WAKE
-	} else {
-		#ifdef TOUCHWAKE_DEBUG_PRINT
-		pr_info("[TOUCHWAKE] Wacom i2c disabling not allowed at the moment\n");
-		#endif
+		wac_i2c->wacom_enable_irq(wac_i2c, false);
+
+		/* release pen, if it is pressed */
+		if (wac_i2c->pen_pressed || wac_i2c->side_pressed
+			|| wac_i2c->pen_prox)
+			forced_release(wac_i2c);
+
+		wac_i2c->wacom_stop(wac_i2c);
 	}
-#endif
-
 }
-
-#ifdef CONFIG_TOUCH_WAKE
-// Yank555.lu - Add hooks to enable / disable the digitizer for touchwake
-void touchscreen_pen_disable(void)
-{
-	#ifdef TOUCHWAKE_DEBUG_PRINT
-	pr_info("[TOUCHWAKE] Wacom disable\n");
-	#endif
-
-	if (touchwake_pen_data != NULL)
-		wacom_i2c_disable(touchwake_pen_data);
-
-	return;
-}
-EXPORT_SYMBOL(touchscreen_pen_disable);
-
-void touchscreen_pen_enable(void)
-{
-	#ifdef TOUCHWAKE_DEBUG_PRINT
-	pr_info("[TOUCHWAKE] Wacom enable\n");
-	#endif
-
-	if (touchwake_pen_data != NULL)
-		wacom_i2c_enable(touchwake_pen_data);
-
-	return;
-}
-EXPORT_SYMBOL(touchscreen_pen_enable);
-#endif
 
 #ifdef WACOM_USE_SOFTKEY
 static int keycode[] = {
@@ -832,22 +770,6 @@ static irqreturn_t wacom_interrupt_pdct(int irq, void *dev_id)
 	dev_info(&wac_i2c->client->dev, "%s: pdct %d(%d) [%s]\n",
 			__func__, wac_i2c->pen_pdct, wac_i2c->pen_prox,
 			wac_i2c->pen_pdct ? "Released" : "Pressed");
-#ifdef CONFIG_TOUCH_WAKE
-	if (touchwake_is_active() && !wac_i2c->pen_pdct) {
-		#ifdef TOUCHWAKE_DEBUG_PRINT
-		pr_info("[TOUCHWAKE] Wacom Pen pressed\n");
-		#endif
-		touch_press(); // Yank555.lu - Screen touched by pen
-	}
-#endif
-#if 0
-	if (wac_i2c->pen_pdct == PDCT_NOSIGNAL) {
-		/* If rdy is 1, pen is still working*/
-		if (wac_i2c->pen_prox == 0)
-			forced_release(wac_i2c);
-	} else if (wac_i2c->pen_prox == 0)
-		forced_hover(wac_i2c);
-#endif
 
 	return IRQ_HANDLED;
 }
@@ -874,8 +796,7 @@ static void pen_insert_work(struct work_struct *work)
 
 #ifdef BATTERY_SAVING_MODE
 	if (wac_i2c->pen_insert) {
-        // Always disable digitizer when pen is inserted
-		//if (wac_i2c->battery_saving_mode)
+		if (wac_i2c->battery_saving_mode)
 			wac_i2c->wacom_i2c_disable(wac_i2c);
 	} else {
 		wac_i2c->wacom_i2c_enable(wac_i2c);
@@ -1675,12 +1596,6 @@ static int wacom_i2c_probe(struct i2c_client *client,
 	schedule_delayed_work(&wac_i2c->boot_done_work,
 					msecs_to_jiffies(20 * 1000));
 #endif
-#ifdef CONFIG_TOUCH_WAKE
-	// Yank555.lu - Store the data for touchwake
-	touchwake_pen_data = wac_i2c;
-	if (touchwake_pen_data == NULL)
-		pr_err("[TOUCHWAKE] Failed to set Wacom touchwake_pen_data\n");
-#endif 
 
 	if (!gpio_get_value(wac_i2c->wac_dt_data->gpio_int)) {
 		ret = wac_i2c->wacom_i2c_recv(wac_i2c, buffer_clear, COM_READ_ALL_DATA_LENGTH, false);
