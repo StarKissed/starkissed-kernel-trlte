@@ -23,8 +23,8 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
 obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
 obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
 obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
-ifdef CONFIG_INTELLI_THERMAL
-obj-$(CONFIG_INTELLI_THERMAL_V2)	+= intelli/msm_thermal_v2.o
+ifdef CONFIG_INTELLI_THERMAL_V2
+obj-$(CONFIG_INTELLI_THERMAL_V2)	+= intelli/msm_thermal.o intelli/msm_thermal_v2.o
 else
 obj-$(CONFIG_THERMAL_MONITOR)	+= msm_thermal.o msm_thermal-dev.o
 endif
