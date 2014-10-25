@@ -770,3 +770,9 @@ source "drivers/misc/mei/Kconfig"
 source "drivers/misc/vmw_vmci/Kconfig"
 source "drivers/misc/qcom/Kconfig"
 endmenu
+
+config TOUCH_WAKE
+	bool "Support for Touch Wake (Yank555.lu)"
+	default y
+	help
+		Say Y here to enable Touch Wake

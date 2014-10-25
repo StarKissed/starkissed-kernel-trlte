@@ -32,6 +32,10 @@
 #include <linux/regulator/consumer.h>
 #include <linux/qpnp/pin.h>
 
+#ifdef CONFIG_TOUCH_WAKE
+#include <linux/touch_wake.h>
+#endif
+
 #define DRIVER_NAME "synaptics_rmi4_i2c"
 
 #define SYNAPTICS_PM_GPIO_STATE_WAKE	0
@@ -218,6 +222,11 @@ static struct device_attribute attrs[] = {
 			synaptics_rmi4_show_error,
 			synaptics_rmi4_suspend_store),
 };
+
+#ifdef CONFIG_TOUCH_WAKE
+static struct synaptics_rmi4_data *touchwake_data = NULL;
+int previous_touch_state = false;
+#endif
 
 #ifdef READ_LCD_ID
 static int synaptics_lcd_id;
@@ -1479,6 +1488,20 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 		rmi4_data->tsp_booster->dvfs_set(rmi4_data->tsp_booster, touch_count);
 #endif
 
+#ifdef CONFIG_TOUCH_WAKE
+	// Read touchscreen digitizer
+	if (touchwake_is_active() && touch_count > 0) {
+		if (previous_touch_state == false) {
+			#ifdef TOUCHWAKE_DEBUG_PRINT
+			pr_info("[TOUCHWAKE] Synaptics pressed\n");
+			#endif
+			touch_press(); // Yank555.lu - Screen touched
+			previous_touch_state = true; // once is enough
+		}
+	} else {
+		previous_touch_state = false; // touch released, restart listening
+	}
+#endif
 	return touch_count;
 }
 
@@ -1966,7 +1989,6 @@ static void synaptics_rmi4_report_touch(struct synaptics_rmi4_data *rmi4_data,
 				__func__, fhandler->fn_number);
 		break;
 	}
-
 	return;
 }
 
@@ -4906,6 +4928,18 @@ err_tsp_reboot:
 /* turn off touch IC, will be turned by InputRedaer */
 	synaptics_rmi4_stop_device(rmi4_data);
 #endif
+
+#ifdef TSP_INIT_COMPLETE
+	complete_all(&rmi4_data->init_done);
+
+#endif
+
+#ifdef CONFIG_TOUCH_WAKE
+	// Yank555.lu - Store the data for touchwake
+	touchwake_data = rmi4_data;
+	if (touchwake_data == NULL)
+		pr_err("[TOUCHWAKE] Failed to set Synaptics touchwake_data\n");
+#endif 
 	return retval;
 
 #if defined(CONFIG_LEDS_CLASS) && defined(TOUCHKEY_ENABLE)
@@ -5269,7 +5303,16 @@ static int synaptics_rmi4_input_open(struct input_dev *dev)
 	struct synaptics_rmi4_data *rmi4_data = input_get_drvdata(dev);
 	int retval;
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s %s\n", __func__, rmi4_data->use_deepsleep ? "wakeup" : "");
+    dev_info(&rmi4_data->i2c_client->dev, "%s %s\n", __func__, rmi4_data->use_deepsleep ? "wakeup" : "");
+#ifdef CONFIG_TOUCH_WAKE
+	#ifdef TOUCHWAKE_DEBUG_PRINT
+	pr_info("[TOUCHWAKE] Synaptics input open\n");
+	#endif
+#endif
+
+#ifdef TSP_INIT_COMPLETE
+	retval = wait_for_completion_interruptible_timeout(&rmi4_data->init_done,
+			msecs_to_jiffies(90 * MSEC_PER_SEC));
 
 	if (rmi4_data->use_deepsleep) {
 
@@ -5288,8 +5331,23 @@ static void synaptics_rmi4_input_close(struct input_dev *dev)
 {
 	struct synaptics_rmi4_data *rmi4_data = input_get_drvdata(dev);
 
+#ifdef CONFIG_TOUCH_WAKE
+	// Don't change state if touchwake handles this
+	if (!touchwake_is_active()) {
+		#ifdef TOUCHWAKE_DEBUG_PRINT
+		pr_info("[TOUCHWAKE] Synaptics input close\n");
+		#endif
+#endif
 	dev_info(&rmi4_data->i2c_client->dev, "%s %s\n", __func__, rmi4_data->use_deepsleep ? "deepsleep" : "");
+    synaptics_rmi4_stop_device(rmi4_data);
 
+#ifdef CONFIG_TOUCH_WAKE
+	} else {
+		#ifdef TOUCHWAKE_DEBUG_PRINT
+		pr_info("[TOUCHWAKE] Synaptics suspend not allowed at the moment\n");
+		#endif
+	}
+#endif
 	if (rmi4_data->use_deepsleep)
 		synaptics_rmi4_sensor_sleep(rmi4_data);
 	else
@@ -5428,6 +5486,36 @@ static int synaptics_rmi4_resume(struct device *dev)
 
 	return 0;
 }
+
+#ifdef CONFIG_TOUCH_WAKE
+// Yank555.lu - Add hooks to enable / disable the digitizer for touchwake
+void touchscreen_disable(void)
+{
+	#ifdef TOUCHWAKE_DEBUG_PRINT
+	pr_info("[TOUCHWAKE] Synaptics disable\n");
+	#endif
+
+	if (touchwake_data != NULL)
+		synaptics_rmi4_input_close(touchwake_data->input_dev);
+
+	return;
+}
+EXPORT_SYMBOL(touchscreen_disable);
+
+void touchscreen_enable(void)
+{
+	#ifdef TOUCHWAKE_DEBUG_PRINT
+	pr_info("[TOUCHWAKE] Synaptics enable\n");
+	#endif
+
+	if (touchwake_data != NULL)
+		synaptics_rmi4_input_open(touchwake_data->input_dev);
+
+	return;
+}
+EXPORT_SYMBOL(touchscreen_enable);
+#endif
+
 #endif
 
 static const struct dev_pm_ops synaptics_rmi4_dev_pm_ops = {
@@ -5511,4 +5599,5 @@ MODULE_AUTHOR("Synaptics, Inc.");
 MODULE_DESCRIPTION("Synaptics RMI4 I2C Touch Driver");
 MODULE_LICENSE("GPL v2");
 MODULE_VERSION(SYNAPTICS_RMI4_DRIVER_VERSION);
+
 
