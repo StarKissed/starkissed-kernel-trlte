@@ -173,11 +173,9 @@ static int zen_init_queue(struct request_queue *q, struct elevator_type *e)
     }
 	INIT_LIST_HEAD(&zdata->fifo_list[SYNC]);
 	INIT_LIST_HEAD(&zdata->fifo_list[ASYNC]);
-
 	zdata->fifo_expire[SYNC] = sync_expire;
 	zdata->fifo_expire[ASYNC] = async_expire;
 	zdata->fifo_batch = fifo_batch;
-
 	return 0;
 }
 
@@ -218,7 +216,7 @@ SHOW_FUNCTION(zen_async_expire_show, zdata->fifo_expire[ASYNC], 1);
 SHOW_FUNCTION(zen_fifo_batch_show, zdata->fifo_batch, 0);
 #undef SHOW_FUNCTION
 
-#define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV, NDX)		\
+#define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV) \
 static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count) \
 { \
 	struct zen_data *zdata = e->elevator_data; \
@@ -234,9 +232,9 @@ static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count) 
 		*(__PTR) = __data; \
 	return ret; \
 }
-STORE_FUNCTION(zen_sync_expire_store, &zdata->fifo_expire[SYNC], 0, INT_MAX, 1, 0);
-STORE_FUNCTION(zen_async_expire_store, &zdata->fifo_expire[ASYNC], 0, INT_MAX, 1, 1);
-STORE_FUNCTION(zen_fifo_batch_store, &zdata->fifo_batch, 0, INT_MAX, 0, 2);
+STORE_FUNCTION(zen_sync_expire_store, &zdata->fifo_expire[SYNC], 0, INT_MAX, 1);
+STORE_FUNCTION(zen_async_expire_store, &zdata->fifo_expire[ASYNC], 0, INT_MAX, 1);
+STORE_FUNCTION(zen_fifo_batch_store, &zdata->fifo_batch, 0, INT_MAX, 0);
 #undef STORE_FUNCTION
 
 #define DD_ATTR(name) \
@@ -283,4 +281,3 @@ MODULE_AUTHOR("Brandon Berhent");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Zen IO scheduler");
 MODULE_VERSION("1.0");
-
