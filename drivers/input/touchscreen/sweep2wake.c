@@ -32,11 +32,9 @@
 #include <linux/input.h>
 #ifdef CONFIG_POWERSUSPEND
 #include <linux/powersuspend.h>
-#else
-#ifndef CONFIG_HAS_EARLYSUSPEND
-#include <linux/lcd_notify.h>
-static struct notifier_block s2w_lcd_notif;
 #endif
+#ifdef CONFIG_HAS_EARLYSUSPEND
+#include <linux/earlysuspend.h>
 #endif
 
 
@@ -340,25 +338,8 @@ static struct power_suspend s2w_power_suspend_handler = {
 	.suspend = s2w_power_suspend,
 	.resume = s2w_power_resume,
 };
-#else
-#ifndef CONFIG_HAS_EARLYSUSPEND
-static int lcd_notifier_callback(struct notifier_block *this,
-				unsigned long event, void *data)
-{
-	switch (event) {
-	case LCD_EVENT_ON_END:
-		scr_suspended = false;
-		break;
-	case LCD_EVENT_OFF_END:
-		scr_suspended = true;
-		break;
-	default:
-		break;
-	}
-
-	return 0;
-}
-#else
+#endif
+#ifdef CONFIG_HAS_EARLYSUSPEND
 static void s2w_early_suspend(struct early_suspend *h) {
 	scr_suspended = true;
 }
@@ -372,7 +353,6 @@ static struct early_suspend s2w_early_suspend_handler = {
 	.suspend = s2w_early_suspend,
 	.resume = s2w_late_resume,
 };
-#endif
 #endif
 /*
  * SYSFS stuff below here
@@ -457,15 +437,9 @@ static int __init sweep2wake_init(void)
 
 #ifdef CONFIG_POWERSUSPEND
 	register_power_suspend(&s2w_power_suspend_handler);
-#else
-#ifndef CONFIG_HAS_EARLYSUSPEND
-	s2w_lcd_notif.notifier_call = lcd_notifier_callback;
-	if (lcd_register_client(&s2w_lcd_notif) != 0) {
-		pr_err("%s: Failed to register lcd callback\n", __func__);
-	}
-#else
-	register_early_suspend(&s2w_early_suspend_handler);
 #endif
+#ifdef CONFIG_HAS_EARLYSUSPEND
+	register_early_suspend(&s2w_early_suspend_handler);
 #endif
 
 	sweep2sleep_kobj = kobject_create_and_add("sweep2sleep", NULL) ;
@@ -499,10 +473,9 @@ static void __exit sweep2wake_exit(void)
 
 #ifdef CONFIG_POWERSUSPEND
 	unregister_power_suspend(&s2w_power_suspend_handler);
-#else
-#ifndef CONFIG_HAS_EARLYSUSPEND
-	lcd_unregister_client(&s2w_lcd_notif);
 #endif
+#ifdef CONFIG_HAS_EARLYSUSPEND
+    unregister_early_suspend(&s2w_early_suspend_handler);
 #endif
 	input_unregister_handler(&s2w_input_handler);
 	destroy_workqueue(s2w_input_wq);
