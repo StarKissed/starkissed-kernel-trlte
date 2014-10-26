@@ -1031,7 +1031,7 @@ config TOUCHSCREEN_SWEEP2WAKE
 
 config TOUCHSCREEN_PREVENT_SLEEP
         bool "Inihibit sleep on modified touchscreen drivers"
-        default y
+        default n
         help
           This disables the sleep function of modified touchscreen drivers.
 
