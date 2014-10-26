@@ -106,7 +106,7 @@ choice
 
 config INTELLI_THERMAL_V2
 	bool "Better thermal monitor for MSM"
-	depends on THERMAL_TSENS8974
+	depends on THERMAL_TSENS8960 || THERMAL_TSENS8974
 	depends on CPU_FREQ_MSM
 	default n
 	help

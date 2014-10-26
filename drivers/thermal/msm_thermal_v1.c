@@ -25,7 +25,7 @@
 #include <linux/cpufreq.h>
 #include <linux/msm_tsens.h>
 #include <linux/msm_thermal.h>
-#include <mach/cpufreq.h>
+#include <soc/qcom/cpufreq.h>
 
 #define DEFAULT_POLLING_MS	500
 /* last 3 minutes based on 250ms polling cycle */
@@ -104,9 +104,7 @@ static int update_cpu_max_freq(int cpu, uint32_t max_freq)
 {
 	int ret = 0;
 
-	ret = msm_cpufreq_set_freq_limits(cpu, MSM_CPUFREQ_NO_LIMIT, max_freq);
-	if (ret)
-		return ret;
+	cpufreq_verify_within_limits(cpufreq_cpu_get(cpu), MSM_CPUFREQ_NO_LIMIT, max_freq);
 
 	limited_max_freq_thermal = max_freq;
 	if (max_freq != MSM_CPUFREQ_NO_LIMIT)
