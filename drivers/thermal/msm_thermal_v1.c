@@ -104,7 +104,7 @@ static int update_cpu_max_freq(int cpu, uint32_t max_freq)
 {
 	int ret = 0;
 
-	cpufreq_verify_within_limits(cpufreq_cpu_get(cpu), MSM_CPUFREQ_NO_LIMIT, max_freq);
+    // cpufreq_verify_within_limits(cpufreq_cpu_get(cpu), max_freq, MSM_CPUFREQ_NO_LIMIT);
 
 	limited_max_freq_thermal = max_freq;
 	if (max_freq != MSM_CPUFREQ_NO_LIMIT)

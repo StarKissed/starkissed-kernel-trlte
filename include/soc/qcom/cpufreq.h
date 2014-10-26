@@ -31,7 +31,7 @@ static int register_devfreq_msm_cpufreq(void)
 
 #if defined(CONFIG_CPU_FREQ_MSM)
 extern unsigned long msm_cpufreq_get_bw(void);
-#if defined(CONFIG_INTELLI_THERMAL_V2)
+#if defined(CONFIG_INTELLI_THERMAL)
 extern int msm_cpufreq_set_freq_limits(
 		uint32_t cpu, uint32_t min, uint32_t max);
 #endif // CONFIG_INTELLI_THERMAL
@@ -40,7 +40,7 @@ extern unsigned long msm_cpufreq_get_bw(void)
 {
 	return ULONG_MAX;
 }
-#if defined(CONFIG_INTELLI_THERMAL_V2)
+#if defined(CONFIG_INTELLI_THERMAL)
 static inline int msm_cpufreq_set_freq_limits(
 		uint32_t cpu, uint32_t min, uint32_t max)
 #endif // CONFIG_INTELLI_THERMAL
