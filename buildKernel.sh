@@ -25,8 +25,8 @@ fi
 if [ -e $KERNELSPEC/buildimg/zImage ]; then
     rm -R $KERNELSPEC/buildimg/zImage
 fi
-if [ -e $KERNELREPO/gooserver/ ]; then
-    rm -R $KERNELREPO/gooserver/*
+if [ -e arch/arm/boot/zImage ]; then
+    rm -R arch/arm/boot/zImage
 fi
 
 cp -R config/apq8084_sec_trlte_tmo_defconfig  arch/arm/configs/apq8084_sec_trlte_tmo_defconfig
@@ -105,6 +105,11 @@ if [ -e arch/arm/boot/zImage ]; then
     read publish
 
     if [ $publish == "y" ]; then
+        if [ -e $KERNELREPO/gooserver/ ]; then
+            rm -R $KERNELREPO/gooserver/*.img
+            rm -R $KERNELREPO/gooserver/*.tar
+            rm -R $KERNELREPO/gooserver/*.md5
+        fi
         ssh upload.goo.im rm public_html/trltetmo/kernel/*
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
