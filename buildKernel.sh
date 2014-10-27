@@ -114,8 +114,6 @@ if [ -e arch/arm/boot/zImage ]; then
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/trltetmo/kernel
     fi
 
-    make -j$CPU_JOB_NUM -C $(pwd) clean
-
 fi
 
 cd $KERNELSPEC
