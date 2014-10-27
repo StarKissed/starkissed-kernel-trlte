@@ -53,7 +53,6 @@
 #include <asm/mmu_context.h>
 #include <asm/ioctls.h>
 #include "internal.h"
-#include "read_write.h"
 
 int compat_log = 1;
 
@@ -68,8 +67,6 @@ int compat_printk(const char *fmt, ...)
 	va_end(ap);
 	return ret;
 }
-
-#include "read_write.h"
 
 /*
  * Not all architectures have sys_utime, so implement this in terms

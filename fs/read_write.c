@@ -18,7 +18,6 @@
 #include <linux/splice.h>
 #include <linux/compat.h>
 #include "internal.h"
-#include "read_write.h"
 
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
@@ -331,39 +330,6 @@ int rw_verify_area(int read_write, struct file *file, loff_t *ppos, size_t count
 	return count > MAX_RW_COUNT ? MAX_RW_COUNT : count;
 }
 
-static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
-{
-	set_current_state(TASK_UNINTERRUPTIBLE);
-	if (!kiocbIsKicked(iocb))
-		schedule();
-	else
-		kiocbClearKicked(iocb);
-	__set_current_state(TASK_RUNNING);
-}
-
-ssize_t do_aio_read(struct kiocb *kiocb, const struct iovec *iov,
-		    unsigned long nr_segs, loff_t pos)
-{
-	struct file *file = kiocb->ki_filp;
-
-	if (file->f_op->read_iter) {
-		size_t count;
-		struct iov_iter iter;
-		int ret;
-
-		count = 0;
-		ret = generic_segment_checks(iov, &nr_segs, &count,
-					     VERIFY_WRITE);
-		if (ret)
-			return ret;
-
-		iov_iter_init(&iter, iov, nr_segs, count, 0);
-		return file->f_op->read_iter(kiocb, &iter, pos);
-	}
-
-	return file->f_op->aio_read(kiocb, iov, nr_segs, pos);
-}
-
 ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
 {
 	struct iovec iov = { .iov_base = buf, .iov_len = len };
@@ -390,7 +356,7 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
-	if (!file_readable(file))
+	if (!file->f_op || (!file->f_op->read && !file->f_op->aio_read))
 		return -EINVAL;
 	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))
 		return -EFAULT;
@@ -413,29 +379,6 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 }
 
 EXPORT_SYMBOL(vfs_read);
-
-ssize_t do_aio_write(struct kiocb *kiocb, const struct iovec *iov,
-		     unsigned long nr_segs, loff_t pos)
-{
-	struct file *file = kiocb->ki_filp;
-
-	if (file->f_op->write_iter) {
-		size_t count;
-		struct iov_iter iter;
-		int ret;
-
-		count = 0;
-		ret = generic_segment_checks(iov, &nr_segs, &count,
-					     VERIFY_READ);
-		if (ret)
-			return ret;
-
-		iov_iter_init(&iter, iov, nr_segs, count, 0);
-		return file->f_op->write_iter(kiocb, &iter, pos);
-	}
-
-	return file->f_op->aio_write(kiocb, iov, nr_segs, pos);
-}
 
 ssize_t do_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos)
 {
@@ -490,7 +433,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 
 	if (!(file->f_mode & FMODE_WRITE))
 		return -EBADF;
-	if (!file_writable(file))
+	if (!file->f_op || (!file->f_op->write && !file->f_op->aio_write))
 		return -EINVAL;
 	if (unlikely(!access_ok(VERIFY_READ, buf, count)))
 		return -EFAULT;
@@ -807,7 +750,7 @@ ssize_t vfs_readv(struct file *file, const struct iovec __user *vec,
 {
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
-	if (!file_readable(file))
+	if (!file->f_op || (!file->f_op->aio_read && !file->f_op->read))
 		return -EINVAL;
 
 	return do_readv_writev(READ, file, vec, vlen, pos);
@@ -820,7 +763,7 @@ ssize_t vfs_writev(struct file *file, const struct iovec __user *vec,
 {
 	if (!(file->f_mode & FMODE_WRITE))
 		return -EBADF;
-	if (!file_writable(file))
+	if (!file->f_op || (!file->f_op->aio_write && !file->f_op->write))
 		return -EINVAL;
 
 	return do_readv_writev(WRITE, file, vec, vlen, pos);
