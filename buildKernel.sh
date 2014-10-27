@@ -17,16 +17,19 @@ PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 CPU_JOB_NUM=8
 
 if [ -e $KERNELSPEC/out ]; then
-rm -R $KERNELSPEC/out
+    rm -R $KERNELSPEC/out
 fi
 if [ -e $KERNELSPEC/buildimg/boot.img ]; then
-rm -R $KERNELSPEC/buildimg/boot.img
+    rm -R $KERNELSPEC/buildimg/boot.img
 fi
 if [ -e $KERNELSPEC/buildimg/newramdisk.cpio.gz ]; then
-rm -R $KERNELSPEC/buildimg/newramdisk.cpio.gz
+    rm -R $KERNELSPEC/buildimg/newramdisk.cpio.gz
 fi
 if [ -e $KERNELSPEC/buildimg/zImage ]; then
-rm -R $KERNELSPEC/buildimg/zImage
+    rm -R $KERNELSPEC/buildimg/zImage
+fi
+if [ -e $KERNELREPO/gooserver/ ]; then
+    rm -R $KERNELREPO/gooserver/*
 fi
 
 cp -R config/apq8084_sec_trlte_tmo_defconfig  arch/arm/configs/apq8084_sec_trlte_tmo_defconfig
@@ -107,13 +110,10 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
     if [ $publish == "y" ]; then
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
-        rm -R $KERNELREPO/gooserver/$IMAGEFILE
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
         scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/trltetmo/kernel
-        rm -R $KERNELREPO/gooserver/$KERNELFILE
         cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/trltetmo/kernel
-        rm -R $KERNELREPO/gooserver/$KERNELFILE.md5
     fi
 
 fi
