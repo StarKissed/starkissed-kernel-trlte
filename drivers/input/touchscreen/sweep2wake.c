@@ -3,6 +3,7 @@
  *
  *
  * Copyright (c) 2013, Dennis Rassmann <showp1984@gmail.com>
+ *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +52,7 @@
 
 /* Tuneables */
 #define S2W_DEBUG		0
-#define S2W_DEFAULT		1
+#define S2W_DEFAULT		0
 #define S2W_PWRKEY_DUR          60
 
 /* Screen size */
@@ -188,7 +189,10 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 				}
 			}
 		}
-		/* s2s: left->right */
+    }
+    /* s2s: left->right */
+    if ((single_touch) && (scr_suspended == true) && (s2w_switch > 0)) {
+        scr_on_touch = true;
 		reverse_prev_coord = DEFAULT_S2W_X_B0;
 		reverse_next_coord = DEFAULT_S2W_X_B3;
 		if ((reverse_barrier[0] == true) ||
@@ -210,7 +214,7 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 						DEFAULT_S2W_Y_LIMIT)) {
 					if (sweep_coord > DEFAULT_S2W_X_B5) {
 						if (exec_count) {
-							pr_info(LOGTAG"OFF\n");
+							pr_info(LOGTAG"ON\n");
 							sweep2wake_pwrswitch();
 							exec_count = false;
 						}
@@ -357,7 +361,7 @@ static struct early_suspend s2w_early_suspend_handler = {
 /*
  * SYSFS stuff below here
  */
-static ssize_t s2w_sweep2sleep_show(struct device *dev,
+static ssize_t s2w_sweep2wake_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	size_t count = 0;
@@ -367,7 +371,7 @@ static ssize_t s2w_sweep2sleep_show(struct device *dev,
 	return count;
 }
 
-static ssize_t s2w_sweep2sleep_dump(struct device *dev,
+static ssize_t s2w_sweep2wake_dump(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	if (buf[0] >= '0' && buf[0] <= '1' && buf[1] == '\n')
@@ -377,8 +381,8 @@ static ssize_t s2w_sweep2sleep_dump(struct device *dev,
 	return count;
 }
 
-static DEVICE_ATTR(sweep2sleep, (S_IWUSR|S_IRUGO),
-	s2w_sweep2sleep_show, s2w_sweep2sleep_dump);
+static DEVICE_ATTR(sweep2wake, (S_IWUSR|S_IRUGO),
+	s2w_sweep2wake_show, s2w_sweep2wake_dump);
 
 static ssize_t s2w_version_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -402,8 +406,12 @@ static DEVICE_ATTR(sweep2wake_version, (S_IWUSR|S_IRUGO),
 /*
  * INIT / EXIT stuff below here
  */
-struct kobject *sweep2sleep_kobj;
-EXPORT_SYMBOL_GPL(sweep2sleep_kobj);
+#ifdef ANDROID_TOUCH_DECLARED
+extern struct kobject *android_touch_kobj;
+#else
+struct kobject *android_touch_kobj;
+EXPORT_SYMBOL_GPL(android_touch_kobj);
+#endif
 
 static int __init sweep2wake_init(void)
 {
@@ -441,23 +449,21 @@ static int __init sweep2wake_init(void)
 #ifdef CONFIG_HAS_EARLYSUSPEND
 	register_early_suspend(&s2w_early_suspend_handler);
 #endif
+    
+#ifndef ANDROID_TOUCH_DECLARED
+    android_touch_kobj = kobject_create_and_add("android_touch", NULL) ;
+    if (android_touch_kobj == NULL) {
+        pr_warn("%s: android_touch_kobj create_and_add failed\n", __func__);
+    }
+#endif
+    rc = sysfs_create_file(android_touch_kobj, &dev_attr_sweep2wake.attr);
+    if (rc) {
+        pr_warn("%s: sysfs_create_file failed for sweep2wake\n", __func__);
 
-	sweep2sleep_kobj = kobject_create_and_add("sweep2sleep", NULL) ;
-	if (sweep2sleep_kobj == NULL) {
-		pr_warn("%s: sweep2sleep_kobj create_and_add failed\n",
-				__func__);
-	}
-	rc = sysfs_create_file(sweep2sleep_kobj, &dev_attr_sweep2sleep.attr);
-	if (rc) {
-		pr_warn("%s: sysfs_create_file failed for sweep2wake\n",
-				__func__);
-	}
-	rc = sysfs_create_file(sweep2sleep_kobj,
-			&dev_attr_sweep2wake_version.attr);
-	if (rc) {
-		pr_warn("%s: sysfs_create_file failed for \
-				sweep2wake_version\n", __func__);
-	}
+	rc = sysfs_create_file(android_touch_kobj, &dev_attr_sweep2wake_version.attr);
+    if (rc) {
+        pr_warn("%s: sysfs_create_file failed for sweep2wake_version\n", __func__);
+    }
 
 err_input_dev:
 	input_free_device(sweep2wake_pwrdev);
@@ -469,7 +475,9 @@ err_alloc_dev:
 
 static void __exit sweep2wake_exit(void)
 {
-	kobject_del(sweep2sleep_kobj);
+#ifndef ANDROID_TOUCH_DECLARED
+    kobject_del(android_touch_kobj);
+#endif
 
 #ifdef CONFIG_POWERSUSPEND
 	unregister_power_suspend(&s2w_power_suspend_handler);
