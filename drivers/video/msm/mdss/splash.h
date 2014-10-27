@@ -5275,5 +5275,6 @@ char splash_bgr888_image[] = {
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
 };
+// Needs to be decrypted and subsequently replaced
 
 #endif
