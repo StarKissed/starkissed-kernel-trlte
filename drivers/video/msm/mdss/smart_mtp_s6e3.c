@@ -4503,3 +4503,9 @@ struct smartdim_conf *smart_S6E3_get_conf_hmt_single(void) {
  * END - Wrapper
  * ----------------------------------------------------------------------------
  */
+
+void panel_load_colors(unsigned int val)
+{
+    panelval = val;
+    wrap_smart_dimming_init();
+}
