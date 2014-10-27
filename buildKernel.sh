@@ -108,6 +108,7 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
     read publish
 
     if [ $publish == "y" ]; then
+        ssh upload.goo.im rm trltetmo/kernel/*
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
