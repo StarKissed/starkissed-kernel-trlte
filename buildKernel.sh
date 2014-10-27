@@ -16,9 +16,6 @@ PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 
 CPU_JOB_NUM=8
 
-if [ -e $KERNELSPEC/out ]; then
-    rm -R $KERNELSPEC/out
-fi
 if [ -e $KERNELSPEC/buildimg/boot.img ]; then
     rm -R $KERNELSPEC/buildimg/boot.img
 fi
@@ -34,11 +31,11 @@ fi
 
 cp -R config/apq8084_sec_trlte_tmo_defconfig  arch/arm/configs/apq8084_sec_trlte_tmo_defconfig
 
-mkdir $(pwd)/out
-make -j$CPU_JOB_NUM -C $(pwd) O=$(pwd)/out VARIANT_DEFCONFIG=apq8084_sec_trlte_tmo_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
-make -j$CPU_JOB_NUM -C $(pwd) O=$(pwd)/out CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -C $(pwd) clean
+make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_tmo_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
-if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
+if [ -e arch/arm/boot/zImage ]; then
 
     MODULEOUT=$KERNELSPEC/buildimg/boot.img-ramdisk
 
@@ -65,7 +62,7 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
 
     fi
 
-    cp -R $(pwd)/out/arch/arm/boot/zImage $KERNELSPEC/buildimg/zImage
+    cp -R arch/arm/boot/zImage $KERNELSPEC/buildimg/zImage
 
     cd buildimg
     ./img.sh
@@ -108,7 +105,7 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
     read publish
 
     if [ $publish == "y" ]; then
-        ssh upload.goo.im rm trltetmo/kernel/*
+        ssh upload.goo.im rm public_html/trltetmo/kernel/*
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
@@ -116,6 +113,8 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
         cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/trltetmo/kernel
     fi
+
+    make -j$CPU_JOB_NUM -C $(pwd) clean
 
 fi
 

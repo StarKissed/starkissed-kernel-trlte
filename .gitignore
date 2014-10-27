@@ -84,6 +84,9 @@ arch/arm/boot/compressed/ashldi3.S
 arch/arm/boot/compressed/piggy.xzkern
 arch/arm/boot/zImage
 
+*.dtb
+*.dts
+
 */zImage
 */*.img
 */*.zip
