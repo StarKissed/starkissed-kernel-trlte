@@ -407,9 +407,9 @@ static DEVICE_ATTR(sweep2wake_version, (S_IWUSR|S_IRUGO),
 /*
  * INIT / EXIT stuff below here
  */
-extern struct kobject *android_touch_kobj;
-//struct kobject *android_touch_kobj;
-//EXPORT_SYMBOL_GPL(android_touch_kobj);
+//extern struct kobject *android_touch_kobj;
+struct kobject *android_touch_kobj;
+EXPORT_SYMBOL_GPL(android_touch_kobj);
 
 static int __init sweep2wake_init(void)
 {
