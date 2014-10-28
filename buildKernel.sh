@@ -87,7 +87,7 @@ if [ -e arch/arm/boot/zImage ]; then
 
     IMAGEFILE=boot.$PUNCHCARD.img
     KERNELFILE=boot.$PUNCHCARD.tar
-    KENRELZIP="StarKissed-NJ7_$PUNCHCARD-Note4.zip"
+    KERNELZIP="StarKissed-NJ7_$PUNCHCARD-Note4.zip"
 
     cp -r  output/boot.img $KERNELREPO/trltetmo/boot.img
 
