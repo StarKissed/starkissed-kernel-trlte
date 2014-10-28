@@ -15,7 +15,10 @@ KERNELHOST=public_html/trltetmo/kernel/
 GOOSERVER=upload.goo.im:$KERNELHOST
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 
-zipfile=$HANDLE"_StarKissed-NJ7-Note4.zip"
+LOCALZIP=$HANDLE"_StarKissed-NJ7-Note4.zip"
+IMAGEFILE=boot.$PUNCHCARD.img
+KERNELFILE=boot.$PUNCHCARD.tar
+KERNELZIP="StarKissed-NJ7_$PUNCHCARD-Note4.zip"
 
 CPU_JOB_NUM=8
 
@@ -30,6 +33,9 @@ if [ -e $KERNELSPEC/buildimg/zImage ]; then
 fi
 if [ -e arch/arm/boot/zImage ]; then
     rm -R arch/arm/boot/zImage
+fi
+if [ -e $KERNELSPEC/trltetmoSKU/$LOCALZIP ];then
+    rm -R$KERNELSPEC/trltetmoSKU/$LOCALZIP
 fi
 
 cp -R config/apq8084_sec_trlte_tmo_defconfig  arch/arm/configs/apq8084_sec_trlte_tmo_defconfig
@@ -85,10 +91,6 @@ if [ -e arch/arm/boot/zImage ]; then
         rm -R output/boot.tar.md5.gz
     fi
 
-    IMAGEFILE=boot.$PUNCHCARD.img
-    KERNELFILE=boot.$PUNCHCARD.tar
-    KERNELZIP="StarKissed-NJ7_$PUNCHCARD-Note4.zip"
-
     cp -r  output/boot.img $KERNELREPO/trltetmo/boot.img
 
 #    if cat /etc/issue | grep Ubuntu; then
@@ -109,9 +111,9 @@ if [ -e arch/arm/boot/zImage ]; then
     cp -R output/boot.img trltetmoSKU
     cd trltetmoSKU
     rm *.zip
-    zip -r $zipfile *
+    zip -r $LOCALZIP *
     cd ../
-    cp -R $KERNELSPEC/trltetmoSKU/$zipfile $KERNELREPO/$zipfile
+    cp -R $KERNELSPEC/trltetmoSKU/$LOCALZIP $KERNELREPO/$LOCALZIP
 
     echo "Publish Kernel?"
     read publish
@@ -133,7 +135,7 @@ if [ -e arch/arm/boot/zImage ]; then
         scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/
         cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER
-        cp -r $KERNELREPO/$zipfile $KERNELREPO/gooserver/$KERNELZIP
+        cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
         scp $KERNELREPO/gooserver/$KENRELZIP $GOOSERVER
     fi
 
