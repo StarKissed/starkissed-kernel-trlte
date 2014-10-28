@@ -1392,6 +1392,7 @@ static struct kernel_param_ops dload_on_uvlo_ops = {
 
 module_param_cb(dload_on_uvlo, &dload_on_uvlo_ops, &dload_on_uvlo, 0644);
 
+#ifdef CONFIG_SEC_DEBUG
 static ssize_t  sysfs_powerkey_onoff_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -1406,6 +1407,7 @@ static ssize_t  sysfs_powerkey_onoff_show(struct device *dev,
 	}
 }
 static DEVICE_ATTR(sec_powerkey_pressed, 0664 , sysfs_powerkey_onoff_show, NULL);
+#endif
 
 
 #ifdef CONFIG_SEC_PM_DEBUG
@@ -1488,8 +1490,10 @@ static int qpnp_pon_probe(struct spmi_device *spmi)
 	int rc, sys_reset, index;
 	u8 pon_sts = 0, buf[2];
 	u16 poff_sts = 0;
+#ifdef CONFIG_SEC_DEBUG
 	struct device *sec_powerkey;
 	int ret;
+#endif
 
 	pon = devm_kzalloc(&spmi->dev, sizeof(struct qpnp_pon),
 							GFP_KERNEL);
@@ -1628,7 +1632,7 @@ static int qpnp_pon_probe(struct spmi_device *spmi)
 		dev_err(&spmi->dev, "sys file creation failed\n");
 		return rc;
 	}
-
+#ifdef CONFIG_SEC_DEBUG
 	sec_powerkey = device_create(sec_class, NULL, 0, NULL, "sec_powerkey");
 	if (IS_ERR(sec_powerkey))
 		pr_err("Failed to create device(sec_powerkey)!\n");
@@ -1638,7 +1642,7 @@ static int qpnp_pon_probe(struct spmi_device *spmi)
 			dev_attr_sec_powerkey_pressed.attr.name);
 	}
 	dev_set_drvdata(sec_powerkey, pon);
-
+#endif
 	return rc;
 }
 

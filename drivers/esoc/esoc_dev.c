@@ -15,7 +15,7 @@
 #include <linux/uaccess.h>
 #include <linux/wait.h>
 #include "esoc.h"
-#if defined(CONFIG_SEC_DEBUG) && defined(CONFIG_SEC_PERIPHERAL_SECURE_CHK)
+#if defined(CONFIG_SEC_DEBUG) || defined(CONFIG_SEC_PERIPHERAL_SECURE_CHK)
 #include <mach/sec_debug.h>
 #endif
 
