@@ -11,7 +11,7 @@ KERNELSPEC=/Volumes/android/trltetmo-kernel
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 MODULEOUT=$KERNELSPEC/buildimg/boot.img-ramdisk
-KERNELHOST=public_html/trltetmo/kernel
+KERNELHOST=public_html/trltetmo/kernel/
 GOOSERVER=upload.goo.im:$KERNELHOST
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 
@@ -128,13 +128,13 @@ if [ -e arch/arm/boot/zImage ]; then
         ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
         ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
-        scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/
+        scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
         scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/
         cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
-        scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/
+        scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER
         cp -r $KERNELREPO/$zipfile $KERNELREPO/gooserver/$KERNELZIP
-        scp $KERNELREPO/gooserver/$KENRELZIP  $GOOSERVER/
+        scp $KERNELREPO/gooserver/$KENRELZIP $GOOSERVER
     fi
 
 fi
