@@ -33,7 +33,9 @@
 #define MAJOR_VERSION	1
 #define MINOR_VERSION	5
 
-//#define POWER_SUSPEND_DEBUG // Add debugging prints in dmesg
+#ifdef CONFIG_POWER_SUSPEND_DEBUG
+#define POWER_SUSPEND_DEBUG // Add debugging prints in dmesg
+#endif
 
 struct workqueue_struct *suspend_work_queue;
 
@@ -299,8 +301,8 @@ static int __init power_suspend_init(void)
 	}
 
 //	mode = POWER_SUSPEND_AUTOSLEEP;	// Default to autosleep mode
-//	mode = POWER_SUSPEND_USERSPACE;	// Default to userspace mode
-	mode = POWER_SUSPEND_PANEL;	// Default to display panel mode
+	mode = POWER_SUSPEND_USERSPACE;	// Default to userspace mode
+//	mode = POWER_SUSPEND_PANEL;	// Default to display panel mode
 //	mode = POWER_SUSPEND_HYBRID;	// Default to display panel / autosleep hybrid mode
 
 	return 0;
