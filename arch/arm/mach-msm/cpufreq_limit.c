@@ -21,7 +21,7 @@
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
 
-#include <mach/cpufreq.h>
+#include <soc/qcom/cpufreq.h>
 
 #define MSM_CPUFREQ_LIMIT_MAJOR		1
 #define MSM_CPUFREQ_LIMIT_MINOR		2
@@ -34,7 +34,7 @@ static int update_cpu_max_freq(int cpu, uint32_t max_freq)
 {
 	int ret = 0;
 
-	ret = msm_cpufreq_set_freq_limits(cpu, MSM_CPUFREQ_NO_LIMIT, max_freq);
+	ret = set_freq_limit(cpu, max_freq);
 	if (ret)
 		return ret;
 
