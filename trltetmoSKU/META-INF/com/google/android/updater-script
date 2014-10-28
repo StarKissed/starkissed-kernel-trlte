@@ -1,0 +1,21 @@
+ui_print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+ui_print("                   _   _             ...    ");
+ui_print("      ___          \\-//`       o,*,(o o)   ");
+ui_print("     (o o)         (o o)       8(o o)(_)Ooo ");
+ui_print(" ooO--(_)--Ooo-ooO--(_)--Ooo-ooO-(_)---Ooo  ");
+ui_print("    ____  __  __  ___  ____  _____  _  _    ");
+ui_print("   ( ___)(  )(  )/ __)(_  _)(  _  )( \( )   ");
+ui_print("    )__)  )(__)( \__ \ _)(_  )(_)(  )  (    ");
+ui_print("   (__)  (______)(___/(____)(_____)(_)\_)   ");
+ui_print("                                            ");
+ui_print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+ui_print(" ");
+
+ui_print(">>> Installing Kernel...");
+package_extract_file("boot.img", "/tmp/boot.img");
+set_perm(0, 0, 0777, "/tmp/boot.img");
+run_program("/sbin/busybox", "dd", "if=/tmp/boot.img", "of=/dev/block/platform/msm_sdcc.1/by-name/boot");
+ui_print(" ");
+
+ui_print(">>> Done!");
+ui_print(" ");

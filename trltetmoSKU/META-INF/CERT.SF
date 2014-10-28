@@ -1,0 +1,46 @@
+Signature-Version: 1.0
+Created-By: 1.0 (Android SignApk)
+SHA1-Digest-Manifest: Tlqk68zwGcHm54qhCjIOt1sbR7I=
+
+Name: kernel/dump_image
+SHA1-Digest: Kizlaky9jDtvgyNpgxOjz7f/vrs=
+
+Name: kernel/mkbootimg.sh
+SHA1-Digest: +nQPFUJPvXrBySBZdfFAKs/eCF8=
+
+Name: kernel/unpackbootimg
+SHA1-Digest: /lKQb7Ey6qOqn2mpKyC+eDUSsSo=
+
+Name: system/modules/drivers/scsi/scsi_wait_scan.ko
+SHA1-Digest: Mc7tU2y7dMZCOICaQMkJChPlmlM=
+
+Name: META-INF/com/google/android/update-binary
+SHA1-Digest: CCeK03El/mTt+pqw6TQ1o7tXF34=
+
+Name: system/modules/drivers/rpmsg/rpmsg_server_sample.ko
+SHA1-Digest: u5JSjuZpAhl2aZuwfacTFh4qFk8=
+
+Name: META-INF/com/google/android/updater-script
+SHA1-Digest: Uj+Q1sSx7u3L8VTDS8YfT3GIU2g=
+
+Name: system/modules/crypto/ansi_cprng.ko
+SHA1-Digest: a3VAjm2c7OJUdocQDSUxDpn7deo=
+
+Name: kernel/mkbootimg
+SHA1-Digest: bps6d+2zkMzNRKooOgq8edbFY0E=
+
+Name: kernel/zImage
+SHA1-Digest: 5cCDPMkXcQyFxladmtoPtjt0LR8=
+
+Name: system/modules/drivers/rpmsg/rpmsg_client_sample.ko
+SHA1-Digest: us7U+IgGGtzwrQaL3nKaFB30Guc=
+
+Name: system/bin/cmplus
+SHA1-Digest: APymSlGott0UvL4/28i2DzuLDKk=
+
+Name: system/etc/init.d/98cmplus
+SHA1-Digest: WZfeQeKqSf1aKSg/ADHU6bMgeXw=
+
+Name: system/etc/cmplus.conf
+SHA1-Digest: oCaX8sFvgsGVzigtB+fjAqdloto=
+

@@ -6,13 +6,16 @@
 
 PROPER=`echo $1 | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
 
-HANDLE=TwistedZero
+HANDLE=LoungeKatt
 KERNELSPEC=/Volumes/android/trltetmo-kernel
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 MODULEOUT=$KERNELSPEC/buildimg/boot.img-ramdisk
-GOOSERVER=upload.goo.im:public_html
+KERNELHOST=public_html/trltetmo/kernel
+GOOSERVER=upload.goo.im:$KERNELHOST
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
+
+zipfile=$HANDLE"_StarKissed-NJ7-Note4.zip"
 
 CPU_JOB_NUM=8
 
@@ -83,6 +86,7 @@ if [ -e arch/arm/boot/zImage ]; then
 
     IMAGEFILE=boot.$PUNCHCARD.img
     KERNELFILE=boot.$PUNCHCARD.tar
+    KENRELZIP="StarKissed-NJ7_$PUNCHCARD-Note4.zip"
 
     cp -r  output/boot.img $KERNELREPO/trltetmo/boot.img
 
@@ -99,7 +103,14 @@ if [ -e arch/arm/boot/zImage ]; then
     else
         md5 -r output/boot.tar.md5 >> output/boot.tar.md5
     fi
+
     cp -r output/boot.tar.md5 $KERNELREPO/trltetmo/boot.tar.md5
+    cp -R output/boot.img trltetmoSKU
+    cd trltetmoSKU
+    rm *.zip
+    zip -r $zipfile *
+    cd ../
+    cp -R $KERNELSPEC/trltetmoSKU/$zipfile $KERNELREPO/$zipfile
 
     echo "Publish Kernel?"
     read publish
@@ -109,14 +120,17 @@ if [ -e arch/arm/boot/zImage ]; then
             rm -R $KERNELREPO/gooserver/*.img
             rm -R $KERNELREPO/gooserver/*.tar
             rm -R $KERNELREPO/gooserver/*.md5
+            rm -R $KERNELREPO/gooserver/*.zip
         fi
-        ssh upload.goo.im rm public_html/trltetmo/kernel/*
+        ssh upload.goo.im mv -f $KERNELHOST/* $KERNELHOST/archive/
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
-        scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/trltetmo/kernel
+        scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
-        scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/trltetmo/kernel
+        scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/
         cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
-        scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/trltetmo/kernel
+        scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER/
+        cp -r $KERNELREPO/$zipfile $KERNELREPO/gooserver/$KERNELZIP
+        scp $KERNELREPO/gooserver/$KENRELZIP  $GOOSERVER/
     fi
 
 fi
