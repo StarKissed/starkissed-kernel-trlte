@@ -33,6 +33,7 @@ if [ -e arch/arm/boot/zImage ]; then
 fi
 
 cp -R config/apq8084_sec_trlte_tmo_defconfig  arch/arm/configs/apq8084_sec_trlte_tmo_defconfig
+cp -R config/apq8084_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
 
 make -j$CPU_JOB_NUM -C $(pwd) clean
 make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_tmo_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
@@ -122,7 +123,10 @@ if [ -e arch/arm/boot/zImage ]; then
             rm -R $KERNELREPO/gooserver/*.md5
             rm -R $KERNELREPO/gooserver/*.zip
         fi
-        ssh upload.goo.im mv -f $KERNELHOST/* $KERNELHOST/archive/
+        ssh upload.goo.im mv -f $KERNELHOST/*.img $KERNELHOST/archive/
+        ssh upload.goo.im mv -f $KERNELHOST/*.tar $KERNELHOST/archive/
+        ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
+        ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER/
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
