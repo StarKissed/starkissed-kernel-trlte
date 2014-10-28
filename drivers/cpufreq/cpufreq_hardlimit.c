@@ -124,6 +124,7 @@
 #include <linux/sysfs.h>
 #include <linux/cpufreq_hardlimit.h>
 #include <linux/cpufreq.h>
+#include <soc/qcom/cpufreq.h>
 #ifdef CONFIG_POWERSUSPEND
 #include <linux/powersuspend.h>
 #endif
@@ -142,7 +143,7 @@ unsigned int touchboost_hi_freq       = CPUFREQ_HARDLIMIT_TOUCHBOOST_HI_STOCK;  
 unsigned int current_limit_max        = CPUFREQ_HARDLIMIT_MAX_SCREEN_ON_STOCK;
 unsigned int current_limit_min        = CPUFREQ_HARDLIMIT_MIN_SCREEN_ON_STOCK;
 unsigned int current_screen_state     = CPUFREQ_HARDLIMIT_SCREEN_ON;		/* default to screen on */
-unsigned int userspace_dvfs_lock      = CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW;	/* default allows userspace dvfs interaction */
+unsigned int userspace_dvfs_lock      = CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE;	/* default allows userspace dvfs interaction */
 
 struct delayed_work stop_wakeup_kick_work;
 
@@ -559,7 +560,7 @@ static ssize_t userspace_dvfs_lock_show(struct kobject *kobj, struct kobj_attrib
 static ssize_t userspace_dvfs_lock_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	unsigned int new_userspace_dvfs_lock;
+	unsigned int new_userspace_dvfs_lock = CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE;
 
 	if (!sscanf(buf, "%du", &new_userspace_dvfs_lock))
 		return -EINVAL;

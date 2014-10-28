@@ -482,8 +482,6 @@ static ssize_t store_##file_name					\
 	return ret ? ret : count;					\
 }
 
-#ifdef CONFIG_SEC_PM
-
 /* CPU Hardlimit - Enforce userspace dvfs lock */
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 static ssize_t store_scaling_min_freq
@@ -494,7 +492,8 @@ static ssize_t store_scaling_min_freq
 
 	// Enforce userspace dvfs lock
 	switch (userspace_dvfs_lock_status()) {
-		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
+        case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW:
+        case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
 			return count;
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_REFUSE:
 			return -EINVAL;
@@ -524,8 +523,6 @@ static ssize_t store_scaling_min_freq
 store_one(scaling_min_freq, min);
 #endif /* CONFIG_CPUFREQ_HARDLIMIT */
 
-#endif
-
 /* Yank555.lu : CPU Hardlimit - Enforce userspace dvfs lock */
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 static ssize_t store_scaling_max_freq
@@ -536,6 +533,7 @@ static ssize_t store_scaling_max_freq
 
 	// Enforce userspace dvfs lock
 	switch (userspace_dvfs_lock_status()) {
+        case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW:
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
 			return count;
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_REFUSE:
@@ -2142,10 +2140,10 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
 
-	if (policy->min > data->user_policy.max
-		|| policy->max < data->user_policy.min) {
+	if (policy->min > policy->user_policy.max
+		|| policy->max < policy->user_policy.min) {
 		pr_debug("CPUFREQ: %s: pmin:%d, pmax:%d, min:%d, max:%d\n",
-			__func__, policy->min, policy->max, data->min, data->max);
+			__func__, policy->min, policy->max, policy->user_policy.min, policy->user_policy.max);
 		ret = -EINVAL;
 		goto error_out;
 	}
