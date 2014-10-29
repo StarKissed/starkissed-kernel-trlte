@@ -1,6 +1,5 @@
 /*
  * FIFO I/O scheduler (_really_ does no-op)
- *            (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -35,18 +34,24 @@ static void fifo_add_request(struct request_queue *q, struct request *req)
 static int fifo_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct fifo_data *fifo_d;
-    struct elevator_queue *eq;
-    
-    eq = elevator_alloc(q, e);
-    if (!eq)
-        return -ENOMEM;
+	struct elevator_queue *eq;
+
+	eq = elevator_alloc(q, e);
+	if (!eq)
+		return -ENOMEM;
 
 	fifo_d = kmalloc_node(sizeof(*fifo_d), GFP_KERNEL, q->node);
-    if (!fifo_d) {
-        kobject_put(&eq->kobj);
-        return -ENOMEM;
-    }
+	if (!fifo_d) {
+		kobject_put(&eq->kobj);
+		return -ENOMEM;
+	}
+	eq->elevator_data = fifo_d;
+
 	INIT_LIST_HEAD(&fifo_d->queue);
+
+	spin_lock_irq(q->queue_lock);
+	q->elevator = eq;
+	spin_unlock_irq(q->queue_lock);
 	return 0;
 }
 
@@ -92,4 +97,3 @@ module_exit(fifo_exit);
 MODULE_AUTHOR("Aaron Carroll");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("No-op IO scheduler that actually does nothing");
-

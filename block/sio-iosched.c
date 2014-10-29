@@ -3,7 +3,6 @@
  * Based on Noop, Deadline and V(R) IO schedulers.
  *
  * Copyright (C) 2012 Miguel Boton <mboton@gmail.com>
- *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  *
  * This algorithm does not do any kind of sorting, as it is aimed for
@@ -24,14 +23,14 @@
 enum { ASYNC, SYNC };
 
 /* Tunables */
-static const int sync_read_expire  = HZ / 2;	/* max time before a sync read is submitted. */
-static const int sync_write_expire = 2 * HZ;	/* max time before a sync write is submitted. */
+static const int sync_read_expire  = 1000;	/* max time before a sync read is submitted. */
+static const int sync_write_expire = 5000;	/* max time before a sync write is submitted. */
 
 static const int async_read_expire  =  4 * HZ;	/* ditto for async, these limits are SOFT! */
 static const int async_write_expire = 16 * HZ;	/* ditto for async, these limits are SOFT! */
 
-static const int writes_starved = 2;		/* max times reads can starve a write */
-static const int fifo_batch     = 8;		/* # of sequential requests treated as one
+static const int writes_starved = 1;		/* max times reads can starve a write */
+static const int fifo_batch     = 1;		/* # of sequential requests treated as one
 						   by the above parameters. For throughput. */
 
 /* Elevator data */
@@ -247,18 +246,19 @@ static int
 sio_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct sio_data *sd;
-    struct elevator_queue *eq;
-    
-    eq = elevator_alloc(q, e);
-    if (!eq)
-        return -ENOMEM;
+	struct elevator_queue *eq;
+
+	eq = elevator_alloc(q, e);
+	if (!eq)
+		return -ENOMEM;
 
 	/* Allocate structure */
 	sd = kmalloc_node(sizeof(*sd), GFP_KERNEL, q->node);
-    if (!sd) {
-        kobject_put(&eq->kobj);
+	if (!sd) {
+		kobject_put(&eq->kobj);
 		return -ENOMEM;
-    }
+	}
+	eq->elevator_data = sd;
 
 	/* Initialize fifo lists */
 	INIT_LIST_HEAD(&sd->fifo_list[SYNC][READ]);
@@ -274,6 +274,9 @@ sio_init_queue(struct request_queue *q, struct elevator_type *e)
 	sd->fifo_expire[ASYNC][WRITE] = async_write_expire;
 	sd->fifo_batch = fifo_batch;
 
+	spin_lock_irq(q->queue_lock);
+	q->elevator = eq;
+	spin_unlock_irq(q->queue_lock);
 	return 0;
 }
 
@@ -387,9 +390,7 @@ static struct elevator_type iosched_sio = {
 static int __init sio_init(void)
 {
 	/* Register elevator */
-	elv_register(&iosched_sio);
-
-	return 0;
+	return elv_register(&iosched_sio);
 }
 
 static void __exit sio_exit(void)
@@ -398,15 +399,10 @@ static void __exit sio_exit(void)
 	elv_unregister(&iosched_sio);
 }
 
-#ifdef CONFIG_FAST_RESUME
-beforeresume_initcall(sio_init);
-#else
 module_init(sio_init);
-#endif
 module_exit(sio_exit);
 
 MODULE_AUTHOR("Miguel Boton");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Simple IO scheduler");
 MODULE_VERSION("0.2");
-
