@@ -48,6 +48,11 @@ config MDNIE_LITE_TUNING
 	bool "MDNIe lite panel tuning"
 	default n
 
+config MDNIE_LITE_CONTROL
+	bool "MDNIe lite control interface"
+	depends on MDNIE_LITE_TUNING
+	default n
+
 config FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL
 	bool "Support SAMSUNG OCTA Command Full-HD Panel"
 	default n
