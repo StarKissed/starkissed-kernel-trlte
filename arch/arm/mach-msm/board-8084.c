@@ -15,6 +15,9 @@
 #include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/of_platform.h>
+#ifdef CONFIG_ANDROID_PERSISTENT_RAM
+#include <linux/persistent_ram.h>
+#endif
 #include <linux/memory.h>
 #include <linux/regulator/krait-regulator.h>
 #include <linux/regulator/rpm-smd-regulator.h>
@@ -425,9 +428,51 @@ static struct of_dev_auxdata apq8084_auxdata_lookup[] __initdata = {
 	{}
 };
 
+#define PERSISTENT_RAM_BASE 0xbff00000
+#define PERSISTENT_RAM_SIZE SZ_1M
+#define RAM_CONSOLE_SIZE (124*SZ_1K * 2)
+
+#ifdef CONFIG_ANDROID_PERSISTENT_RAM
+static struct persistent_ram_descriptor pram_descs[] = {
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+    {
+        .name = "ram_console",
+        .size = RAM_CONSOLE_SIZE,
+    },
+#endif
+};
+
+static struct persistent_ram msm8974_persistent_ram = {
+    .start = PERSISTENT_RAM_BASE,
+    .size = PERSISTENT_RAM_SIZE,
+    .num_descs = ARRAY_SIZE(pram_descs),
+    .descs = pram_descs,
+};
+
+void __init add_persistent_ram(void)
+{
+    persistent_ram_early_init(&msm8974_persistent_ram);
+}
+#endif
+
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+static struct platform_device ram_console_device = {
+    .name = "ram_console",
+    .id = -1,
+};
+
+void __init add_ramconsole_devices(void)
+{
+    platform_device_register(&ram_console_device);
+}
+#endif /* CONFIG_ANDROID_RAM_CONSOLE */
+
 void __init apq8084_reserve(void)
 {
 	of_scan_flat_dt(dt_scan_for_memory_reserve, NULL);
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+    add_persistent_ram();
+#endif
 }
 
 static void __init apq8084_early_memory(void)
@@ -511,6 +556,9 @@ void __init apq8084_init(void)
 
 	samsung_sys_class_init();
 	apq8084_init_gpiomux();
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
+    add_ramconsole_devices();
+#endif
 	apq8084_add_drivers();
 
 	platform_add_devices(common_devices, ARRAY_SIZE(common_devices));
