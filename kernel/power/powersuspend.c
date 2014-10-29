@@ -301,9 +301,9 @@ static int __init power_suspend_init(void)
 	}
 
 //	mode = POWER_SUSPEND_AUTOSLEEP;	// Default to autosleep mode
-	mode = POWER_SUSPEND_USERSPACE;	// Default to userspace mode
+//	mode = POWER_SUSPEND_USERSPACE;	// Default to userspace mode
 //	mode = POWER_SUSPEND_PANEL;	// Default to display panel mode
-//	mode = POWER_SUSPEND_HYBRID;	// Default to display panel / autosleep hybrid mode
+	mode = POWER_SUSPEND_HYBRID;	// Default to display panel / autosleep hybrid mode
 
 	return 0;
 }
