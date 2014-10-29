@@ -129,6 +129,8 @@ static u64 boostpulse_endtime;
 #define DEFAULT_TIMER_SLACK (4 * DEFAULT_TIMER_RATE)
 static int timer_slack_val = DEFAULT_TIMER_SLACK;
 
+#define TOP_STOCK_FREQ 2649600
+
 static bool io_is_busy;
 
 #ifdef CONFIG_MODE_AUTO_CHANGE
@@ -637,6 +639,8 @@ static void cpufreq_interactive_timer(unsigned long data)
 			if (new_freq < hispeed_freq)
 				new_freq = hispeed_freq;
 		}
+		if (new_freq > TOP_STOCK_FREQ && cpu_load < 99)
+			new_freq = TOP_STOCK_FREQ;
 	} else {
 		new_freq = choose_freq(pcpu, loadadjfreq);
 
