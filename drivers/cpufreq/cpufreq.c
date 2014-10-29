@@ -493,6 +493,7 @@ static ssize_t store_scaling_min_freq
 	// Enforce userspace dvfs lock
 	switch (userspace_dvfs_lock_status()) {
         case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW:
+            break;
         case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
 			return count;
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_REFUSE:
@@ -534,6 +535,7 @@ static ssize_t store_scaling_max_freq
 	// Enforce userspace dvfs lock
 	switch (userspace_dvfs_lock_status()) {
         case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW:
+            break;
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
 			return count;
 		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_REFUSE:
