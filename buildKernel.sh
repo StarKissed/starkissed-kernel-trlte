@@ -11,14 +11,14 @@ KERNELSPEC=/Volumes/android/trltetmo-kernel
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 MODULEOUT=$KERNELSPEC/buildimg/boot.img-ramdisk
-KERNELHOST=public_html/trltetmo/kernel/
+KERNELHOST=public_html/trltetmo/kernel
 GOOSERVER=upload.goo.im:$KERNELHOST
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 
 LOCALZIP=$HANDLE"_StarKissed-NJ7-Note4.zip"
 IMAGEFILE=boot.$PUNCHCARD.img
 KERNELFILE=boot.$PUNCHCARD.tar
-KERNELZIP="StarKissed-NJ7_$PUNCHCARD-Note4.zip"
+KERNELZIP=StarKissed-NJ7_$PUNCHCARD-Note4.zip
 
 CPU_JOB_NUM=8
 
@@ -35,7 +35,7 @@ if [ -e arch/arm/boot/zImage ]; then
     rm -R arch/arm/boot/zImage
 fi
 if [ -e $KERNELSPEC/trltetmoSKU/$LOCALZIP ];then
-    rm -R$KERNELSPEC/trltetmoSKU/$LOCALZIP
+    rm -R $KERNELSPEC/trltetmoSKU/$LOCALZIP
 fi
 
 cp -R config/apq8084_sec_trlte_tmo_defconfig  arch/arm/configs/apq8084_sec_trlte_tmo_defconfig
@@ -126,15 +126,15 @@ if [ -e arch/arm/boot/zImage ]; then
             rm -R $KERNELREPO/gooserver/*.zip
         fi
         ssh upload.goo.im mv -f $KERNELHOST/*.img $KERNELHOST/archive/
-        ssh upload.goo.im mv -f $KERNELHOST/*.tar $KERNELHOST/archive/
-        ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
-        ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER
+        ssh upload.goo.im mv -f $KERNELHOST/*.tar $KERNELHOST/archive/
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
         scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/
+        ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
         cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER
+        ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
         cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
         scp $KERNELREPO/gooserver/$KENRELZIP $GOOSERVER
     fi
