@@ -1,8 +1,9 @@
 #!/bin/sh
 
 # Copyright (C) 2011 Twisted Playground
+# Copyright (C) 2013 LoungeKatt
 
-# This script is designed by Twisted Playground for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
+# This script is designed by Twisted Playground / LoungeKatt for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
 HANDLE=LoungeKatt
 KERNELSPEC=/Volumes/android/starkissed-kernel-trlte
@@ -10,54 +11,27 @@ KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 
-echo "1. T-Mo"
-echo "2. AT&T"
-echo "3. VZW"
-echo "4. Spr"
-echo "Please Choose: "
-read profile
-
-case $profile in
-1)
-TYPE=tmo
-BUILD=NJ7
-;;
-2)
-TYPE=att
-BUILD=NA
-;;
-3)
-TYPE=vzw
-BUILD=NA
-;;
-4)
-TYPE=spr
-BUILD=NIE
-;;
-*)
-exit 1
-;;
-esac
+buildKernel () {
 
 PROPER=`echo $TYPE | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
-MODULEOUT=$KERNELSPEC/build`echo $TYPE`/boot.img-ramdisk
+MODULEOUT=$KERNELSPEC/buildimg/boot.`echo $TYPE`-ramdisk
 KERNELHOST=public_html/trlte`echo $TYPE`/kernel
 GOOSERVER=upload.goo.im:$KERNELHOST
-IMAGEFILE=boot.$PUNCHCARD.img
-KERNELFILE=boot.$PUNCHCARD.tar
-LOCALZIP=$HANDLE"_StarKissed-trlte["`echo $TYPE`"."`echo $BUILD`"].zip"
-KERNELZIP="StarKissed-"$PUNCHCARD"-trlte["`echo $TYPE`"."`echo $BUILD`"].zip"
+IMAGEFILE=boot-`echo $TYPE`.$PUNCHCARD.img
+KERNELFILE=boot-`echo $TYPE`.$PUNCHCARD.tar
+LOCALZIP=`echo $HANDLE"_StarKissed-trlte["$TYPE"."$BUILD"].zip"`
+KERNELZIP=`echo "StarKissed-"$PUNCHCARD"-trlte["$TYPE"."$BUILD"].zip"`
 
 CPU_JOB_NUM=8
 
-if [ -e $KERNELSPEC/build`echo $TYPE`/boot.img ]; then
-    rm -R $KERNELSPEC/build`echo $TYPE`/boot.img
+if [ -e $KERNELSPEC/buildimg/boot.img ]; then
+    rm -R $KERNELSPEC/buildimg/boot.img
 fi
-if [ -e $KERNELSPEC/build`echo $TYPE`/newramdisk.cpio.gz ]; then
-    rm -R $KERNELSPEC/build`echo $TYPE`/newramdisk.cpio.gz
+if [ -e $KERNELSPEC/buildimg/newramdisk.cpio.gz ]; then
+    rm -R $KERNELSPEC/buildimg/newramdisk.cpio.gz
 fi
-if [ -e $KERNELSPEC/build`echo $TYPE`/zImage ]; then
-    rm -R $KERNELSPEC/build`echo $TYPE`/zImage
+if [ -e $KERNELSPEC/buildimg/zImage ]; then
+    rm -R $KERNELSPEC/buildimg/zImage
 fi
 if [ -e arch/arm/boot/zImage ]; then
     rm -R arch/arm/boot/zImage
@@ -66,8 +40,9 @@ if [ -e $KERNELSPEC/trlteSKU/$LOCALZIP ];then
     rm -R $KERNELSPEC/trlteSKU/$LOCALZIP
 fi
 
-cp -R config/trlte_`echo $TYPE`_defconfig arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
-cp -R config/apq8084_defconfig  arch/arm/configs/apq8084_sec_defconfig
+cat config/trlte_`echo $TYPE`_defconfig config/trlte_gen_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+cp -R config/trlte_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
+cp -R buildimg/boot.gen-ramdisk/* $MODULEOUT/
 
 make -j$CPU_JOB_NUM -C $(pwd) clean
 make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_`echo $TYPE`_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
@@ -98,10 +73,10 @@ if [ -e arch/arm/boot/zImage ]; then
 
     fi
 
-    cp -R arch/arm/boot/zImage build`echo $TYPE`
+    cp -R arch/arm/boot/zImage buildimg
 
-    cd build`echo $TYPE`
-    ./img.sh
+    cd buildimg
+    ./img.sh `echo $TYPE`
 
     echo "building boot package"
     cp -R boot.img ../output
@@ -141,38 +116,89 @@ if [ -e arch/arm/boot/zImage ]; then
     cd ../
     cp -R $KERNELSPEC/trlteSKU/$LOCALZIP $KERNELREPO/$LOCALZIP
 
-    echo "Publish Kernel?"
-    read publish
-
-    if [ $publish == "y" || $publish == "m" ]; then
+    if [ $publish == "y" ] || [ $publish == "m" ] ; then
         if [ -e $KERNELREPO/gooserver/ ]; then
-            rm -R $KERNELREPO/gooserver/*.img
-            rm -R $KERNELREPO/gooserver/*.tar
-            rm -R $KERNELREPO/gooserver/*.md5
-            rm -R $KERNELREPO/gooserver/*.zip
+            rm -R $KERNELREPO/gooserver/*.{img,tar,md5,zip}
         fi
         cp -r  $KERNELREPO/trlte`echo $TYPE`/boot.img $KERNELREPO/gooserver/$IMAGEFILE
-if [ $publish == "y" ]; then
-        ssh upload.goo.im mv -f $KERNELHOST/*.img $KERNELHOST/archive/
-        scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER
-fi
         cp -r $KERNELREPO/trlte`echo $TYPE`/boot.tar $KERNELREPO/gooserver/$KERNELFILE
-if [ $publish == "y" ]; then
-        ssh upload.goo.im mv -f $KERNELHOST/*.tar $KERNELHOST/archive/
-        scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/
-fi
         cp -r $KERNELREPO/trlte`echo $TYPE`/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
-if [ $publish == "y" ]; then
-        ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
-        scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER
-fi
-        cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/`echo $KERNELZIP`
-if [ $publish == "y" ]; then
-        ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
-        scp `echo $KERNELREPO/gooserver/$KENRELZIP` $GOOSERVER
-fi
+        cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
+    fi
+
+    if [ $publish == "y" ]; then
+        ssh upload.goo.im mv -f $KERNELHOST/*.{img,tar,md5,zip} $KERNELHOST/archive/
+        scp -r $KERNELREPO/gooserver/*.{img,tar,md5,zip} $GOOSERVER
     fi
 
 fi
+
+}
+
+echo "1. T-Mobile"
+echo "2. AT&T"
+echo "3. Verizon"
+echo "4. Sprint"
+echo "5. Canadian"
+echo "6. US Cellular"
+echo "a. Circus"
+echo "Please Choose: "
+read profile
+echo "Publish Kernel?"
+read publish
+
+case $profile in
+1)
+    TYPE=tmo
+    BUILD=NJ7
+    buildKernel
+    exit
+;;
+2)
+    TYPE=spr
+    BUILD=NIE
+    buildKernel
+    exit
+;;
+3)
+    TYPE=can
+    BUILD=NJ3
+    buildKernel
+    exit
+;;
+4)
+    TYPE=vzw
+    BUILD=NI1
+    buildKernel
+    exit
+;;
+5)
+    TYPE=usc
+    BUILD=NA
+    buildKernel
+    exit
+;;
+6)
+    TYPE=att
+    BUILD=NA
+    buildKernel
+    exit
+;;
+a)
+    TYPE=tmo
+    BUILD=NJ7
+    buildKernel
+    TYPE=spr
+    BUILD=NIE
+    buildKernel
+    TYPE=can
+    BUILD=NJ3
+    buildKernel
+    TYPE=vzw
+    BUILD=NI1
+    buildKernel
+    exit
+;;
+esac
 
 cd $KERNELSPEC
