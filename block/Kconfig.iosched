@@ -60,12 +60,6 @@ config IOSCHED_ZEN
 	FCFS, dispatches are back-inserted, deadlines ensure fairness.
         Should work best with devices where there is no travel delay.
 
-config IOSCHED_FIOPS
-	tristate "Fiops I/O scheduler"
-	default y
-	---help---
-	Another simple scheduler.
-
 config IOSCHED_FIFO
 	tristate "Fifo I/O scheduler"
 	default y
@@ -135,9 +129,6 @@ choice
 	config DEFAULT_ZEN
 		bool "ZEN" if IOSCHED_ZEN=y
 
-	config DEFAULT_FIOPS
-		bool "FIOPS" if IOSCHED_FIOPS=y
-
 	config DEFAULT_VR
 		bool "VR" if IOSCHED_VR=y
 
@@ -152,7 +143,6 @@ config DEFAULT_IOSCHED
 	default "sio" if DEFAULT_SIO
 	default "fifo" if DEFAULT_FIFO
 	default "zen" if DEFAULT_ZEN
-	default "fiops" if DEFAULT_FIOPS
         default "vr" if DEFAULT_VR
 
 endmenu
