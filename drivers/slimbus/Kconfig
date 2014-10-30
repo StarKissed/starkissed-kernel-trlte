@@ -25,4 +25,10 @@ config SLIMBUS_MSM_NGD
 	  interface, and communicating with master component residing on ADSP
 	  for bandwidth and data-channel management.
 
+config SLIMBUS_BOOST
+	bool "Qualcomm Slimbus Overclocking"
+	default n
+	help
+	  Overclock Slimbus to improve audio quality.
+
 endif
