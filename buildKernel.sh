@@ -125,17 +125,17 @@ if [ -e arch/arm/boot/zImage ]; then
             rm -R $KERNELREPO/gooserver/*.md5
             rm -R $KERNELREPO/gooserver/*.zip
         fi
-        ssh upload.goo.im mv -f $KERNELHOST/*.img $KERNELHOST/archive/
         cp -r  $KERNELREPO/trltetmo/boot.img $KERNELREPO/gooserver/$IMAGEFILE
+        ssh upload.goo.im mv -f $KERNELHOST/*.img $KERNELHOST/archive/
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER
-        ssh upload.goo.im mv -f $KERNELHOST/*.tar $KERNELHOST/archive/
         cp -r $KERNELREPO/trltetmo/boot.tar $KERNELREPO/gooserver/$KERNELFILE
+        ssh upload.goo.im mv -f $KERNELHOST/*.tar $KERNELHOST/archive/
         scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/
-        ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
         cp -r $KERNELREPO/trltetmo/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
+        ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER
-        ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
         cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
+        ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
         scp $KERNELREPO/gooserver/$KENRELZIP $GOOSERVER
     fi
 
