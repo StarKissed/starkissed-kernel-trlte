@@ -482,6 +482,8 @@ static ssize_t store_##file_name					\
 	return ret ? ret : count;					\
 }
 
+#ifdef CONFIG_SEC_PM
+
 /* CPU Hardlimit - Enforce userspace dvfs lock */
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 static ssize_t store_scaling_min_freq
@@ -523,6 +525,10 @@ static ssize_t store_scaling_min_freq
 /* Disable scaling_min_freq store */
 store_one(scaling_min_freq, min);
 #endif /* CONFIG_CPUFREQ_HARDLIMIT */
+
+#else
+store_one(scaling_min_freq, min);
+#endif
 
 /* Yank555.lu : CPU Hardlimit - Enforce userspace dvfs lock */
 #ifdef CONFIG_CPUFREQ_HARDLIMIT

@@ -560,7 +560,7 @@ static ssize_t userspace_dvfs_lock_show(struct kobject *kobj, struct kobj_attrib
 static ssize_t userspace_dvfs_lock_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	unsigned int new_userspace_dvfs_lock = CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE;
+	unsigned int new_userspace_dvfs_lock;
 
 	if (!sscanf(buf, "%du", &new_userspace_dvfs_lock))
 		return -EINVAL;
