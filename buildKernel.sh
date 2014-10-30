@@ -66,8 +66,8 @@ if [ -e $KERNELSPEC/trlteSKU/$LOCALZIP ];then
     rm -R $KERNELSPEC/trlteSKU/$LOCALZIP
 fi
 
-cp -R config/apq8084_sec_trlte_`echo $TYPE`_defconfig arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
-cp -R config/apq8084_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
+cp -R config/trlte_`echo $TYPE`_defconfig arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+cp -R config/apq8084_defconfig  arch/arm/configs/apq8084_sec_defconfig
 
 make -j$CPU_JOB_NUM -C $(pwd) clean
 make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_`echo $TYPE`_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
@@ -162,7 +162,7 @@ if [ -e arch/arm/boot/zImage ]; then
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER
         cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/`echo $KERNELZIP`
         ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
-        scp $KERNELREPO/gooserver/$KENRELZIP $GOOSERVER
+        scp `echo $KERNELREPO/gooserver/$KENRELZIP` $GOOSERVER
     fi
 
 fi
