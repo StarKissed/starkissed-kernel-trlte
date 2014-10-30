@@ -1,0 +1,164 @@
+# Copyright (C) 2012 The Android Open Source Project
+#
+# IMPORTANT: Do not create world writable files or directories.
+# This is a common source of Android security bugs.
+#
+import init.fac.rc
+
+on early-boot
+    chown bluetooth net_bt_stack /dev/ttyHS0
+    chmod 0660 /dev/ttyHS0
+
+on init
+#Private Mode
+    mkdir /mnt/shell/privatemode 0700 system system
+    mkdir /storage/Private 0000 system system
+#Carrier
+	mkdir /carrier 0771 system system
+
+on fs
+	wait /dev/block/platform/msm_sdcc.1/by-name/carrier
+	mount ext4 /dev/block/platform/msm_sdcc.1/by-name/carrier /carrier nosuid nodev barrier=1
+	chown system system /carrier
+	chmod 0771 /carrier
+	restorecon -R /carrier
+
+#For Absolute Persistence Partition 
+       
+    mkdir /persdata 0755 system system 
+    mkdir /persdata/absolute 0750 system system 
+  
+    wait /dev/block/platform/msm_sdcc.1/by-name/persdata 
+    check_fs /dev/block/platform/msm_sdcc.1/by-name/persdata ext4 
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persdata /persdata/absolute nosuid nodev barrier=1 
+      
+    chown system system /persdata 
+    chmod 0755 /persdata 
+    chown system system /persdata/absolute 
+    chmod 0750 /persdata/absolute
+					
+on post-fs-data
+#Private Mode
+    mkdir /data/privatemode 0770 system system
+    chown system system /data/privatemode
+    restorecon /data/privatemode
+
+# ItsOn property
+    start itsonbs
+
+on boot
+# Fingerprint
+    mkdir /dev/validity 0770 system system
+
+
+# permissions for bluetooth.
+    setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
+    chown bluetooth net_bt_stack ro.bt.bdaddr_path
+    chown radio net_bt_stack /efs/bluetooth/bt_addr
+    chmod 0640 /efs/bluetooth/bt_addr
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+
+# bluetooth LPM
+    chmod 0660 /proc/bluetooth/sleep/lpm
+    chmod 0220 /proc/bluetooth/sleep/btwrite
+    chown bluetooth net_bt_stack /proc/bluetooth/sleep/lpm
+    chown bluetooth net_bt_stack /proc/bluetooth/sleep/btwrite
+    chmod 0600 /dev/btlock
+    chown bluetooth bluetooth /dev/btlock
+
+###############################################################################
+# System LSI
+# Comment : add permission to device driver
+# NFC : Permissions for NFC
+    chmod 0660 /dev/sec-nfc
+# NFC : change owner
+    chown nfc nfc /dev/sec-nfc
+# NFC : create data/nfc for nv storage
+    mkdir /data/nfc 0700 nfc nfc
+    mkdir /data/nfc/param 0700 nfc nfc
+###############################################################################
+
+# bluetooth LPM
+
+# bluetooth dhcp config
+
+# SSWAP
+    write /proc/sys/vm/swappiness 130
+
+# TODO: replace it with device's DEXPREOPT_BOOT_JARS
+
+#
+# VOWIFI - This RILD defined here will override the service defined
+# in the main init.rc to support Sprint VoWiFi project
+#
+service ril-daemon /system/bin/rild
+    class main
+    socket rild stream 660 root radio
+    socket rild-debug stream 660 radio system
+    socket rild-cas stream 660 casdrm mmb
+#
+# VoWiFi: Added cfiat and kipc socket for Sprint VoWiFi project.
+    socket cfiat stream 660 radio inet
+    socket kipc stream 660 radio inet
+# End of VoWiFi
+#
+    user root
+    group radio cache inet misc audio log qcom_diag
+
+#Private Mode
+service privatemode /system/bin/sdcard /data/privatemode /mnt/shell/privatemode 1000 1000
+    class late_start
+    oneshot
+
+
+# SENSOR FRAMEWORK : starts fingerprintService
+service vcsFPService /system/bin/vcsFPService
+    class late_start
+    user system
+    group system
+
+# bootchecker
+service bootchecker /system/bin/bootchecker
+    class late_start
+    user system
+    group system log
+    oneshot
+
+
+# SSWAP
+service swapon /sbin/sswap -s
+    class core
+    user root
+    group root
+    seclabel u:r:sswap:s0
+    oneshot
+
+service itsonbs /system/vendor/itson/itson-bootstrapper.sh
+    oneshot
+    critical
+    seclabel u:r:itsonbs:s0
+
+on property:init.svc.bootanim=stopped
+# permission for Input Device(Touchkey).
+    chown radio system /sys/class/sec/sec_touchkey/touch_sensitivity
+    chown radio system /sys/class/sec/sec_touchkey/touchkey_firm_update
+    chown system radio /sys/class/sec/sec_touchkey/glove_mode
+    chown system radio /sys/class/sec/sec_touchkey/flip_mode
+    chown system radio /sys/class/sec/sec_touchkey/1mm_mode
+    chown system radio /sys/class/sec/sec_touchkey/boost_level
+
+# Wacom
+    chown system radio /sys/class/sec/sec_epen/epen_firm_update
+    chown system radio /sys/class/sec/sec_epen/epen_reset
+    chown system radio /sys/class/sec/sec_epen/epen_reset_result
+    chown system radio /sys/class/sec/sec_epen/epen_checksum
+    chown system radio /sys/class/sec/sec_epen/epen_checksum_result
+    chown system radio /sys/class/sec/sec_epen/epen_saving_mode
+    chown system radio /sys/class/sec/sec_epen/epen_connection
+    chown system radio /sys/class/sec/sec_epen/epen_tuning_version
+    chown system radio /sys/class/sec/sec_epen/epen_firm_update_status
+    chown system radio /sys/class/sec/sec_epen/epen_firm_version
+    chown system radio /sys/class/sec/sec_epen/epen_delay_time
+    chown system radio /sys/class/sec/sec_epen/boost_level
