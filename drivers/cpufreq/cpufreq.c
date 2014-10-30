@@ -482,10 +482,8 @@ static ssize_t store_##file_name					\
 	return ret ? ret : count;					\
 }
 
-#ifdef CONFIG_SEC_PM
-
 /* CPU Hardlimit - Enforce userspace dvfs lock */
-#ifdef CONFIG_CPUFREQ_HARDLIMIT
+#if defined(CONFIG_SEC_PM) && defined(CONFIG_CPUFREQ_HARDLIMIT)
 static ssize_t store_scaling_min_freq
 (struct cpufreq_policy *policy, const char *buf, size_t count)
 {
@@ -511,7 +509,6 @@ static ssize_t store_scaling_min_freq
 		return -EINVAL;
 
 	policy->user_policy.min = new_policy.min;
-	new_policy.user_policy.min = new_policy.min;
 
 	ret = cpufreq_driver->verify(&new_policy);
 	if (ret)
@@ -525,10 +522,6 @@ static ssize_t store_scaling_min_freq
 /* Disable scaling_min_freq store */
 store_one(scaling_min_freq, min);
 #endif /* CONFIG_CPUFREQ_HARDLIMIT */
-
-#else
-store_one(scaling_min_freq, min);
-#endif
 
 /* Yank555.lu : CPU Hardlimit - Enforce userspace dvfs lock */
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
@@ -557,7 +550,6 @@ static ssize_t store_scaling_max_freq
 		return -EINVAL;
 
 	policy->user_policy.max = new_policy.max;
-	new_policy.user_policy.max = new_policy.max;
 
 	ret = cpufreq_driver->verify(&new_policy);
 	if (ret)
