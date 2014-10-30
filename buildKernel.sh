@@ -144,7 +144,7 @@ if [ -e arch/arm/boot/zImage ]; then
     echo "Publish Kernel?"
     read publish
 
-    if [ $publish == "y" ]; then
+    if [ $publish == "y" || $publish == "m" ]; then
         if [ -e $KERNELREPO/gooserver/ ]; then
             rm -R $KERNELREPO/gooserver/*.img
             rm -R $KERNELREPO/gooserver/*.tar
@@ -152,17 +152,25 @@ if [ -e arch/arm/boot/zImage ]; then
             rm -R $KERNELREPO/gooserver/*.zip
         fi
         cp -r  $KERNELREPO/trlte`echo $TYPE`/boot.img $KERNELREPO/gooserver/$IMAGEFILE
+if [ $publish == "y" ]; then
         ssh upload.goo.im mv -f $KERNELHOST/*.img $KERNELHOST/archive/
         scp $KERNELREPO/gooserver/$IMAGEFILE $GOOSERVER
+fi
         cp -r $KERNELREPO/trlte`echo $TYPE`/boot.tar $KERNELREPO/gooserver/$KERNELFILE
+if [ $publish == "y" ]; then
         ssh upload.goo.im mv -f $KERNELHOST/*.tar $KERNELHOST/archive/
         scp $KERNELREPO/gooserver/$KERNELFILE $GOOSERVER/
+fi
         cp -r $KERNELREPO/trlte`echo $TYPE`/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
+if [ $publish == "y" ]; then
         ssh upload.goo.im mv -f $KERNELHOST/*.md5 $KERNELHOST/archive/
         scp $KERNELREPO/gooserver/$KERNELFILE.md5 $GOOSERVER
+fi
         cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/`echo $KERNELZIP`
+if [ $publish == "y" ]; then
         ssh upload.goo.im mv -f $KERNELHOST/*.zip $KERNELHOST/archive/
         scp `echo $KERNELREPO/gooserver/$KENRELZIP` $GOOSERVER
+fi
     fi
 
 fi
