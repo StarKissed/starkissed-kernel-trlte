@@ -94,3 +94,5 @@ arch/arm/boot/zImage
 0
 out
 output
+
+starkissed/kernel/*/boot.img
