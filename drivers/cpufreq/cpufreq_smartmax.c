@@ -34,6 +34,7 @@
 #include <linux/timer.h>
 #include <linux/workqueue.h>
 #include <linux/moduleparam.h>
+#include <linux/rwsem.h>
 #include <linux/jiffies.h>
 #include <linux/input.h>
 #include <linux/kthread.h>
@@ -153,6 +154,7 @@ struct smartmax_info_s {
 	unsigned int cur_cpu_load;
 	unsigned int old_freq;
 	int ramp_dir;
+    struct rw_semaphore enable_sem;
 	bool enable;
 	unsigned int ideal_speed;
 	unsigned int cpu;
@@ -1001,9 +1003,9 @@ static int cpufreq_smartmax_boost_task(void *data) {
 		policy = this_smartmax->cur_policy;
 		if (!policy)
 			continue;
-
-//		if (lock_policy_rwsem_write(0) < 0)
-//			continue;
+        
+        if (!down_read_trylock(&this_smartmax->enable_sem))
+            break;
 
 		mutex_lock(&this_smartmax->timer_mutex);
 
@@ -1018,8 +1020,8 @@ static int cpufreq_smartmax_boost_task(void *data) {
 			this_smartmax->prev_cpu_idle = get_cpu_idle_time(0, &this_smartmax->prev_cpu_wall, io_is_busy);
 		}
 		mutex_unlock(&this_smartmax->timer_mutex);
-				
-//		unlock_policy_rwsem_write(0);
+        
+        up_read(&this_smartmax->enable_sem);
 	}
 
 	return 0;
@@ -1254,6 +1256,7 @@ static int __init cpufreq_smartmax_init(void) {
 		this_smartmax->ramp_dir = 0;
 		this_smartmax->freq_change_time = 0;
 		this_smartmax->cur_cpu_load = 0;
+        init_rwsem(&this_smartmax->enable_sem);
 	}
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
