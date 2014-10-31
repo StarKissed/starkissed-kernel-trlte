@@ -35,7 +35,6 @@
 #include <linux/workqueue.h>
 #include <linux/moduleparam.h>
 #include <linux/jiffies.h>
-#include <linux/earlysuspend.h>
 #include <linux/input.h>
 #include <linux/kthread.h>
 #include <linux/slab.h>
