@@ -37,6 +37,8 @@
 #endif
 #define EARLYSUSPEND_HOTPLUGLOCK 1
 
+#define cputime64_sub(__a, __b)    ((__a) - (__b))
+
 /*
  * runqueue average
  */
