@@ -18,7 +18,6 @@ MODULEOUT=$KERNELSPEC/buildimg/boot.`echo $TYPE`-ramdisk
 KERNELHOST=public_html/trlte`echo $TYPE`/kernel
 GOOSERVER=upload.goo.im:$KERNELHOST
 IMAGEFILE=boot-`echo $TYPE`.$PUNCHCARD.img
-# KERNELFILE=boot-`echo $TYPE`.$PUNCHCARD.tar
 LOCALZIP=`echo $HANDLE"_StarKissed-trlte["$TYPE"."$BUILD"].zip"`
 KERNELZIP=`echo "StarKissed-"$PUNCHCARD"-trlte["$TYPE"."$BUILD"].zip"`
 
@@ -95,21 +94,6 @@ if [ -e arch/arm/boot/zImage ]; then
     cp -r  output/boot.img $KERNELREPO/trlte`echo $TYPE`/boot.img
     cp -r  output/boot.img starkissed/kernel/`echo $TYPE`/boot.img
 
-#    if cat /etc/issue | grep Ubuntu; then
-#        tar -H ustar -c output/boot.img > output/boot.tar
-#    else
-#        tar --format ustar -c output/boot.img > output/boot.tar
-#    fi
-    # tar cvf output/boot.tar output/boot.img
-    # cp -r output/boot.tar $KERNELREPO/trlte`echo $TYPE`/boot.tar
-    # cp -r output/boot.tar output/boot.tar.md5
-    # if cat /etc/issue | grep Ubuntu; then
-    #     md5sum -t output/boot.tar.md5 >> output/boot.tar.md5
-    # else
-    #     md5 -r output/boot.tar.md5 >> output/boot.tar.md5
-    # fi
-
-    # cp -r output/boot.tar.md5 $KERNELREPO/trlte`echo $TYPE`/boot.tar.md5
     cp -R output/boot.img skrecovery
     cd skrecovery
     rm *.zip
@@ -119,17 +103,16 @@ if [ -e arch/arm/boot/zImage ]; then
 
     if [ $publish == "y" ] || [ $publish == "m" ] ; then
         if [ -e $KERNELREPO/gooserver/ ]; then
-            rm -R $KERNELREPO/gooserver/*.{img,tar,md5,zip}
+            rm -R $KERNELREPO/gooserver/*.{img,zip}
         fi
         cp -r  $KERNELREPO/trlte`echo $TYPE`/boot.img $KERNELREPO/gooserver/$IMAGEFILE
-        # cp -r $KERNELREPO/trlte`echo $TYPE`/boot.tar $KERNELREPO/gooserver/$KERNELFILE
-        # cp -r $KERNELREPO/trlte`echo $TYPE`/boot.tar.md5 $KERNELREPO/gooserver/$KERNELFILE.md5
         cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
     fi
 
     if [ $publish == "y" ]; then
-        ssh upload.goo.im mv -f $KERNELHOST/*.{img,tar,md5,zip} $KERNELHOST/archive/
-        scp -r $KERNELREPO/gooserver/*.{img,tar,md5,zip} $GOOSERVER
+        existing=`ssh upload.goo.im ls $KERNELHOST/*.{img,zip}`
+        scp -r $KERNELREPO/gooserver/*.{img,zip} $GOOSERVER
+        ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
 
 fi
