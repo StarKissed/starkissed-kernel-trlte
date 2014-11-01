@@ -985,6 +985,9 @@ static int sec_chg_set_property(struct power_supply *psy,
 					case POWER_SUPPLY_TYPE_OTG:
 						current_now = FAST_CHARGE_900;
 						goto set_current;
+					case POWER_SUPPLY_TYPE_WIRELESS:
+						current_now = FAST_CHARGE_900;
+						goto set_current;
 					case POWER_SUPPLY_TYPE_MAINS:
 						current_now = FAST_CHARGE_1500;
 						goto set_current;
@@ -998,6 +1001,9 @@ static int sec_chg_set_property(struct power_supply *psy,
 					case POWER_SUPPLY_TYPE_USB_ACA:
 					case POWER_SUPPLY_TYPE_CARDOCK:
 					case POWER_SUPPLY_TYPE_OTG:
+						current_now = FAST_CHARGE_900;
+						goto set_current;
+					case POWER_SUPPLY_TYPE_WIRELESS:
 						current_now = FAST_CHARGE_900;
 						goto set_current;
 					case POWER_SUPPLY_TYPE_MAINS:
