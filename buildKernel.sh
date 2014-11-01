@@ -41,7 +41,9 @@ fi
 
 cat config/trlte_`echo $TYPE`_defconfig config/trlte_gen_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
 cp -R config/trlte_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
-cp -R buildimg/boot.gen-ramdisk/* $MODULEOUT/
+if [ `echo $TYPE` != "sku" ]; then
+    cp -R buildimg/boot.gen-ramdisk/* $MODULEOUT/
+fi
 
 make -j$CPU_JOB_NUM -C $(pwd) clean
 make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_`echo $TYPE`_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
@@ -125,6 +127,7 @@ echo "3. Canadian"
 echo "4. Verizon"
 echo "5. US Cellular"
 echo "6. AT&T"
+echo "s. StarKissed"
 echo "a. Circus"
 echo "Please Choose: "
 read profile
@@ -165,6 +168,12 @@ case $profile in
 6)
     TYPE=att
     BUILD=NIE
+    buildKernel
+    exit
+;;
+s)
+    TYPE=sku
+    BUILD=SKU
     buildKernel
     exit
 ;;

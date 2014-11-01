@@ -102,3 +102,5 @@ buildimg/boot.can-ramdisk/init.sk.rc
 buildimg/boot.spr-ramdisk/init.sk.rc
 buildimg/boot.tmo-ramdisk/init.sk.rc
 buildimg/boot.vzw-ramdisk/init.sk.rc
+
+buildimg/boot.sku-ramdisk
