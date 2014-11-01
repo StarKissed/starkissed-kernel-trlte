@@ -708,7 +708,7 @@ static void krait_update_uv(int *uv, int num, int boost_uv)
 #ifdef CONFIG_CPU_VOLTAGE_TABLE
 
 #define CPU_VDD_MIN	 600
-#define CPU_VDD_MAX	1450
+#define CPU_VDD_MAX	1800
 
 extern bool is_used_by_scaling(unsigned int freq);
 
