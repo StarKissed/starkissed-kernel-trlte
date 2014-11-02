@@ -153,8 +153,8 @@ static spinlock_t mode_lock;
 #define SINGLE_MODE	1
 #define NO_MODE	0
 
-static unsigned int mode = 0;
-static unsigned int enforced_mode = 0;
+static unsigned int mode = 2;
+static unsigned int enforced_mode = 1;
 static u64 mode_check_timestamp = 0;
 
 #define DEFAULT_MULTI_ENTER_TIME (4 * DEFAULT_TIMER_RATE)
