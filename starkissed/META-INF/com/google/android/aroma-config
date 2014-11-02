@@ -74,11 +74,12 @@ checkbox(
       "customize.prop",
 
 	  "Kernels",         "Galaxy Note 4 Kernels",                                2,  #-- Group 1. key = "item.1.x"
-		"T-Mobile",           "Model SM-910T",                                        0,     #-- item.1.1
-		"Sprint",           "Model SM-910 ",                                        0,     #-- item.1.2
-		"Verizon",        "Model SM-910V",                                        0,     #-- item.1.3
-		"Canadian",        "Model SM-910 ",                                        0,     #-- item.1.4
-		"AT&T",        "Model SM-910 ",                                        0,     #-- item.1.5
+		"T-Mobile",  "Model SM-910T",                                        0,     #-- item.1.1
+		"Sprint",    "Model SM-910 ",                                        0,     #-- item.1.2
+		"Verizon",   "Model SM-910V",                                        0,     #-- item.1.3
+		"Canadian",  "Model SM-910W8",                                       0,     #-- item.1.4
+		"AT&T",      "Model SM-910 ",                                        0,     #-- item.1.5
+		"U.S. Cell", "Model SM-910 ",                                        0,     #-- item.1.6
 	  #--------[ Initial Value = 0: Unselected, 1: Selected, 2: Group Item, 3: Not Visible ]---------#
 );
 exec("/sbin/busybox", "umount", "/system");
@@ -87,8 +88,9 @@ appendvar("installer_title","\n\nInstall:\n\n");
 appendvar("installer_title",iif(prop("customize.prop","item.1.1")=="1","SM-910T\n",""));
 appendvar("installer_title",iif(prop("customize.prop","item.1.2")=="1","SM-910 \n",""));
 appendvar("installer_title",iif(prop("customize.prop","item.1.3")=="1","SM-910V\n",""));
-appendvar("installer_title",iif(prop("customize.prop","item.1.4")=="1","SM-910 \n",""));
+appendvar("installer_title",iif(prop("customize.prop","item.1.4")=="1","SM-910W8\n",""));
 appendvar("installer_title",iif(prop("customize.prop","item.1.5")=="1","SM-910 \n",""));
+appendvar("installer_title",iif(prop("customize.prop","item.1.6")=="1","SM-910 \n",""));
 writetmpfile("customize.prop",readtmpfile("customize.prop"));
 if confirm("Processing",getvar("installer_title") + "\nBegin Processing?", "@confirm")=="no" then back(1);
 endif;

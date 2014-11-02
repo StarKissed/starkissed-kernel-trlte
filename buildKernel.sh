@@ -10,6 +10,10 @@ KERNELSPEC=/Volumes/android/starkissed-kernel-trlte
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
+LOCALZIP=$HANDLE"_StarKissed-trlte[Auto].zip"
+KERNELZIP="StarKissed-"$PUNCHCARD"-trlte[Auto].zip"
+AROMAZIP=$HANDLE"_StarKissed-trlte[Aroma].zip"
+AROMAHOST="StarKissed-"$PUNCHCARD"-trlte[Aroma].zip"
 
 buildKernel () {
 
@@ -18,8 +22,6 @@ MODULEOUT=$KERNELSPEC/buildimg/boot.`echo $TYPE`-ramdisk
 KERNELHOST=public_html/trlte`echo $TYPE`/kernel
 GOOSERVER=upload.goo.im:$KERNELHOST
 IMAGEFILE=boot-`echo $TYPE`.$PUNCHCARD.img
-LOCALZIP=`echo $HANDLE"_StarKissed-trlte["$TYPE"."$BUILD"].zip"`
-KERNELZIP=`echo "StarKissed-"$PUNCHCARD"-trlte["$TYPE"."$BUILD"].zip"`
 
 CPU_JOB_NUM=8
 
@@ -93,91 +95,73 @@ if [ -e arch/arm/boot/zImage ]; then
         rm -R output/boot.tar.md5.gz
     fi
 
-    cp -r  output/boot.img $KERNELREPO/trlte`echo $TYPE`/boot.img
-    cp -r  output/boot.img starkissed/kernel/`echo $TYPE`/boot.img
+    if [ `echo $TYPE` == "sku" ]; then
+        cp -r  output/boot.img $KERNELREPO/trltesku/boot.img
+        if [ $publish == "y" ]; then
+            if [ -e $KERNELREPO/gooserver/ ]; then
+                rm -R $KERNELREPO/gooserver/*.img
+            fi
+            cp -r  $KERNELREPO/trltesku/boot.img $KERNELREPO/gooserver/$IMAGEFILE
 
-    cp -R output/boot.img skrecovery
-    cd skrecovery
-    rm *.zip
-    zip -r $LOCALZIP *
-    cd ../
-    cp -R $KERNELSPEC/skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
-
-    if [ $publish == "y" ] || [ $publish == "m" ] ; then
-        if [ -e $KERNELREPO/gooserver/ ]; then
-            rm -R $KERNELREPO/gooserver/*.{img,zip}
+            existing=`ssh upload.goo.im ls $KERNELHOST/*.img`
+            scp -r $KERNELREPO/gooserver/*.img $GOOSERVER
+            ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
         fi
-        cp -r  $KERNELREPO/trlte`echo $TYPE`/boot.img $KERNELREPO/gooserver/$IMAGEFILE
-        cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
-    fi
-
-    if [ $publish == "y" ]; then
-        existing=`ssh upload.goo.im ls $KERNELHOST/*.{img,zip}`
-        scp -r $KERNELREPO/gooserver/*.{img,zip} $GOOSERVER
-        ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
+    else
+        cp -r output/boot.img starkissed/kernel/`echo $TYPE`/boot.img
+        cp -r output/boot.img skrecovery/kernel/`echo $TYPE`/boot.img
     fi
 
 fi
 
 }
 
-echo "1. T-Mobile"
-echo "2. Sprint"
-echo "3. Canadian"
-echo "4. Verizon"
-echo "5. US Cellular"
-echo "6. AT&T"
-echo "s. StarKissed"
-echo "a. Circus"
+buildAroma () {
+
+    cd skrecovery
+    rm *.zip
+    zip -r $LOCALZIP *
+    cd ../
+    cp -R $KERNELSPEC/skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
+
+    if [ $publish == "y" ]; then
+        if [ -e $KERNELREPO/gooserver/ ]; then
+            rm -R $KERNELREPO/gooserver/*.zip
+        fi
+        cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
+
+        existing=`ssh upload.goo.im ls public_html/trltesku/kernel/*.zip`
+        scp -r $KERNELREPO/gooserver/*.zip $GOOSERVER
+        ssh upload.goo.im mv -t public_html/trltesku/kernel/archive/ $existing
+    fi
+    if [ -e starkissed/$AROMAZIP ];then
+        rm -R starkissed/$AROMAZIP
+    fi
+    cd starkissed
+    zip -r $AROMAZIP *
+    cd ../
+    cp -R $KERNELSPEC/starkissed/$AROMAZIP $KERNELREPO/$AROMAZIP
+
+}
+
+echo "1. Deported"
+echo "2. StarKissed"
+echo "3. Package"
+echo "4. Carrier"
 echo "Please Choose: "
 read profile
-echo "Publish Kernel?"
-read publish
 
 case $profile in
 1)
-    TYPE=tmo
-    BUILD=NJ7
+    echo "Publish Image?"
+    read publish
+    TYPE=sku
     buildKernel
     exit
 ;;
 2)
-    TYPE=spr
-    BUILD=NIE
-    buildKernel
-    exit
-;;
-3)
-    TYPE=can
-    BUILD=NJ3
-    buildKernel
-    exit
-;;
-4)
-    TYPE=vzw
-    BUILD=NI1
-    buildKernel
-    exit
-;;
-5)
-    TYPE=usc
-    BUILD=NA
-    buildKernel
-    exit
-;;
-6)
-    TYPE=att
-    BUILD=NIE
-    buildKernel
-    exit
-;;
-s)
-    TYPE=sku
-    BUILD=SKU
-    buildKernel
-    exit
-;;
-a)
+    echo "Publish Package?"
+    read publish
     TYPE=tmo
     BUILD=NJ7
     buildKernel
@@ -193,14 +177,23 @@ a)
     TYPE=att
     BUILD=NIE
     buildKernel
-    if [ $publish == "y" ] && [ 0 == 1 ] ; then
-        if [ -e starkissed/StarKissed-Aroma-trlte_kernel.zip ];then
-            rm -R starkissed/StarKissed-Aroma-trlte_kernel.zip
-        fi
-        cd starkissed
-        zip -r StarKissed-Aroma-trlte_kernel.zip *
-        cp -R StarKissed-Aroma-trlte_kernel.zip $KERNELREPO/StarKissed-Aroma-trlte_kernel.zip
-    fi
+    TYPE=usc
+    BUILD=NA
+    buildKernel
+    buildAroma
+    exit
+;;
+3)
+    echo "Publish Package?"
+    read publish
+    buildAroma
+    exit
+;;
+4)
+    echo "Which Carrier?"
+    read carrier
+    TYPE=$carrier
+    buildKernel
     exit
 ;;
 esac
