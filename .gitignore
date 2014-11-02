@@ -103,4 +103,6 @@ buildimg/boot.spr-ramdisk/init.sk.rc
 buildimg/boot.tmo-ramdisk/init.sk.rc
 buildimg/boot.vzw-ramdisk/init.sk.rc
 
+config/trlte_sku_defconfig
+arch/arm/configs/apq8084_sec_trlte_sku_defconfig
 buildimg/boot.sku-ramdisk

@@ -1,9 +1,10 @@
 # StarKissed Extras
 
 on early-init
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2649600
 
 # Configure SEAndroid booleans and enforcing mode
-     setsebool debugfs 1
+    setsebool debugfs 1
 
 on init
     setenforce 0
