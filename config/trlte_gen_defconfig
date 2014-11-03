@@ -1,4 +1,4 @@
-CONFIG_LOCALVERSION="-StarKissed"
+CONFIG_LOCALVERSION="-Deported[SKU]"
 
 # TCP Congestion Control
 CONFIG_TCP_CONG_ADVANCED=y
