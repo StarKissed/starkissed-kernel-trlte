@@ -6,7 +6,7 @@
 # This script is designed by Twisted Playground / LoungeKatt for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
 HANDLE=LoungeKatt
-KERNELSPEC=/Volumes/android/starkissed-kernel-trlte
+KERNELSPEC=/Volumes/android/starkissed-deported
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
@@ -103,9 +103,12 @@ if [ -e arch/arm/boot/zImage ]; then
             fi
             cp -r  $KERNELREPO/trltesku/boot.img $KERNELREPO/gooserver/$IMAGEFILE
 
-            existing=`ssh upload.goo.im ls $KERNELHOST/*.img`
-            scp -r $KERNELREPO/gooserver/*.img $GOOSERVER
-            ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
+            megacmd move mega:/trltesku/*.img mega:/trltesku/archive
+            megacmd put $KERNELREPO/gooserver/*.img mega:/trltesku/
+
+#            existing=`ssh upload.goo.im ls $KERNELHOST/*.img`
+#            scp -r $KERNELREPO/gooserver/*.img $GOOSERVER
+#            ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
         fi
     else
         cp -r output/boot.img starkissed/kernel/`echo $TYPE`/boot.img
@@ -130,9 +133,12 @@ buildAroma () {
         fi
         cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
 
-        existing=`ssh upload.goo.im ls public_html/trltesku/kernel/*.zip`
-        scp -r $KERNELREPO/gooserver/*.zip $GOOSERVER
-        ssh upload.goo.im mv -t public_html/trltesku/kernel/archive/ $existing
+        megacmd move mega:/trltesku/*.zip mega:/trltesku/archive
+        megacmd put $KERNELREPO/gooserver/*.zip mega:/trltesku/
+
+#        existing=`ssh upload.goo.im ls public_html/trltesku/kernel/*.zip`
+#        scp -r $KERNELREPO/gooserver/*.zip $GOOSERVER
+#        ssh upload.goo.im mv -t public_html/trltesku/kernel/archive/ $existing
     fi
     if [ -e starkissed/$AROMAZIP ];then
         rm -R starkissed/$AROMAZIP

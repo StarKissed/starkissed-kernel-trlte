@@ -49,13 +49,7 @@ set_perm(0, 0, 0777, "/tmp/boot.img");
 run_program("/sbin/busybox", "dd", "if=/tmp/boot.img", "of=/dev/block/platform/msm_sdcc.1/by-name/boot");
 ui_print(">>> Install Completed");
 endif;
-if getprop("ro.product.device") == "trlteusv" then ui_print(" Installing U.S. Cell Kernel");
-package_extract_file("kernel/usc/boot.img", "/tmp/boot.img");
-set_perm(0, 0, 0777, "/tmp/boot.img");
-run_program("/sbin/busybox", "dd", "if=/tmp/boot.img", "of=/dev/block/platform/msm_sdcc.1/by-name/boot");
-ui_print(">>> Install Completed");
-endif;
-ui_print(" ");
 
+ui_print(" ");
 ui_print(">>> Please Reboot!");
 ui_print(" ");
