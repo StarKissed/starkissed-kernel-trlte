@@ -2022,10 +2022,10 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
 
-	if (policy->min > policy->user_policy.max
-		|| policy->max < policy->user_policy.min) {
+    if (new_policy->min > policy->user_policy.max
+        || new_policy->max < policy->user_policy.min) {
 		pr_debug("CPUFREQ: %s: pmin:%d, pmax:%d, min:%d, max:%d\n",
-			__func__, policy->min, policy->max, policy->user_policy.min, policy->user_policy.max);
+			__func__, new_policy->min, new_policy->max, policy->min, policy->max);
 		ret = -EINVAL;
 		goto error_out;
 	}
