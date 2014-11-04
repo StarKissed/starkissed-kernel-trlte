@@ -10,6 +10,7 @@ KERNELSPEC=/Volumes/android/starkissed-deported
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
+MEGASERVER=mega:/trltesku/
 LOCALZIP=$HANDLE"_StarKissed-trlte[Auto].zip"
 KERNELZIP="StarKissed-"$PUNCHCARD"-trlte[Auto].zip"
 AROMAZIP=$HANDLE"_StarKissed-trlte[Aroma].zip"
@@ -42,9 +43,9 @@ if [ -e $KERNELSPEC/skrecovery/$LOCALZIP ];then
     rm -R $KERNELSPEC/skrecovery/$LOCALZIP
 fi
 
-cat config/trlte_`echo $TYPE`_defconfig config/trlte_gen_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+cat config/trlte_`echo $TYPE`_defconfig config/trlte_sku_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
 cp -R config/trlte_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
-cp -R buildimg/boot.gen-ramdisk/* $MODULEOUT/
+cp -R buildimg/boot.sku-ramdisk/* $MODULEOUT/
 
 if [ $publish == "y" ]; then
     starkissed Compiling
@@ -97,19 +98,20 @@ if [ -e arch/arm/boot/zImage ]; then
         fi
         cp -r  $KERNELREPO/trltesku/$CARRIERIM $KERNELREPO/gooserver/$IMAGEFILE
 
-        for i in $(megacmd list mega:/trltesku/ 2>&1 | awk '{print $1}' | grep -i $TYPE.img); do
-            megacmd move $i mega:/trltesku/archive/$(basename $i)
+        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i boot.$TYPE.*.img); do
+            megacmd move $i $MEGASERVER/archive/$(basename $i)
         done
-        megacmd put $KERNELREPO/gooserver/*.img mega:/trltesku/
+        megacmd put $KERNELREPO/gooserver/*.img $MEGASERVER
 
-        existing=`ssh upload.goo.im ls $KERNELHOST/*.$TYPE.img`
+        existing=`ssh upload.goo.im ls $KERNELHOST/boot.$TYPE.*.img`
         scp -r $KERNELREPO/gooserver/*.img $GOOSERVER
         ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
     cp -r $KERNELREPO/trltesku/$CARRIERIM starkissed/kernel/`echo $TYPE`/boot.img
     cp -r $KERNELREPO/trltesku/$CARRIERIM skrecovery/kernel/`echo $TYPE`/boot.img
     starkissed Inactive
-
+else
+    starkissed Inactive
 fi
 
 }
@@ -130,14 +132,10 @@ buildAroma () {
         fi
         cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
 
-        for i in $(megacmd list mega:/trltesku/ 2>&1 | awk '{print $1}' | grep -i .zip); do
-            megacmd move $i mega:/trltesku/archive/$(basename $i)
+        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
+            megacmd move $i $MEGASERVER/archive/$(basename $i)
         done
-        megacmd put $KERNELREPO/gooserver/*.zip mega:/trltesku/
-
-#        existing=`ssh upload.goo.im ls public_html/trltesku/kernel/*.zip`
-#        scp -r $KERNELREPO/gooserver/*.zip $GOOSERVER
-#        ssh upload.goo.im mv -t public_html/trltesku/kernel/archive/ $existing
+        megacmd put $KERNELREPO/gooserver/*.zip $MEGASERVER
     fi
     if [ -e starkissed/$AROMAZIP ];then
         rm -R starkissed/$AROMAZIP
