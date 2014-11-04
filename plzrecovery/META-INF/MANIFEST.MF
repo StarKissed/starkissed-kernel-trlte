@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Created-By: 1.0 (Android SignApk)
+
+Name: META-INF/com/google/android/updater-script
+SHA1-Digest: 6LRhhy6uV7qmU41LssaxnRQ3h2Q=
+
+Name: recovery.img
+SHA1-Digest: g+KWvnAsCmO2RP9Mil1hCGlLA+A=
+
+Name: META-INF/com/google/android/update-binary
+SHA1-Digest: jcntSUtRLcMbTrLGKXRcvuDf7QA=
+

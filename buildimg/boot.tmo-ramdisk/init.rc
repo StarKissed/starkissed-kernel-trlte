@@ -13,7 +13,7 @@ import /init.${ro.hardware}.rc
 import /init.trace.rc
 import /init.carrier.rc
 import /init.container.rc
-import /init.sk.rc
+import /init.sku.rc
 
 on early-init
     # Set init and its forked children's oom_adj.

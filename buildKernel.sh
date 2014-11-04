@@ -10,20 +10,29 @@ KERNELSPEC=/Volumes/android/starkissed-deported
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
-MEGASERVER=mega:/trltesku/
 LOCALZIP=$HANDLE"_StarKissed-trlte[Auto].zip"
 KERNELZIP="StarKissed-"$PUNCHCARD"-trlte[Auto].zip"
 AROMAZIP=$HANDLE"_StarKissed-trlte[Aroma].zip"
 AROMAHOST="StarKissed-"$PUNCHCARD"-trlte[Aroma].zip"
+PHILZZIP=$HANDLE"_Philz_Touch_6.58.9-trlte[NA].zip"
+RECOVERZIP="Philz_Touch_6.58.9-"$PUNCHCARD"-trlte[NA].zip"
 
 buildKernel () {
 
 PROPER=`echo $TYPE | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
 MODULEOUT=$KERNELSPEC/buildimg/boot.`echo $TYPE`-ramdisk
-KERNELHOST=public_html/trltesku
+if [ `echo $TYPE` == "plz" ]; then
+    MEGASERVER=mega:/trltesku/recovery/
+    KERNELHOST=public_html/trltesku/recovery
+    CARRIERIM=recovery.`echo $TYPE`.img
+    IMAGEFILE=recovery.`echo $TYPE`.$PUNCHCARD.img
+else
+    MEGASERVER=mega:/trltesku/
+    KERNELHOST=public_html/trltesku
+    CARRIERIM=boot.`echo $TYPE`.img
+    IMAGEFILE=boot.`echo $TYPE`.$PUNCHCARD.img
+fi
 GOOSERVER=upload.goo.im:$KERNELHOST
-CARRIERIM=boot.`echo $TYPE`.img
-IMAGEFILE=boot.`echo $TYPE`.$PUNCHCARD.img
 
 CPU_JOB_NUM=8
 
@@ -43,9 +52,15 @@ if [ -e $KERNELSPEC/skrecovery/$LOCALZIP ];then
     rm -R $KERNELSPEC/skrecovery/$LOCALZIP
 fi
 
-cat config/trlte_`echo $TYPE`_defconfig config/trlte_sku_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+if [ `echo $TYPE` == "plz" ]; then
+    cp -r config/trlte_plz_defconfig arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+else
+    cat config/trlte_`echo $TYPE`_defconfig config/trlte_sku_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+fi
 cp -R config/trlte_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
-cp -R buildimg/boot.sku-ramdisk/* $MODULEOUT/
+if [ `echo $TYPE` == "plz" ]; then
+    cp -R buildimg/boot.sku-ramdisk/* $MODULEOUT/
+fi
 
 if [ $publish == "y" ]; then
     starkissed Compiling
@@ -53,9 +68,9 @@ else
     starkissed Verifying
 fi
 
-make -j$CPU_JOB_NUM -C $(pwd) clean
-make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_`echo $TYPE`_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
-make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -s -C $(pwd) clean
+make -j$CPU_JOB_NUM -s -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_`echo $TYPE`_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -s -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
 if [ -e arch/arm/boot/zImage ]; then
 
@@ -107,8 +122,30 @@ if [ -e arch/arm/boot/zImage ]; then
         scp -r $KERNELREPO/gooserver/*.img $GOOSERVER
         ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
-    cp -r $KERNELREPO/trltesku/$CARRIERIM starkissed/kernel/`echo $TYPE`/boot.img
-    cp -r $KERNELREPO/trltesku/$CARRIERIM skrecovery/kernel/`echo $TYPE`/boot.img
+    if [ `echo $TYPE` == "plz" ]; then
+        cp -r $KERNELREPO/trltesku/$CARRIERIM plzrecovery/recovery.img
+        starkissed Packaging
+        cd plzrecovery
+        rm *.zip
+        zip -r $PHILZZIP *
+        cd ../
+        cp -R $KERNELSPEC/plzrecovery/$PHILZZIP $KERNELREPO/$PHILZZIP
+        if [ $publish == "y" ]; then
+            starkissed Uploading
+            if [ -e $KERNELREPO/gooserver/ ]; then
+                rm -R $KERNELREPO/gooserver/*.zip
+            fi
+            cp -r $KERNELREPO/$PHILZZIP $KERNELREPO/gooserver/$RECOVERZIP
+
+            for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
+                megacmd move $i $MEGASERVER/archive/$(basename $i)
+            done
+            megacmd put $KERNELREPO/gooserver/*.zip $MEGASERVER
+        fi
+    else
+        cp -r $KERNELREPO/trltesku/$CARRIERIM starkissed/kernel/`echo $TYPE`/boot.img
+        cp -r $KERNELREPO/trltesku/$CARRIERIM skrecovery/kernel/`echo $TYPE`/boot.img
+    fi
     starkissed Inactive
 else
     starkissed Inactive
@@ -151,6 +188,7 @@ buildAroma () {
 echo "1. StarKissed"
 echo "2. Deported"
 echo "3. Carrier"
+echo "4. Recovery"
 echo "Please Choose: "
 read profile
 
@@ -190,6 +228,13 @@ case $profile in
     echo "Publish Image?"
     read publish
     TYPE=$carrier
+    buildKernel
+    exit
+;;
+4)
+    echo "Publish Image?"
+    read publish
+    TYPE=plz
     buildKernel
     exit
 ;;

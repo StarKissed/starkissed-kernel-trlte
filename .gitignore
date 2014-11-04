@@ -98,8 +98,8 @@ output
 starkissed/kernel/*/boot.img
 skrecovery/kernel/*/boot.img
 
-buildimg/boot.att-ramdisk/init.sk.rc
-buildimg/boot.can-ramdisk/init.sk.rc
-buildimg/boot.spr-ramdisk/init.sk.rc
-buildimg/boot.tmo-ramdisk/init.sk.rc
-buildimg/boot.vzw-ramdisk/init.sk.rc
+buildimg/boot.att-ramdisk/init.sku.rc
+buildimg/boot.can-ramdisk/init.sku.rc
+buildimg/boot.spr-ramdisk/init.sku.rc
+buildimg/boot.tmo-ramdisk/init.sku.rc
+buildimg/boot.vzw-ramdisk/init.sku.rc
