@@ -1904,7 +1904,7 @@ static int cpufreq_governor_umbrella_core(struct cpufreq_policy *policy,
 static void cpufreq_umbrella_core_power_suspend(struct power_suspend *h)
 {
     mutex_lock(&gov_lock);
-    max_gov_freq = 960000;
+    max_gov_freq = 1036800;
     mutex_unlock(&gov_lock);
 }
 
