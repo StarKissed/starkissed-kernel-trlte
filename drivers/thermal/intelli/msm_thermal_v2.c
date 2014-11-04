@@ -1,4 +1,5 @@
 /* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
+ *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -33,10 +34,11 @@
 #include <linux/of.h>
 #include <linux/sysfs.h>
 #include <linux/types.h>
-#include <linux/android_alarm.h>
+#include <linux/alarmtimer.h>
+#include "../../staging/android/android_alarm.h"
 #include <linux/thermal.h>
 #include <mach/rpm-regulator.h>
-#include <mach/rpm-regulator-smd.h>
+#include <linux/regulator/rpm-smd-regulator.h>
 #include <linux/regulator/consumer.h>
 
 #define MAX_CURRENT_UA 1000000
@@ -1025,7 +1027,7 @@ static int do_ocr(void)
 			continue;
 		}
 
-		if (temp > msm_thermal_info.ocr_temp_degC) {
+		if (temp > msm_thermal_info.core_limit_temp_degC) {
 			if (ocr_rails[0].init != OPTIMUM_CURRENT_NR)
 				for (j = 0; j < ocr_rail_cnt; j++)
 					ocr_rails[j].init = OPTIMUM_CURRENT_NR;
@@ -1033,8 +1035,8 @@ static int do_ocr(void)
 			if (ret)
 				pr_err("Error setting max optimum current\n");
 			goto do_ocr_exit;
-		} else if (temp <= (msm_thermal_info.ocr_temp_degC -
-			msm_thermal_info.ocr_temp_hyst_degC))
+		} else if (temp <= (msm_thermal_info.core_limit_temp_degC -
+			msm_thermal_info.core_temp_hysteresis_degC))
 			auto_cnt++;
 	}
 
@@ -1255,11 +1257,20 @@ static void thermal_rtc_setup(void)
 	ktime_t wakeup_time;
 	ktime_t curr_time;
 
-	curr_time = alarm_get_elapsed_realtime();
-	wakeup_time = ktime_add_us(curr_time,
+#if defined(ANDROID_ALARM_ACTIVATED)
+    curr_time = alarm_get_elapsed_realtime();
+#else
+    curr_time = ktime_get_boottime();
+#endif
+	wakeup_time = ktime_add_us(ktime_get(),
 			(wakeup_ms * USEC_PER_MSEC));
+#if defined(ANDROID_ALARM_ACTIVATED)
 	alarm_start_range(&thermal_rtc, wakeup_time,
 			wakeup_time);
+#else
+    alarm_start(&thermal_rtc, wakeup_time);
+#endif
+    
 	pr_debug("%s: Current Time: %ld %ld, Alarm set to: %ld %ld\n",
 			KBUILD_MODNAME,
 			ktime_to_timeval(curr_time).tv_sec,
@@ -1274,13 +1285,27 @@ static void timer_work_fn(struct work_struct *work)
 	sysfs_notify(tt_kobj, NULL, "wakeup_ms");
 }
 
+#if defined(ANDROID_ALARM_ACTIVATED)
 static void thermal_rtc_callback(struct alarm *al)
-{
-	struct timeval ts;
-	ts = ktime_to_timeval(alarm_get_elapsed_realtime());
+#else
+static enum alarmtimer_restart thermal_rtc_callback(struct alarm *al, ktime_t now)
+#endif
+    {
+        struct timeval ts;
+
+#if defined(ANDROID_ALARM_ACTIVATED)
+        ts = ktime_to_timeval(alarm_get_elapsed_realtime());
+#else
+        ts = ktime_to_timeval(ktime_get_boottime());
+#endif
+
 	schedule_work(&timer_work);
 	pr_debug("%s: Time on alarm expiry: %ld %ld\n", KBUILD_MODNAME,
 			ts.tv_sec, ts.tv_usec);
+
+#if !defined(ANDROID_ALARM_ACTIVATED)
+        return ALARMTIMER_NORESTART;
+#endif
 }
 
 static int hotplug_notify(enum thermal_trip_type type, int temp, void *data)
@@ -1905,7 +1930,7 @@ done_stat_nodes:
 	return ret;
 }
 
-int __devinit msm_thermal_init(struct msm_thermal_data *pdata)
+int /*__devinit*/ msm_thermal_init(struct msm_thermal_data *pdata)
 {
 	int ret = 0;
 	uint32_t cpu;
@@ -2419,12 +2444,12 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 	ocr_rails = NULL;
 
 	key = "qti,pmic-opt-curr-temp";
-	ret = of_property_read_u32(node, key, &data->ocr_temp_degC);
+	ret = of_property_read_u32(node, key, &data->core_limit_temp_degC);
 	if (ret)
 		goto read_ocr_fail;
 
 	key = "qti,pmic-opt-curr-temp-hysteresis";
-	ret = of_property_read_u32(node, key, &data->ocr_temp_hyst_degC);
+	ret = of_property_read_u32(node, key, &data->core_temp_hysteresis_degC);
 	if (ret)
 		goto read_ocr_fail;
 
@@ -2656,7 +2681,7 @@ PROBE_FREQ_EXIT:
 	return ret;
 }
 
-static int __devinit msm_thermal_dev_probe(struct platform_device *pdev)
+static int /*__devinit*/ msm_thermal_dev_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	char *key = NULL;
@@ -2780,8 +2805,13 @@ int __init msm_thermal_late_init(void)
 	msm_thermal_add_psm_nodes();
 	msm_thermal_add_vdd_rstr_nodes();
 	msm_thermal_add_ocr_nodes();
-	alarm_init(&thermal_rtc, ANDROID_ALARM_ELAPSED_REALTIME_WAKEUP,
-			thermal_rtc_callback);
+#if defined(ANDROID_ALARM_ACTIVATED)
+    alarm_init(&thermal_rtc, ANDROID_ALARM_ELAPSED_REALTIME_WAKEUP,
+               thermal_rtc_callback);
+#else
+    alarm_init(&thermal_rtc, ALARM_BOOTTIME,
+               thermal_rtc_callback);
+#endif
 	INIT_WORK(&timer_work, timer_work_fn);
 	msm_thermal_add_timer_nodes();
 
