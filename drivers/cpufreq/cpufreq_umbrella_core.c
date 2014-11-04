@@ -220,7 +220,7 @@ static unsigned int up_threshold_any_cpu_freq;
 static int cpufreq_governor_umbrella_core(struct cpufreq_policy *policy,
 		unsigned int event);
 
-#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_umbrella_core
+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_UMBRELLA_CORE
 static
 #endif
 struct cpufreq_governor cpufreq_gov_umbrella_core = {
@@ -1988,7 +1988,7 @@ static void mode_auto_change_boost(struct work_struct *work)
 }
 #endif	// CONFIG_MODE_AUTO_CHANGE_BOOST
 
-#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_umbrella_core
+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_UMBRELLA_CORE
 fs_initcall(cpufreq_umbrella_core_init);
 #else
 module_init(cpufreq_umbrella_core_init);
