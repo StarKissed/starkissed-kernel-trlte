@@ -106,7 +106,7 @@ choice
 
 config INTELLI_THERMAL
 	bool "Better thermal monitor for MSM"
-	depends on THERMAL_TSENS8960
+	depends on THERMAL_TSENS8960 || THERMAL_TSENS8974
 	depends on CPU_FREQ_MSM
 	help
 	  This enables thermal monitoring capability in the kernel replacing
