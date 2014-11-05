@@ -1,7 +1,6 @@
 import /init.recovery.${ro.hardware}.rc
 
 on early-init
-    # Configure SEAndroid booleans and enforcing mode
     setsebool debugfs 1
 
     # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
@@ -23,9 +22,11 @@ on init
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
     export EXTERNAL_STORAGE /sdcard
+    export SECONDARY_STORAGE /sdcard1
 
     symlink /storage /mnt
-    symlink /storage/extSdCard /mnt/extSdCard
+    symlink /sdcard1 /mnt/extSdCard
+    symlink /sdcard1 /storage/sdcard1
     symlink /sdcard /mnt/sdcard
     symlink /sdcard /storage/sdcard0
     mkdir /external_sd
@@ -85,7 +86,6 @@ on boot
     domainname localdomain
 
     class_start default
-    start deported
 
 on property:sys.powerctl=*
     powerctl ${sys.powerctl}
@@ -113,12 +113,6 @@ service vold /sbin/minivold
     socket vold stream 0660 root mount
     ioprio be 2
     seclabel u:r:recovery:s0
-
-service deported /selinux/deported
-     class late_start
-     user root
-     disabled
-     oneshot
 
 # recovery lock
 on property:sys.usb.recovery_lock=1

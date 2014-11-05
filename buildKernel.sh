@@ -58,7 +58,7 @@ else
     cat config/trlte_`echo $TYPE`_defconfig config/trlte_sku_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
 fi
 cp -R config/trlte_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
-if [ `echo $TYPE` == "plz" ]; then
+if [ `echo $TYPE` != "plz" ]; then
     cp -R buildimg/boot.sku-ramdisk/* $MODULEOUT/
 fi
 
@@ -155,25 +155,30 @@ fi
 
 buildAroma () {
 
-    starkissed Packaging
-    cd skrecovery
-    rm *.zip
-    zip -r $LOCALZIP *
-    cd ../
-    cp -R $KERNELSPEC/skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
+MEGASERVER=mega:/trltesku/
+KERNELHOST=public_html/trltesku
+GOOSERVER=upload.goo.im:$KERNELHOST
 
-    if [ $publish == "y" ]; then
-        starkissed Uploading
-        if [ -e $KERNELREPO/gooserver/ ]; then
-            rm -R $KERNELREPO/gooserver/*.zip
-        fi
-        cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
+starkissed Packaging
+cd skrecovery
+rm *.zip
+zip -r $LOCALZIP *
+cd ../
+cp -R $KERNELSPEC/skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
 
-        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
-            megacmd move $i $MEGASERVER/archive/$(basename $i)
-        done
-        megacmd put $KERNELREPO/gooserver/*.zip $MEGASERVER
+if [ $publish == "y" ]; then
+    starkissed Uploading
+    if [ -e $KERNELREPO/gooserver/ ]; then
+        rm -R $KERNELREPO/gooserver/*.zip
     fi
+    cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
+
+    for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
+        megacmd move $i $MEGASERVER/archive/$(basename $i)
+    done
+    megacmd put $KERNELREPO/gooserver/*.zip $MEGASERVER
+fi
+if [ 0 = 1 ]; then
     if [ -e starkissed/$AROMAZIP ];then
         rm -R starkissed/$AROMAZIP
     fi
@@ -181,7 +186,8 @@ buildAroma () {
     zip -r $AROMAZIP *
     cd ../
     cp -R $KERNELSPEC/starkissed/$AROMAZIP $KERNELREPO/$AROMAZIP
-    starkissed Inactive
+fi
+starkissed Inactive
 
 }
 
@@ -196,6 +202,8 @@ case $profile in
 1)
     echo "Publish Image?"
     read publish
+    echo "Publish Package?"
+    read package
     TYPE=tmo
     BUILD=NJ7
     buildKernel
@@ -205,15 +213,20 @@ case $profile in
     TYPE=can
     BUILD=NJ3
     buildKernel
-    TYPE=vzw
-    BUILD=NI1
-    buildKernel
-    TYPE=att
-    BUILD=NIE
-    buildKernel
     TYPE=usc
     BUILD=NA
     buildKernel
+    if [ 0 = 1 ]; then
+        TYPE=vzw
+        BUILD=NI1
+        buildKernel
+        TYPE=att
+        BUILD=NIE
+        buildKernel
+    fi
+    if [ $package == "y" ]; then
+        buildAroma
+    fi
     exit
 ;;
 2)

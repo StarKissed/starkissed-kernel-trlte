@@ -223,9 +223,6 @@ on post-fs
     restorecon /cache/lost+found
 
 on post-fs-data
-    # Reload SE Android Policy
-    setprop selinux.reload_policy 1
-
     # We chown/chmod /data again so because mount is run as root + defaults
     chown system system /data
     chmod 0771 /data
@@ -937,15 +934,6 @@ service healthd-charger /sbin/healthd -n
     class charger
     critical
     seclabel u:r:healthd:s0
-
-# Reload SE Android Policy for MDM
-on property:persist.security.mdm.policy=1
-    setprop selinux.reload_policy 1
-
-on property:selinux.reload_policy=1
-    chown system system /sys/fs/selinux/enforce
-    chown -R system system /sys/fs/selinux/booleans
-    chown system system /sys/fs/selinux/commit_pending_bools
 
 service console /system/bin/sh
     class core
