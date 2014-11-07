@@ -513,7 +513,7 @@ static ssize_t store_scaling_min_freq
 	if (ret)
 		pr_err("cpufreq: Frequency verification failed\n");
 
-	ret = __cpufreq_set_policy(policy, &new_policy);
+	ret = cpufreq_set_policy(policy, &new_policy);
 
 	return ret ? ret : count;
 }
@@ -553,7 +553,7 @@ static ssize_t store_scaling_max_freq
 	if (ret)
 		pr_err("cpufreq: Frequency verification failed\n");
 
-	ret = __cpufreq_set_policy(policy, &new_policy);
+	ret = cpufreq_set_policy(policy, &new_policy);
 
 	return ret ? ret : count;
 }
@@ -2309,7 +2309,7 @@ int cpufreq_set_limits(int cpu, unsigned int limit, unsigned int value)
 		if (cur_policy->min > value)
 		{
 			new_policy.min = value;
-			ret = __cpufreq_set_policy(cur_policy, &new_policy);
+			ret = cpufreq_set_policy(cur_policy, &new_policy);
 			if(ret < 0)
 				goto out_unlock;
 
@@ -2327,7 +2327,7 @@ int cpufreq_set_limits(int cpu, unsigned int limit, unsigned int value)
 		new_policy.min = value;
 	}
 
-	ret = __cpufreq_set_policy(cur_policy, &new_policy);
+	ret = cpufreq_set_policy(cur_policy, &new_policy);
 	if(ret < 0)
 		goto out_unlock;
 
