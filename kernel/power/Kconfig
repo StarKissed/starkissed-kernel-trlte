@@ -27,7 +27,7 @@ config POWERSUSPEND
 
 config CPU_FREQ_LIMIT_USERSPACE
 	bool "User space cpufreq limit interface"
-	depends on CPU_FREQ_LIMIT
+	depends on CPU_FREQ_LIMIT || CPUFREQ_HARDLIMIT
 	default n
 	help
 	  Add sysfs to limit CPU frequency for a userspace program.

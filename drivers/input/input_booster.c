@@ -33,24 +33,42 @@ static void input_booster_change_dvfs_tsp_work(struct work_struct *work)
 		booster->dvfs_freq = -1;
 		break;
 	case DVFS_STAGE_DUAL:
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+		retval = set_freq_limit(DVFS_TOUCH_ID,
+				touchboost_lo_freq);
+#else
 		retval = set_freq_limit(DVFS_TOUCH_ID,
 				MIN_TOUCH_LIMIT_SECOND);
+#endif
 #if INPUT_BIMC_MINLOCK
 		pr_info("%s: bimc clk set: %d\n",
 				__func__, INPUT_BIMC_SECOND_LIMIT);
 		request_bimc_clk(INPUT_BIMC_SECOND_LIMIT);
 #endif
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+		booster->dvfs_freq = touchboost_lo_freq;
+#else
 		booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#endif
 		break;
 	case DVFS_STAGE_NINTH:
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+        retval = set_freq_limit(DVFS_TOUCH_ID,
+                touchboost_hi_freq);
+#else
 		retval = set_freq_limit(DVFS_TOUCH_ID,
 				MIN_TOUCH_LIMIT);
+#endif
 #if INPUT_BIMC_MINLOCK
 		pr_info("%s: bimc clk set: %d\n",
 				__func__, INPUT_BIMC_LIMIT);
 		request_bimc_clk(INPUT_BIMC_LIMIT);
 #endif
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+        booster->dvfs_freq = touchboost_hi_freq;
+#else
 		booster->dvfs_freq = MIN_TOUCH_LIMIT;
+#endif
 		break;
 	}
 
@@ -97,29 +115,49 @@ static void input_booster_set_dvfs_tsp_lock(struct input_booster *booster, int o
 			switch (booster->dvfs_boost_mode) {
 			case DVFS_STAGE_SINGLE:
 			case DVFS_STAGE_DUAL:
-				if (booster->dvfs_freq != MIN_TOUCH_LIMIT) {
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+				if (booster->dvfs_freq != touchboost_hi_freq) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
+							touchboost_hi_freq);
+#else
+				if (booster->dvfs_freq != MIN_TOUCH_LIMIT) {
+                    retval = set_freq_limit(DVFS_TOUCH_ID,
 							MIN_TOUCH_LIMIT);
+#endif
 #if INPUT_BIMC_MINLOCK
 					pr_info("%s: bimc clk set: %d\n",
 							__func__, INPUT_BIMC_LIMIT);
 					request_bimc_clk(INPUT_BIMC_LIMIT);
 #endif
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+					booster->dvfs_freq = touchboost_hi_freq;
+#else
 					booster->dvfs_freq = MIN_TOUCH_LIMIT;
+#endif
 				}
 				schedule_delayed_work(&booster->work_dvfs_chg,
 					msecs_to_jiffies(INPUT_BOOSTER_CHG_TIME_TSP));
 				break;
 			case DVFS_STAGE_TRIPLE:
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+				if (booster->dvfs_freq != touchboost_lo_freq) {
+					retval = set_freq_limit(DVFS_TOUCH_ID,
+							touchboost_lo_freq);
+#else
 				if (booster->dvfs_freq != MIN_TOUCH_LIMIT_SECOND) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
 							MIN_TOUCH_LIMIT_SECOND);
+#endif
 #if INPUT_BIMC_MINLOCK
 					pr_info("%s: bimc clk set: %d\n",
 							__func__, INPUT_BIMC_SECOND_LIMIT);
 					request_bimc_clk(INPUT_BIMC_SECOND_LIMIT);
 #endif
-					booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+					booster->dvfs_freq = touchboost_lo_freq;
+#else
+                    booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#endif
 				}
 				schedule_delayed_work(&booster->work_dvfs_chg,
 					msecs_to_jiffies(INPUT_BOOSTER_CHG_TIME_TSP));
@@ -247,9 +285,15 @@ static void input_booster_change_dvfs_wacom_work(struct work_struct *work)
 		booster->dvfs_freq = -1;
 		break;
 	case DVFS_STAGE_DUAL:
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+		retval = set_freq_limit(DVFS_TOUCH_ID,
+				touchboost_lo_freq);
+		booster->dvfs_freq = touchboost_lo_freq;
+#else
 		retval = set_freq_limit(DVFS_TOUCH_ID,
 				MIN_TOUCH_LIMIT_SECOND);
 		booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#endif
 		break;
 	}
 
@@ -285,19 +329,33 @@ static void input_booster_set_dvfs_wacom_lock(struct input_booster *booster, int
 			switch (booster->dvfs_boost_mode) {
 			case DVFS_STAGE_SINGLE:
 			case DVFS_STAGE_DUAL:
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+				if (booster->dvfs_freq != touchboost_hi_freq) {
+					retval = set_freq_limit(DVFS_TOUCH_ID,
+							touchboost_hi_freq);
+					booster->dvfs_freq = touchboost_hi_freq;
+#else
 				if (booster->dvfs_freq != MIN_TOUCH_LIMIT) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
 							MIN_TOUCH_LIMIT);
 					booster->dvfs_freq = MIN_TOUCH_LIMIT;
+#endif
 				}
 				schedule_delayed_work(&booster->work_dvfs_chg,
 					msecs_to_jiffies(INPUT_BOOSTER_CHG_TIME_WACOM));
 				break;
 			case DVFS_STAGE_TRIPLE:
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+				if (booster->dvfs_freq != touchboost_lo_freq) {
+					retval = set_freq_limit(DVFS_TOUCH_ID,
+							touchboost_lo_freq);
+					booster->dvfs_freq = touchboost_lo_freq;
+#else
 				if (booster->dvfs_freq != MIN_TOUCH_LIMIT_SECOND) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
 							MIN_TOUCH_LIMIT_SECOND);
 					booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#endif
 				}
 				schedule_delayed_work(&booster->work_dvfs_chg,
 					msecs_to_jiffies(INPUT_BOOSTER_CHG_TIME_WACOM));
@@ -404,7 +462,11 @@ void input_booster_init_dvfs(struct input_booster *booster, int id)
 		booster->dvfs_boost_mode = DVFS_STAGE_NONE;
 
 	if (booster->dvfs_id == INPUT_BOOSTER_ID_TKEY) {
-		booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+		booster->dvfs_freq = touchboost_lo_freq;
+#else
+        booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#endif
 		booster->dvfs_lock_status = true;
 	} else {
 		booster->dvfs_lock_status = false;

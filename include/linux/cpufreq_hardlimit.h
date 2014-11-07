@@ -49,6 +49,9 @@ extern unsigned int touchboost_hi_freq;
 /* Sanitize cpufreq to hardlimits */
 unsigned int check_cpufreq_hardlimit(unsigned int freq);
 
+/* User enable/disable */
+unsigned int hardlimit_user_enabled_status(void);
+
 /* Scaling min/max lock */
 unsigned int userspace_dvfs_lock_status(void);
 

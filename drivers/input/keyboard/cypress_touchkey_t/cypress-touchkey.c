@@ -1345,12 +1345,20 @@ static ssize_t boost_level_store(struct device *dev,
 			__func__, info->tkey_booster->dvfs_boost_mode);
 
 	if (info->tkey_booster->dvfs_boost_mode == DVFS_STAGE_DUAL) {
-		info->tkey_booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+        info->tkey_booster->dvfs_freq = touchboost_lo_freq;
+#else
+        info->tkey_booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
+#endif
 		dev_info(&info->client->dev,
 			"%s: boost_mode DUAL, dvfs_freq = %d\n",
 			__func__, info->tkey_booster->dvfs_freq);
 	} else if (info->tkey_booster->dvfs_boost_mode == DVFS_STAGE_SINGLE) {
-		info->tkey_booster->dvfs_freq = MIN_TOUCH_LIMIT;
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+        info->tkey_booster->dvfs_freq = touchboost_hi_freq;
+#else
+        info->tkey_booster->dvfs_freq = MIN_TOUCH_LIMIT;
+#endif
 		dev_info(&info->client->dev,
 			"%s: boost_mode SINGLE, dvfs_freq = %d\n",
 			__func__, info->tkey_booster->dvfs_freq);
