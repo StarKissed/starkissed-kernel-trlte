@@ -1281,6 +1281,7 @@ static void __exit cpufreq_smartmax_exit(void) {
 module_exit(cpufreq_smartmax_exit);
 
 MODULE_AUTHOR("maxwen");
+MODULE_AUTHOR("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION("'cpufreq_smartmax' - A smart cpufreq governor");
 MODULE_LICENSE("GPL");
 

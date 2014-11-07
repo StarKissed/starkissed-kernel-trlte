@@ -489,6 +489,7 @@ module_init(sweep2wake_init);
 module_exit(sweep2wake_exit);
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
+MODULE_AUTHOR("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
 MODULE_VERSION(DRIVER_VERSION);
 MODULE_LICENSE("GPLv2");

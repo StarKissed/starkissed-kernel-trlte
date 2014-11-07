@@ -546,6 +546,7 @@ static void __exit cpufreq_gov_dbs_exit(void)
 }
 
 MODULE_AUTHOR("knzo");
+MODULE_AUTHOR("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION("'cpufreq_lionheart' - A brave and agile conservative-based governor.");
 MODULE_LICENSE("GPL");
 

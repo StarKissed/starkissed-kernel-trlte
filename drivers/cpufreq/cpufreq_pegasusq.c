@@ -1618,6 +1618,7 @@ static void __exit cpufreq_gov_dbs_exit(void)
 }
 
 MODULE_AUTHOR("ByungChang Cha <bc.cha@samsung.com>");
+MODULE_AUTHOR("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION("'cpufreq_pegasusq' - A dynamic cpufreq/cpuhotplug governor");
 MODULE_LICENSE("GPL");
 

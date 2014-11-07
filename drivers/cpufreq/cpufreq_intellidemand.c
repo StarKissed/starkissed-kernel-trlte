@@ -2443,6 +2443,7 @@ static void __exit cpufreq_gov_dbs_exit(void)
 MODULE_AUTHOR("Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>");
 MODULE_AUTHOR("Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>");
 MODULE_AUTHOR("Paul Reioux <reioux@gmail.com>");
+MODULE_AUTHOR("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION("'cpufreq_intellidemand' - A dynamic cpufreq governor for "
 	"Low Latency Frequency Transition capable processors");
 MODULE_LICENSE("GPL");

@@ -921,5 +921,6 @@ static void __exit cpufreq_smartass_exit(void)
 module_exit(cpufreq_smartass_exit);
 
 MODULE_AUTHOR ("Erasmux");
+MODULE_AUTHOR ("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION ("'cpufreq_smartass_v2' - A smart cpufreq governor");
 MODULE_LICENSE ("GPL");

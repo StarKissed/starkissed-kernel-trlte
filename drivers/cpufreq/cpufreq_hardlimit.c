@@ -1,5 +1,8 @@
 /*
- * Author: Jean-Pierre Rasquin <yank555.lu@gmail.com>
+ *  drivers/cpufreq/cpufreq_hardlimit.c
+ *
+ *  Copyright (C)  2013 Jean-Pierre Rasquin <yank555.lu@gmail.com>
+ *            (C)  2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and

@@ -1454,6 +1454,8 @@ static void __exit cpufreq_yankactive_exit(void)
 module_exit(cpufreq_yankactive_exit);
 
 MODULE_AUTHOR("Mike Chan <mike@android.com>");
+MODULE_AUTHOR("Jean-Pierre Rasquin <yank555.lu@gmail.com>");
+MODULE_AUTHOR("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION("'cpufreq_yankactive' - A cpufreq governor for "
 	"Latency sensitive workloads");
 MODULE_LICENSE("GPL");
