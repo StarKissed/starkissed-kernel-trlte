@@ -143,8 +143,7 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 {
 	char *page = NULL;
 	ssize_t length;
-    // SELinux default configuration is permissive unless enforcing
-	int new_value = 0;
+	int new_value;
 
 	length = -ENOMEM;
 	if (count >= PAGE_SIZE)
@@ -181,7 +180,9 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 	selnl_notify_setenforce(new_value);
         selinux_status_update_setenforce(new_value);
 #else
-//    new_value = 0;
+#ifdef CONFIG_RECOVERY_KERNEL
+    new_value = 0;
+#endif
 	if (new_value != selinux_enforcing) {
 		length = task_has_security(current, SECURITY__SETENFORCE);
 		if (length)
