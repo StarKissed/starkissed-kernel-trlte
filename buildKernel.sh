@@ -108,18 +108,18 @@ if [ -e arch/arm/boot/zImage ]; then
 
     if [ $publish == "y" ]; then
         starkissed Uploading
-        if [ -e $KERNELREPO/gooserver/ ]; then
-            rm -R $KERNELREPO/gooserver/*.img
+        if [ -e ~/.goo/ ]; then
+            rm -R ~/.goo/*.img
         fi
-        cp -r  $KERNELREPO/trltesku/$CARRIERIM $KERNELREPO/gooserver/$IMAGEFILE
+        cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
 
         for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i boot.$TYPE.*.img); do
             megacmd move $i $MEGASERVER/archive/$(basename $i)
         done
-        megacmd put $KERNELREPO/gooserver/*.img $MEGASERVER
+        megacmd put ~/.goo/*.img $MEGASERVER
 
         existing=`ssh upload.goo.im ls $KERNELHOST/boot.$TYPE.*.img`
-        scp -r $KERNELREPO/gooserver/*.img $GOOSERVER
+        scp -r ~/.goo/*.img $GOOSERVER
         ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
     if [ `echo $TYPE` == "plz" ]; then
@@ -132,15 +132,15 @@ if [ -e arch/arm/boot/zImage ]; then
         cp -R $KERNELSPEC/plzrecovery/$PHILZZIP $KERNELREPO/$PHILZZIP
         if [ $publish == "y" ]; then
             starkissed Uploading
-            if [ -e $KERNELREPO/gooserver/ ]; then
-                rm -R $KERNELREPO/gooserver/*.zip
+            if [ -e ~/.goo/ ]; then
+                rm -R ~/.goo/*.zip
             fi
-            cp -r $KERNELREPO/$PHILZZIP $KERNELREPO/gooserver/$RECOVERZIP
+            cp -r $KERNELREPO/$PHILZZIP ~/.goo/$RECOVERZIP
 
             for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
                 megacmd move $i $MEGASERVER/archive/$(basename $i)
             done
-            megacmd put $KERNELREPO/gooserver/*.zip $MEGASERVER
+            megacmd put ~/.goo/*.zip $MEGASERVER
         fi
     else
         cp -r $KERNELREPO/trltesku/$CARRIERIM starkissed/kernel/`echo $TYPE`/boot.img
@@ -168,15 +168,15 @@ cp -R $KERNELSPEC/skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
 
 if [ $publish == "y" ]; then
     starkissed Uploading
-    if [ -e $KERNELREPO/gooserver/ ]; then
-        rm -R $KERNELREPO/gooserver/*.zip
+    if [ -e ~/.goo/ ]; then
+        rm -R ~/.goo/*.zip
     fi
-    cp -r $KERNELREPO/$LOCALZIP $KERNELREPO/gooserver/$KERNELZIP
+    cp -r $KERNELREPO/$LOCALZIP ~/.goo/$KERNELZIP
 
     for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
         megacmd move $i $MEGASERVER/archive/$(basename $i)
     done
-    megacmd put $KERNELREPO/gooserver/*.zip $MEGASERVER
+    megacmd put ~/.goo/*.zip $MEGASERVER
 fi
 if [ 0 = 1 ]; then
     if [ -e starkissed/$AROMAZIP ];then
