@@ -127,7 +127,9 @@
 #include <linux/sysfs.h>
 #include <linux/cpufreq_hardlimit.h>
 #include <linux/cpufreq.h>
+#ifdef CONFIG_POWERSUSPEND
 #include <linux/powersuspend.h>
+#endif
 #include <linux/jiffies.h>
 #include <linux/workqueue.h>
 
@@ -144,7 +146,7 @@ unsigned int current_limit_max        = CPUFREQ_HARDLIMIT_MAX_SCREEN_ON_STOCK;
 unsigned int current_limit_min        = CPUFREQ_HARDLIMIT_MIN_SCREEN_ON_STOCK;
 unsigned int current_screen_state     = CPUFREQ_HARDLIMIT_SCREEN_ON;		/* default to screen on */
 unsigned int userspace_dvfs_lock      = CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW;	/* default allows userspace dvfs interaction */
-unsigned int hardlimit_user_enabled   = 0;
+unsigned int hardlimit_user_enabled   = CPUFREQ_HARDLIMIT_USER_DISABLED;
 
 struct delayed_work stop_wakeup_kick_work;
 
@@ -218,6 +220,7 @@ unsigned int userspace_dvfs_lock_status(void)
 	return userspace_dvfs_lock;
 }
 
+#ifdef CONFIG_POWERSUSPEND
 /* Powersuspend */
 static void cpufreq_hardlimit_suspend(struct power_suspend * h)
 {
@@ -270,6 +273,7 @@ static struct power_suspend cpufreq_hardlimit_suspend_data =
 	.suspend = cpufreq_hardlimit_suspend,
 	.resume = cpufreq_hardlimit_resume,
 };
+#endif
 
 /* Delayed work */
 static void stop_wakeup_kick(struct work_struct *work)
@@ -573,7 +577,8 @@ static ssize_t hardlimit_user_enabled_store(struct kobject *kobj, struct kobj_at
     if (new_hardlimit_user_enabled == hardlimit_user_enabled)
         return count;
     
-    if (new_hardlimit_user_enabled >= 0 && new_hardlimit_user_enabled <= 1) {
+    if (new_hardlimit_user_enabled >= CPUFREQ_HARDLIMIT_USER_DISABLED
+        && new_hardlimit_user_enabled <= CPUFREQ_HARDLIMIT_USER_ENBALED) {
         hardlimit_user_enabled = new_hardlimit_user_enabled;
         return count;
     }
@@ -825,8 +830,10 @@ int hardlimit_init(void)
 #else
         if (!hardlimit_retval) {
 #endif
+#ifdef CONFIG_POWERSUSPEND
 		/* Only register to powersuspend and delayed work if we were able to create the sysfs interface */
 		register_power_suspend(&cpufreq_hardlimit_suspend_data);
+#endif
 		INIT_DEFERRABLE_WORK(&stop_wakeup_kick_work, stop_wakeup_kick);
 	}
 
@@ -836,7 +843,9 @@ int hardlimit_init(void)
 
 void hardlimit_exit(void)
 {
+#ifdef CONFIG_POWERSUSPEND
 	unregister_power_suspend(&cpufreq_hardlimit_suspend_data);
+#endif
 	kobject_put(hardlimit_kobj);
 }
 
