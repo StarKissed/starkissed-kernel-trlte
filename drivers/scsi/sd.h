@@ -84,6 +84,7 @@ struct scsi_disk {
 	unsigned	lbpws : 1;
 	unsigned	lbpws10 : 1;
 	unsigned	lbpvpd : 1;
+	unsigned	ws10 : 1;
 	unsigned	ws16 : 1;
 #ifdef CONFIG_USB_STORAGE_DETECT
 	wait_queue_head_t	 delay_wait;
