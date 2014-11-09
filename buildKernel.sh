@@ -191,6 +191,8 @@ starkissed Inactive
 
 }
 
+rm -fR $(find . -name '*.orig'|xargs)
+
 echo "1. StarKissed"
 echo "2. Deported"
 echo "3. Carrier"
