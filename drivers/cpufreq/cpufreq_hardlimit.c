@@ -15,114 +15,6 @@
  *
  */
 
-/*
- * CPU freq hard limit - SysFS interface :
- * ---------------------------------------
- *
- * /sys/kernel/cpufreq_hardlimit/scaling_max_freq_screen_on (rw)
- *
- *   set or show the real hard CPU max frequency limit when screen is on
- *
- * /sys/kernel/cpufreq_hardlimit/scaling_max_freq_screen_off (rw)
- *
- *   set or show the real hard CPU max frequency limit when screen is off
- *
- * /sys/kernel/cpufreq_hardlimit/scaling_min_freq_screen_on (rw)
- *
- *   set or show the real hard CPU min frequency limit when screen is on
- *
- * /sys/kernel/cpufreq_hardlimit/scaling_min_freq_screen_off (rw)
- *
- *   set or show the real hard CPU min frequency limit when screen is off
- *
- * /sys/kernel/cpufreq_hardlimit/wakeup_kick_freq (rw)
- *
- *   set or show the wakeup kick frequency (scaling_min for delay time)
- *
- * /sys/kernel/cpufreq_hardlimit/wakeup_kick_delay (rw)
- *
- *   set or show the wakeup kick duration (in ms)
- *
- * /sys/kernel/cpufreq_hardlimit/touchboost_lo_freq (rw)
- *
- *   set or show touchboost low frequency
- *
- * /sys/kernel/cpufreq_hardlimit/touchboost_hi_freq (rw)
- *
- *   set or show touchboost high frequency
- *
- * /sys/kernel/cpufreq_hardlimit/userspace_dvfs_lock (rw)
- *
- *   0 = allow changes to scaling min/max
- *   1 = ignore (don't apply, but don't return an error)
- *   2 = refuse (don't apply, return EINVAL)
- *
- * /sys/kernel/cpufreq_hardlimit/available_frequencies (ro)
- *
- *   display list of available CPU frequencies for convenience
- *
- * /sys/kernel/cpufreq_hardlimit/current_limit_max (ro)
- *
- *   display current applied hardlimit for CPU max
- *
- * /sys/kernel/cpufreq_hardlimit/current_limit_min (ro)
- *
- *   display current applied hardlimit for CPU min
- *
- * /sys/kernel/cpufreq_hardlimit/version (ro)
- *
- *   display CPU freq hard limit version information
- *
- * CPU freq hard limit - Legacy SysFS interface :
- * ----------------------------------------------
- * (optional - kept for compatibility with existing apps)
- *
- * /sys/kernel/cpufreq/hardlimit (rw)
- *
- *   set or show the real hard CPU frequency limit when screen is on
- *
- * /sys/kernel/cpufreq/hardlimit_screen_off (rw)
- *
- *   set or show the real hard CPU frequency limit when screen is off
- *
- * /sys/kernel/cpufreq/wakeup_kick_freq (rw)
- *
- *   set or show the wakeup kick frequency (scaling_min for delay time)
- *
- * /sys/kernel/cpufreq/wakeup_kick_delay (rw)
- *
- *   set or show the wakeup kick duration (in ms)
- *
- * /sys/kernel/cpufreq/touchboost_lo_freq (rw)
- *
- *   set or show touchboost low frequency
- *
- * /sys/kernel/cpufreq/touchboost_hi_freq (rw)
- *
- *   set or show touchboost high frequency
- *
- * /sys/kernel/cpufreq/available_frequencies (ro)
- *
- *   display list of available CPU frequencies for convenience
- *
- * /sys/kernel/cpufreq/current_limit_max (ro)
- *
- *   display current applied hardlimit for CPU max
- *
- * /sys/kernel/cpufreq/current_limit_min (ro)
- *
- *   display current applied hardlimit for CPU min
- *
- * /sys/kernel/cpufreq/version (ro)
- *
- *   display CPU freq hard limit version information
- *
- */
-
-// Disable/Enable old legacy interface used in v1.x
-//
-//#define CPUFREQ_HARDLIMIT_LEGACY_INTERFACE
-
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <linux/cpufreq_hardlimit.h>
@@ -587,8 +479,8 @@ static ssize_t hardlimit_user_enabled_store(struct kobject *kobj, struct kobj_at
     if (new_hardlimit_user_enabled == hardlimit_user_enabled)
         return count;
     
-    if (new_hardlimit_user_enabled >= HARDLIMIT_USER_DISABLED
-        && new_hardlimit_user_enabled <= HARDLIMIT_USER_ENABLED) {
+    if (new_hardlimit_user_enabled == HARDLIMIT_USER_DISABLED
+        || new_hardlimit_user_enabled == HARDLIMIT_USER_ENABLED) {
         hardlimit_user_enabled = new_hardlimit_user_enabled;
         touchboost_hi_freq = MIN_TOUCH_LIMIT;
         touchboost_lo_freq = MIN_TOUCH_LIMIT_SECOND;

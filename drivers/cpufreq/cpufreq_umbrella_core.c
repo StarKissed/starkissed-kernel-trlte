@@ -13,8 +13,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * Author: LoungeKatt (twistedumbrella@gmail.com)
- *
  */
 
 #include <linux/cpu.h>
@@ -1618,7 +1616,7 @@ static ssize_t store_##obj_name(struct kobject *kobj,			\
         return count;							\
 }									\
 									\
-static struct global_attr obj_attr = __ATTR(obj_name, 0644,		\
+static struct global_attr obj_attr = __ATTR(obj_name, 0666,		\
                 show_##obj_name, store_##obj_name);			\
 
 index(mode, mode_attr);
