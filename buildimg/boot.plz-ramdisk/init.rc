@@ -22,7 +22,6 @@ on init
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
     export EXTERNAL_STORAGE /sdcard
-    export SECONDARY_STORAGE /sdcard1
 
     symlink /storage /mnt
     symlink /sdcard1 /mnt/extSdCard
@@ -61,8 +60,6 @@ on init
     mount_all fstab.qcom
     #load_persist_props
     setprop persist.service.cdrom.enable 0
-    #setprop selinux.reload_policy 0
-
 
 on fs
     mkdir /dev/usb-ffs 0770 shell shell
@@ -77,7 +74,6 @@ on fs
     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
-
 
 on boot
 
