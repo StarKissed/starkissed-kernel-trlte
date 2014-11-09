@@ -133,8 +133,8 @@ static u64 boostpulse_endtime;
 static int timer_slack_val = DEFAULT_TIMER_SLACK;
 
 #define DEFAULT_INACTIVE_FREQ_ON 1958400
-#define DEFAULT_INACTIVE_FREQ_OFF 1190400
-unsigned int max_gov_freq = DEFAULT_INACTIVE_FREQ_ON;
+#define DEFAULT_INACTIVE_FREQ_OFF 1036800
+unsigned int max_inactive_freq = 2457600;
 unsigned int max_inactive_freq_screen_on = DEFAULT_INACTIVE_FREQ_ON;
 unsigned int max_inactive_freq_screen_off = DEFAULT_INACTIVE_FREQ_OFF;
 
@@ -155,8 +155,8 @@ static spinlock_t mode_lock;
 #define SINGLE_MODE	1
 #define NO_MODE	0
 
-static unsigned int mode = MULTI_MODE;
-static unsigned int enforced_mode = 1;
+static unsigned int mode = 0;
+static unsigned int enforced_mode = 0;
 static u64 mode_check_timestamp = 0;
 
 #define DEFAULT_MULTI_ENTER_TIME (4 * DEFAULT_TIMER_RATE)
@@ -646,8 +646,8 @@ static void cpufreq_umbrella_core_timer(unsigned long data)
 			if (new_freq < hispeed_freq)
 				new_freq = hispeed_freq;
 		}
-		if (new_freq > max_gov_freq && cpu_load < 99)
-			new_freq = max_gov_freq;
+		if (new_freq > max_inactive_freq && cpu_load < 99)
+			new_freq = max_inactive_freq;
 	} else {
 		new_freq = choose_freq(pcpu, loadadjfreq);
 
@@ -1500,6 +1500,7 @@ static ssize_t store_sync_freq(struct kobject *kobj,
 	return count;
 }
 
+#ifdef CONFIG_POWERSUSPEND
 static ssize_t max_inactive_freq_screen_on_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
     return sprintf(buf, "%d\n", max_inactive_freq_screen_on);
@@ -1514,12 +1515,12 @@ static ssize_t max_inactive_freq_screen_on_store(struct kobject *kobj, struct ko
     
     if (new_max_inactive_freq_screen_on == max_inactive_freq_screen_on)
         return count;
-    
-    max_gov_freq = max_inactive_freq_screen_on = new_max_inactive_freq_screen_on;
+
+    max_inactive_freq = max_inactive_freq_screen_on = new_max_inactive_freq_screen_on;
     return count;
 }
 
-static struct kobj_attribute max_inactive_freq_screen_on_attr = __ATTR(max_inactive_freq, 0666, max_inactive_freq_screen_on_show, max_inactive_freq_screen_on_store);
+static struct kobj_attribute max_inactive_freq_screen_on_attr = __ATTR(max_inactive_freq_screen_on, 0666, max_inactive_freq_screen_on_show, max_inactive_freq_screen_on_store);
 
 static ssize_t max_inactive_freq_screen_off_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
@@ -1541,6 +1542,28 @@ static ssize_t max_inactive_freq_screen_off_store(struct kobject *kobj, struct k
 }
 
 static struct kobj_attribute max_inactive_freq_screen_off_attr = __ATTR(max_inactive_freq_screen_off, 0666, max_inactive_freq_screen_off_show, max_inactive_freq_screen_off_store);
+#else
+static ssize_t max_inactive_freq_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%d\n", max_inactive_freq);
+}
+
+static ssize_t max_inactive_freq_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+    unsigned int new_max_inactive_freq;
+    
+    if (!sscanf(buf, "%du", &new_max_inactive_freq))
+        return -EINVAL;
+    
+    if (new_max_inactive_freq == max_inactive_freq)
+        return count;
+    
+    max_inactive_freq = new_max_inactive_freq;
+    return count;
+}
+
+static struct kobj_attribute max_inactive_freq_attr = __ATTR(max_inactive_freq, 0666, max_inactive_freq_show, max_inactive_freq_store);
+#endif
 
 static struct global_attr sync_freq_attr = __ATTR(sync_freq, 0644,
 		show_sync_freq, store_sync_freq);
@@ -1716,9 +1739,11 @@ static struct attribute *umbrella_core_attributes[] = {
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE_BOOST
 	&bimc_hispeed_freq_attr.attr,
 #endif
-    &max_inactive_freq_screen_on_attr.attr,
 #ifdef CONFIG_POWERSUSPEND
+    &max_inactive_freq_screen_on_attr.attr,
     &max_inactive_freq_screen_off_attr.attr,
+#else
+    &max_inactive_freq_attr.attr,
 #endif
 	NULL,
 };
