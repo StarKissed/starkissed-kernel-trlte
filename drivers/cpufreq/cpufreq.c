@@ -338,7 +338,7 @@ extern void update_scaling_limits(unsigned int freq_min, unsigned int freq_max)
 	struct cpufreq_policy *policy;
 
 	for_each_possible_cpu(cpu) {
-        if (!hardlimit_user_enabled_status()) {
+        if (hardlimit_user_enabled_status() == HARDLIMIT_USER_DISABLED) {
             return;
         }
 		#ifdef CPUFREQ_HARDLIMIT_DEBUG
@@ -489,7 +489,7 @@ static ssize_t store_scaling_min_freq
 	unsigned int ret = -EINVAL;
 	struct cpufreq_policy new_policy;
 
-    if (hardlimit_user_enabled_status()) {
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
         // Yank555.lu - Enforce userspace dvfs lock
         switch (userspace_dvfs_lock_status()) {
             case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
@@ -512,7 +512,7 @@ static ssize_t store_scaling_min_freq
 		pr_err("cpufreq: Frequency verification failed\n");
 
     policy->user_policy.min = new_policy.min;
-    if (hardlimit_user_enabled_status()) {
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
         new_policy.user_policy.min = new_policy.min;
     }
 	ret = cpufreq_set_policy(policy, &new_policy);
@@ -532,7 +532,7 @@ static ssize_t store_scaling_max_freq
 	unsigned int ret = -EINVAL;
 	struct cpufreq_policy new_policy;
 
-    if (hardlimit_user_enabled_status()) {
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
         // Yank555.lu - Enforce userspace dvfs lock
         switch (userspace_dvfs_lock_status()) {
             case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE:
@@ -555,7 +555,7 @@ static ssize_t store_scaling_max_freq
 		pr_err("cpufreq: Frequency verification failed\n");
 
     policy->user_policy.max = new_policy.max;
-    if (hardlimit_user_enabled_status()) {
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
         new_policy.user_policy.max = new_policy.max;
     }
 	ret = cpufreq_set_policy(policy, &new_policy);
@@ -992,7 +992,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy, struct device *de
 	}
 	if (per_cpu(cpufreq_policy_save, cpu).min) {
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-        if (hardlimit_user_enabled_status()) {
+        if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
             /* Yank555.lu - Enforce hardlimit when restoring policy */
             policy->min = check_cpufreq_hardlimit(per_cpu(cpufreq_policy_save, cpu).min);
         } else {
@@ -1005,7 +1005,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy, struct device *de
 	}
 	if (per_cpu(cpufreq_policy_save, cpu).max) {
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-        if (hardlimit_user_enabled_status()) {
+        if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
             /* Yank555.lu - Enforce hardlimit when restoring policy */
             policy->max = check_cpufreq_hardlimit(per_cpu(cpufreq_policy_save, cpu).max);
         } else {
@@ -2421,7 +2421,7 @@ int cpufreq_update_policy(unsigned int cpu)
 			check_cpufreq_hardlimit(policy->user_policy.max)
 		);
 	#endif
-    if (hardlimit_user_enabled_status()) {
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
         /* Yank555.lu - Enforce hardlimit */
         new_policy.min = check_cpufreq_hardlimit(policy->user_policy.min);
         new_policy.max = check_cpufreq_hardlimit(policy->user_policy.max);
