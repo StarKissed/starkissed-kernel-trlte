@@ -68,7 +68,7 @@ else
     starkissed Verifying
 fi
 
-make -j$CPU_JOB_NUM -s -C $(pwd) clean
+make -j$CPU_JOB_NUM -s -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX
 make -j$CPU_JOB_NUM -s -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_`echo $TYPE`_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
 make -j$CPU_JOB_NUM -s -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
