@@ -2479,14 +2479,10 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
 		case CPU_ONLINE:
 			__cpufreq_add_dev(dev, NULL, frozen);
 			cpufreq_update_policy(cpu);
-		case CPU_ONLINE_FROZEN:
-			cpufreq_add_dev(dev, NULL);
 			break;
 
 		case CPU_DOWN_PREPARE:
 			__cpufreq_remove_dev_prepare(dev, NULL, frozen);
-		case CPU_DOWN_PREPARE_FROZEN:
-			__cpufreq_remove_dev(dev, NULL);
 			break;
 
 		case CPU_POST_DEAD:
@@ -2495,8 +2491,6 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
 
 		case CPU_DOWN_FAILED:
 			__cpufreq_add_dev(dev, NULL, frozen);
-		case CPU_DOWN_FAILED_FROZEN:
-			cpufreq_add_dev(dev, NULL);
 			break;
 		}
 	}
