@@ -38,7 +38,7 @@ unsigned int current_limit_max        = CPUFREQ_HARDLIMIT_MAX_SCREEN_ON_STOCK;
 unsigned int current_limit_min        = CPUFREQ_HARDLIMIT_MIN_SCREEN_ON_STOCK;
 unsigned int current_screen_state     = CPUFREQ_HARDLIMIT_SCREEN_ON;            /* default to screen on */
 unsigned int userspace_dvfs_lock      = CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW;	/* default allows userspace dvfs interaction */
-unsigned int hardlimit_user_enabled   = HARDLIMIT_USER_DISABLED;
+unsigned int hardlimit_user_enforced   = HARDLIMIT_USER_DISABLED;
 
 struct delayed_work stop_wakeup_kick_work;
 
@@ -101,9 +101,9 @@ void reapply_hard_limits(void)
 }
 
 /* User enable/disable */
-unsigned int hardlimit_user_enabled_status(void)
+unsigned int hardlimit_user_enforced_status(void)
 {
-    return hardlimit_user_enabled;
+    return hardlimit_user_enforced;
 }
 
 /* Scaling min/max lock */
@@ -452,26 +452,26 @@ static ssize_t touchboost_hi_freq_store(struct kobject *kobj, struct kobj_attrib
 
 }
 
-/* sysfs interface for "hardlimit_user_enabled" */
-static ssize_t hardlimit_user_enabled_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+/* sysfs interface for "hardlimit_user_enforced" */
+static ssize_t hardlimit_user_enforced_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return sprintf(buf, "%d\n", hardlimit_user_enabled);
+    return sprintf(buf, "%d\n", hardlimit_user_enforced);
 }
 
-static ssize_t hardlimit_user_enabled_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+static ssize_t hardlimit_user_enforced_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
     
-    unsigned int new_hardlimit_user_enabled;
+    unsigned int new_hardlimit_user_enforced;
     
-    if (!sscanf(buf, "%du", &new_hardlimit_user_enabled))
+    if (!sscanf(buf, "%du", &new_hardlimit_user_enforced))
         return -EINVAL;
     
-    if (new_hardlimit_user_enabled == hardlimit_user_enabled)
+    if (new_hardlimit_user_enforced == hardlimit_user_enforced)
         return count;
     
-    if (new_hardlimit_user_enabled == HARDLIMIT_USER_DISABLED
-        || new_hardlimit_user_enabled == HARDLIMIT_USER_ENABLED) {
-        hardlimit_user_enabled = new_hardlimit_user_enabled;
+    if (new_hardlimit_user_enforced == HARDLIMIT_USER_DISABLED
+        || new_hardlimit_user_enforced == HARDLIMIT_USER_ENFORCED) {
+        hardlimit_user_enforced = new_hardlimit_user_enforced;
         return count;
     }
     
@@ -645,8 +645,8 @@ __ATTR(touchboost_lo_freq, 0666, touchboost_lo_freq_show, touchboost_lo_freq_sto
 static struct kobj_attribute touchboost_hi_freq_attribute =
 __ATTR(touchboost_hi_freq, 0666, touchboost_hi_freq_show, touchboost_hi_freq_store);
 
-static struct kobj_attribute hardlimit_user_enabled_attribute =
-__ATTR(hardlimit_user_enabled, 0666, hardlimit_user_enabled_show, hardlimit_user_enabled_store);
+static struct kobj_attribute hardlimit_user_enforced_attribute =
+__ATTR(hardlimit_user_enforced, 0666, hardlimit_user_enforced_show, hardlimit_user_enforced_store);
 
 static struct kobj_attribute userspace_dvfs_lock_attribute =
 __ATTR(userspace_dvfs_lock, 0666, userspace_dvfs_lock_show, userspace_dvfs_lock_store);
@@ -672,7 +672,7 @@ static struct attribute *hardlimit_attrs[] = {
 	&wakeup_kick_delay_attribute.attr,
 	&touchboost_lo_freq_attribute.attr,
 	&touchboost_hi_freq_attribute.attr,
-    &hardlimit_user_enabled_attribute.attr,
+    &hardlimit_user_enforced_attribute.attr,
 	&userspace_dvfs_lock_attribute.attr,
 	&available_frequencies_attribute.attr,
 	&current_limit_min_attribute.attr,

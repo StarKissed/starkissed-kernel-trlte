@@ -24,12 +24,12 @@
 #define CPUFREQ_HARDLIMIT_MAX_SCREEN_OFF_STOCK	422400
 #define CPUFREQ_HARDLIMIT_MIN_SCREEN_ON_STOCK	268000
 #define CPUFREQ_HARDLIMIT_MIN_SCREEN_OFF_STOCK	268000
-#define CPUFREQ_HARDLIMIT_WAKEUP_KICK_FREQ      652800
+#define CPUFREQ_HARDLIMIT_WAKEUP_KICK_FREQ      729600
 
 #define CPUFREQ_HARDLIMIT_SCREEN_ON	 1		/* default, consider we boot with screen on */
 #define CPUFREQ_HARDLIMIT_SCREEN_OFF 0
 
-#define HARDLIMIT_USER_ENABLED	1
+#define HARDLIMIT_USER_ENFORCED	1
 #define HARDLIMIT_USER_DISABLED 0		/* default, hardlimit is disabled on boot */
 
 /* Userspace access to scaling min/max */
@@ -51,8 +51,8 @@ extern unsigned int touchboost_hi_freq;
 /* Sanitize cpufreq to hardlimits */
 unsigned int check_cpufreq_hardlimit(unsigned int freq);
 
-/* User enable/disable */
-unsigned int hardlimit_user_enabled_status(void);
+/* User enforce/disable */
+unsigned int hardlimit_user_enforced_status(void);
 
 /* Scaling min/max lock */
 unsigned int userspace_dvfs_lock_status(void);
