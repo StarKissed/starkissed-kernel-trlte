@@ -397,8 +397,8 @@ static ssize_t touchboost_lo_freq_store(struct kobject *kobj, struct kobj_attrib
 
 	struct cpufreq_frequency_table *table;
     
-    if (!hardlimit_user_enabled) {
-        touchboost_hi_freq = MIN_TOUCH_LIMIT;
+    if (hardlimit_user_enabled == HARDLIMIT_USER_DISABLED) {
+        touchboost_lo_freq = MIN_TOUCH_LIMIT_SECOND;
         return count;
     }
 
@@ -436,8 +436,8 @@ static ssize_t touchboost_hi_freq_store(struct kobject *kobj, struct kobj_attrib
 
 	struct cpufreq_frequency_table *table;
     
-    if (!hardlimit_user_enabled) {
-        touchboost_lo_freq = MIN_TOUCH_LIMIT_SECOND;
+    if (hardlimit_user_enabled == HARDLIMIT_USER_DISABLED) {
+        touchboost_hi_freq = MIN_TOUCH_LIMIT;
         return count;
     }
 
