@@ -32,11 +32,11 @@ unsigned int hardlimit_min_screen_off = CPUFREQ_HARDLIMIT_MIN_SCREEN_OFF_STOCK; 
 unsigned int wakeup_kick_freq         = CPUFREQ_HARDLIMIT_WAKEUP_KICK_FREQ;     /* default to limit behaviour */
 unsigned int wakeup_kick_delay        = CPUFREQ_HARDLIMIT_WAKEUP_KICK_DISABLED;
 unsigned int wakeup_kick_active       = CPUFREQ_HARDLIMIT_WAKEUP_KICK_INACTIVE;
-unsigned int touchboost_lo_freq       = CPUFREQ_HARDLIMIT_TOUCHBOOST_LO_STOCK;  /* default to stock behaviour */
-unsigned int touchboost_hi_freq       = CPUFREQ_HARDLIMIT_TOUCHBOOST_HI_STOCK;  /* default to stock behaviour */
+unsigned int touchboost_lo_freq       = MIN_TOUCH_LIMIT_SECOND;                 /* default to stock behaviour */
+unsigned int touchboost_hi_freq       = MIN_TOUCH_LIMIT;                        /* default to stock behaviour */
 unsigned int current_limit_max        = CPUFREQ_HARDLIMIT_MAX_SCREEN_ON_STOCK;
 unsigned int current_limit_min        = CPUFREQ_HARDLIMIT_MIN_SCREEN_ON_STOCK;
-unsigned int current_screen_state     = CPUFREQ_HARDLIMIT_SCREEN_ON;		/* default to screen on */
+unsigned int current_screen_state     = CPUFREQ_HARDLIMIT_SCREEN_ON;            /* default to screen on */
 unsigned int userspace_dvfs_lock      = CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW;	/* default allows userspace dvfs interaction */
 unsigned int hardlimit_user_enabled   = HARDLIMIT_USER_DISABLED;
 
@@ -396,11 +396,6 @@ static ssize_t touchboost_lo_freq_store(struct kobject *kobj, struct kobj_attrib
 	unsigned int new_touchboost_lo_freq, i;
 
 	struct cpufreq_frequency_table *table;
-    
-    if (hardlimit_user_enabled == HARDLIMIT_USER_DISABLED) {
-        touchboost_lo_freq = MIN_TOUCH_LIMIT_SECOND;
-        return count;
-    }
 
 	if (!sscanf(buf, "%du", &new_touchboost_lo_freq))
 		return -EINVAL;
@@ -435,11 +430,6 @@ static ssize_t touchboost_hi_freq_store(struct kobject *kobj, struct kobj_attrib
 	unsigned int new_touchboost_hi_freq, i;
 
 	struct cpufreq_frequency_table *table;
-    
-    if (hardlimit_user_enabled == HARDLIMIT_USER_DISABLED) {
-        touchboost_hi_freq = MIN_TOUCH_LIMIT;
-        return count;
-    }
 
 	if (!sscanf(buf, "%du", &new_touchboost_hi_freq))
 		return -EINVAL;
@@ -482,8 +472,6 @@ static ssize_t hardlimit_user_enabled_store(struct kobject *kobj, struct kobj_at
     if (new_hardlimit_user_enabled == HARDLIMIT_USER_DISABLED
         || new_hardlimit_user_enabled == HARDLIMIT_USER_ENABLED) {
         hardlimit_user_enabled = new_hardlimit_user_enabled;
-        touchboost_hi_freq = MIN_TOUCH_LIMIT;
-        touchboost_lo_freq = MIN_TOUCH_LIMIT_SECOND;
         return count;
     }
     
