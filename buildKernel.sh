@@ -19,18 +19,18 @@ RECOVERZIP="Philz_Touch_6.58.9-"$PUNCHCARD"-trlte[NA].zip"
 
 buildKernel () {
 
-PROPER=`echo $TYPE | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
-MODULEOUT=$KERNELSPEC/buildimg/boot.`echo $TYPE`-ramdisk
-if [ `echo $TYPE` == "plz" ]; then
+PROPER=`echo "$TYPE" | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
+MODULEOUT=$KERNELSPEC/buildimg/boot."$TYPE"-ramdisk
+if [ "$TYPE" == "plz" ]; then
     MEGASERVER=mega:/trltesku/recovery/
     KERNELHOST=public_html/trltesku/recovery
-    CARRIERIM=recovery.`echo $TYPE`.img
-    IMAGEFILE=recovery.`echo $TYPE`.$PUNCHCARD.img
+    CARRIERIM=recovery."$TYPE".img
+    IMAGEFILE=recovery."$TYPE".$PUNCHCARD.img
 else
     MEGASERVER=mega:/trltesku/
     KERNELHOST=public_html/trltesku
-    CARRIERIM=boot.`echo $TYPE`.img
-    IMAGEFILE=boot.`echo $TYPE`.$PUNCHCARD.img
+    CARRIERIM=boot."$TYPE".img
+    IMAGEFILE=boot."$TYPE".$PUNCHCARD.img
 fi
 GOOSERVER=upload.goo.im:$KERNELHOST
 
@@ -52,13 +52,13 @@ if [ -e $KERNELSPEC/skrecovery/$LOCALZIP ];then
     rm -R $KERNELSPEC/skrecovery/$LOCALZIP
 fi
 
-if [ `echo $TYPE` == "plz" ]; then
-    cp -r config/trlte_plz_defconfig arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+if [ "$TYPE" == "plz" ]; then
+    cp -r config/trlte_plz_defconfig arch/arm/configs/apq8084_sec_trlte_"$TYPE"_defconfig
 else
-    cat config/trlte_`echo $TYPE`_defconfig config/trlte_sku_defconfig > arch/arm/configs/apq8084_sec_trlte_`echo $TYPE`_defconfig
+    cat config/trlte_"$TYPE"_defconfig config/trlte_sku_defconfig > arch/arm/configs/apq8084_sec_trlte_"$TYPE"_defconfig
 fi
 cp -R config/trlte_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
-if [ `echo $TYPE` != "plz" ]; then
+if [ "$TYPE" != "plz" ]; then
     cp -R buildimg/boot.sku-ramdisk/* $MODULEOUT/
 fi
 
@@ -69,7 +69,7 @@ else
 fi
 
 make -j$CPU_JOB_NUM -s -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX
-make -j$CPU_JOB_NUM -s -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_`echo $TYPE`_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -s -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_"$TYPE"_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
 make -j$CPU_JOB_NUM -s -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
 if [ -e arch/arm/boot/zImage ]; then
@@ -100,7 +100,7 @@ if [ -e arch/arm/boot/zImage ]; then
     cp -R arch/arm/boot/zImage buildimg
 
     cd buildimg
-    ./img.sh `echo $TYPE`
+    ./img.sh "$TYPE"
 
     echo "building boot package"
     cp -r boot.img $KERNELREPO/trltesku/$CARRIERIM
@@ -109,20 +109,20 @@ if [ -e arch/arm/boot/zImage ]; then
     if [ $publish == "y" ]; then
         starkissed Uploading
         if [ -e ~/.goo/ ]; then
-            rm -R ~/.goo/*.`echo $TYPE`.*.img
+            rm -R ~/.goo/*."$TYPE".*.img
         fi
         cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
 
-        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i *.$TYPE.*.img); do
+        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i *."$TYPE".*.img); do
             megacmd move $i $MEGASERVER/archive/$(basename $i)
         done
-        megacmd put ~/.goo/*.`echo $TYPE`.*.img $MEGASERVER
+        megacmd put ~/.goo/*."$TYPE".*.img $MEGASERVER
 
-        existing=`ssh upload.goo.im ls $KERNELHOST/*.$TYPE.*.img`
-        scp -r ~/.goo/*.`echo $TYPE`.*.img $GOOSERVER
+        existing=`ssh upload.goo.im ls $KERNELHOST/*."$TYPE".*.img`
+        scp -r ~/.goo/*."$TYPE".*.img $GOOSERVER
         ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
-    if [ `echo $TYPE` == "plz" ]; then
+    if [ "$TYPE" == "plz" ]; then
         cp -r $KERNELREPO/trltesku/$CARRIERIM plzrecovery/recovery.img
         starkissed Packaging
         cd plzrecovery
@@ -143,8 +143,8 @@ if [ -e arch/arm/boot/zImage ]; then
             megacmd put ~/.goo/*.zip $MEGASERVER
         fi
     else
-        cp -r $KERNELREPO/trltesku/$CARRIERIM starkissed/kernel/`echo $TYPE`/boot.img
-        cp -r $KERNELREPO/trltesku/$CARRIERIM skrecovery/kernel/`echo $TYPE`/boot.img
+        cp -r $KERNELREPO/trltesku/$CARRIERIM starkissed/kernel/"$TYPE"/boot.img
+        cp -r $KERNELREPO/trltesku/$CARRIERIM skrecovery/kernel/"$TYPE"/boot.img
     fi
     starkissed Inactive
 else
@@ -207,23 +207,18 @@ case $profile in
     echo "Publish Package?"
     read package
     TYPE=tmo
-    BUILD=NJ7
     buildKernel
     TYPE=spr
-    BUILD=NIE
     buildKernel
     TYPE=can
-    BUILD=NJ3
     buildKernel
     TYPE=usc
-    BUILD=NA
     buildKernel
     if [ 0 = 1 ]; then
         TYPE=vzw
         BUILD=NI1
         buildKernel
         TYPE=att
-        BUILD=NIE
         buildKernel
     fi
     if [ $package == "y" ]; then
