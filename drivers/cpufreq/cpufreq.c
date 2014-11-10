@@ -507,13 +507,17 @@ static ssize_t store_scaling_min_freq
 	if (ret != 1)
 		return -EINVAL;
 
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
+        policy->user_policy.min = new_policy.min;
+        new_policy.user_policy.min = new_policy.min;
+    }
+
 	ret = cpufreq_driver->verify(&new_policy);
 	if (ret)
 		pr_err("cpufreq: Frequency verification failed\n");
 
-    policy->user_policy.min = new_policy.min;
-    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
-        new_policy.user_policy.min = new_policy.min;
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_DISABLED) {
+        policy->user_policy.min = new_policy.min;
     }
 	ret = cpufreq_set_policy(policy, &new_policy);
 
@@ -550,13 +554,17 @@ static ssize_t store_scaling_max_freq
 	if (ret != 1)
 		return -EINVAL;
 
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
+        policy->user_policy.max = new_policy.max;
+        new_policy.user_policy.max = new_policy.max;
+    }
+
 	ret = cpufreq_driver->verify(&new_policy);
 	if (ret)
 		pr_err("cpufreq: Frequency verification failed\n");
 
-    policy->user_policy.max = new_policy.max;
-    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_ENABLED) {
-        new_policy.user_policy.max = new_policy.max;
+    if (hardlimit_user_enabled_status() == HARDLIMIT_USER_DISABLED) {
+        policy->user_policy.max = new_policy.max;
     }
 	ret = cpufreq_set_policy(policy, &new_policy);
 
@@ -2151,10 +2159,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
 
-    if (new_policy->min > policy->user_policy.max
-        || new_policy->max < policy->user_policy.min) {
-		pr_debug("CPUFREQ: %s: pmin:%d, pmax:%d, min:%d, max:%d\n",
-			__func__, new_policy->min, new_policy->max, policy->min, policy->max);
+	if (new_policy->min > policy->user_policy.max
+	    || new_policy->max < policy->user_policy.min) {
 		ret = -EINVAL;
 		goto error_out;
 	}

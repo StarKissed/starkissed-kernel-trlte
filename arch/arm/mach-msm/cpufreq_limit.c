@@ -20,6 +20,7 @@
 
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
+#include <linux/cpufreq_limit.h>
 
 #include <soc/qcom/cpufreq.h>
 
@@ -28,7 +29,7 @@
 
 //#define DEBUG_CPU_LIMITER
 
-uint32_t limited_max_freq = 2803200;
+uint32_t limited_max_freq = MAX_FREQ_LIMIT;
 
 static int update_cpu_max_freq(int cpu, uint32_t max_freq)
 {

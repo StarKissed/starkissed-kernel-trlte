@@ -26,11 +26,11 @@
 #define CPUFREQ_HARDLIMIT_MIN_SCREEN_OFF_STOCK	268000
 #define CPUFREQ_HARDLIMIT_WAKEUP_KICK_FREQ      652800
 
-#define CPUFREQ_HARDLIMIT_SCREEN_ON	 0		/* default, consider we boot with screen on */
-#define CPUFREQ_HARDLIMIT_SCREEN_OFF 1
+#define CPUFREQ_HARDLIMIT_SCREEN_ON	 1		/* default, consider we boot with screen on */
+#define CPUFREQ_HARDLIMIT_SCREEN_OFF 0
 
-#define HARDLIMIT_USER_DISABLED 0		/* default, hardlimit is disabled on boot */
 #define HARDLIMIT_USER_ENABLED	1
+#define HARDLIMIT_USER_DISABLED 0		/* default, hardlimit is disabled on boot */
 
 /* Userspace access to scaling min/max */
 #define CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW	0
