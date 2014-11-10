@@ -35,7 +35,7 @@ static void input_booster_change_dvfs_tsp_work(struct work_struct *work)
 	case DVFS_STAGE_DUAL:
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 		retval = set_freq_limit(DVFS_TOUCH_ID,
-				touchboost_lo_freq);
+				check_cpufreq_hardlimit(touchboost_lo_freq));
 #else
 		retval = set_freq_limit(DVFS_TOUCH_ID,
 				MIN_TOUCH_LIMIT_SECOND);
@@ -46,7 +46,7 @@ static void input_booster_change_dvfs_tsp_work(struct work_struct *work)
 		request_bimc_clk(INPUT_BIMC_SECOND_LIMIT);
 #endif
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-		booster->dvfs_freq = touchboost_lo_freq;
+		booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_lo_freq);
 #else
 		booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
 #endif
@@ -54,7 +54,7 @@ static void input_booster_change_dvfs_tsp_work(struct work_struct *work)
 	case DVFS_STAGE_NINTH:
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
         retval = set_freq_limit(DVFS_TOUCH_ID,
-                touchboost_hi_freq);
+                check_cpufreq_hardlimit(touchboost_hi_freq));
 #else
 		retval = set_freq_limit(DVFS_TOUCH_ID,
 				MIN_TOUCH_LIMIT);
@@ -65,7 +65,7 @@ static void input_booster_change_dvfs_tsp_work(struct work_struct *work)
 		request_bimc_clk(INPUT_BIMC_LIMIT);
 #endif
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-        booster->dvfs_freq = touchboost_hi_freq;
+        booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_hi_freq);
 #else
 		booster->dvfs_freq = MIN_TOUCH_LIMIT;
 #endif
@@ -116,9 +116,9 @@ static void input_booster_set_dvfs_tsp_lock(struct input_booster *booster, int o
 			case DVFS_STAGE_SINGLE:
 			case DVFS_STAGE_DUAL:
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-				if (booster->dvfs_freq != touchboost_hi_freq) {
+				if (booster->dvfs_freq != check_cpufreq_hardlimit(touchboost_hi_freq)) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
-							touchboost_hi_freq);
+							check_cpufreq_hardlimit(touchboost_hi_freq));
 #else
 				if (booster->dvfs_freq != MIN_TOUCH_LIMIT) {
                     retval = set_freq_limit(DVFS_TOUCH_ID,
@@ -130,7 +130,7 @@ static void input_booster_set_dvfs_tsp_lock(struct input_booster *booster, int o
 					request_bimc_clk(INPUT_BIMC_LIMIT);
 #endif
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-					booster->dvfs_freq = touchboost_hi_freq;
+					booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_hi_freq);
 #else
 					booster->dvfs_freq = MIN_TOUCH_LIMIT;
 #endif
@@ -140,9 +140,9 @@ static void input_booster_set_dvfs_tsp_lock(struct input_booster *booster, int o
 				break;
 			case DVFS_STAGE_TRIPLE:
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-				if (booster->dvfs_freq != touchboost_lo_freq) {
+				if (booster->dvfs_freq != check_cpufreq_hardlimit(touchboost_lo_freq)) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
-							touchboost_lo_freq);
+							check_cpufreq_hardlimit(touchboost_lo_freq));
 #else
 				if (booster->dvfs_freq != MIN_TOUCH_LIMIT_SECOND) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
@@ -154,7 +154,7 @@ static void input_booster_set_dvfs_tsp_lock(struct input_booster *booster, int o
 					request_bimc_clk(INPUT_BIMC_SECOND_LIMIT);
 #endif
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-					booster->dvfs_freq = touchboost_lo_freq;
+					booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_lo_freq);
 #else
                     booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
 #endif
@@ -287,8 +287,8 @@ static void input_booster_change_dvfs_wacom_work(struct work_struct *work)
 	case DVFS_STAGE_DUAL:
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 		retval = set_freq_limit(DVFS_TOUCH_ID,
-				touchboost_lo_freq);
-		booster->dvfs_freq = touchboost_lo_freq;
+				check_cpufreq_hardlimit(touchboost_lo_freq));
+		booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_lo_freq);
 #else
 		retval = set_freq_limit(DVFS_TOUCH_ID,
 				MIN_TOUCH_LIMIT_SECOND);
@@ -330,10 +330,10 @@ static void input_booster_set_dvfs_wacom_lock(struct input_booster *booster, int
 			case DVFS_STAGE_SINGLE:
 			case DVFS_STAGE_DUAL:
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-				if (booster->dvfs_freq != touchboost_hi_freq) {
+				if (booster->dvfs_freq != check_cpufreq_hardlimit(touchboost_hi_freq)) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
-							touchboost_hi_freq);
-					booster->dvfs_freq = touchboost_hi_freq;
+							check_cpufreq_hardlimit(touchboost_hi_freq));
+					booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_hi_freq);
 #else
 				if (booster->dvfs_freq != MIN_TOUCH_LIMIT) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
@@ -346,10 +346,10 @@ static void input_booster_set_dvfs_wacom_lock(struct input_booster *booster, int
 				break;
 			case DVFS_STAGE_TRIPLE:
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-				if (booster->dvfs_freq != touchboost_lo_freq) {
+				if (booster->dvfs_freq != check_cpufreq_hardlimit(touchboost_lo_freq)) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
-							touchboost_lo_freq);
-					booster->dvfs_freq = touchboost_lo_freq;
+							check_cpufreq_hardlimit(touchboost_lo_freq));
+					booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_lo_freq);
 #else
 				if (booster->dvfs_freq != MIN_TOUCH_LIMIT_SECOND) {
 					retval = set_freq_limit(DVFS_TOUCH_ID,
@@ -463,7 +463,7 @@ void input_booster_init_dvfs(struct input_booster *booster, int id)
 
 	if (booster->dvfs_id == INPUT_BOOSTER_ID_TKEY) {
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-		booster->dvfs_freq = touchboost_lo_freq;
+		booster->dvfs_freq = check_cpufreq_hardlimit(touchboost_lo_freq);
 #else
         booster->dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
 #endif

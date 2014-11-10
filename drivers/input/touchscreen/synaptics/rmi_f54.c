@@ -6211,7 +6211,7 @@ static ssize_t boost_level_store(struct device *dev,
 
 	if (rmi4_data->tkey_dvfs_boost_mode == DVFS_STAGE_DUAL) {
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-		rmi4_data->tkey_dvfs_freq = touchboost_lo_freq;
+		rmi4_data->tkey_dvfs_freq = check_cpufreq_hardlimit(touchboost_hi_freq);
 #else
         rmi4_data->tkey_dvfs_freq = MIN_TOUCH_LIMIT_SECOND;
 #endif
@@ -6220,7 +6220,7 @@ static ssize_t boost_level_store(struct device *dev,
 			__func__, rmi4_data->tkey_dvfs_freq);
 	} else if (rmi4_data->tkey_dvfs_boost_mode == DVFS_STAGE_SINGLE) {
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
-		rmi4_data->tkey_dvfs_freq = touchboost_hi_freq;
+		rmi4_data->tkey_dvfs_freq = check_cpufreq_hardlimit(touchboost_hi_freq);
 #else
         rmi4_data->tkey_dvfs_freq = MIN_TOUCH_LIMIT;
 #endif
