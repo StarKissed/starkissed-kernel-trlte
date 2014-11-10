@@ -1516,7 +1516,10 @@ static ssize_t max_inactive_freq_screen_on_store(struct kobject *kobj, struct ko
     if (new_max_inactive_freq_screen_on == max_inactive_freq_screen_on)
         return count;
 
-    max_inactive_freq = max_inactive_freq_screen_on = new_max_inactive_freq_screen_on;
+    max_inactive_freq_screen_on = new_max_inactive_freq_screen_on;
+    if (max_inactive_freq_screen_on < max_inactive_freq) {
+        max_inactive_freq = max_inactive_freq_screen_on;
+    }
     return count;
 }
 
@@ -1976,14 +1979,18 @@ static int cpufreq_governor_umbrella_core(struct cpufreq_policy *policy,
 static void cpufreq_umbrella_core_power_suspend(struct power_suspend *h)
 {
     mutex_lock(&gov_lock);
-    max_gov_freq = max_inactive_freq_screen_off;
+    if (max_inactive_freq_screen_off < max_inactive_freq) {
+        max_inactive_freq = max_inactive_freq_screen_off;
+    }
     mutex_unlock(&gov_lock);
 }
 
 static void cpufreq_umbrella_core_power_resume(struct power_suspend *h)
 {
     mutex_lock(&gov_lock);
-    max_gov_freq = max_inactive_freq_screen_on;
+    if (max_inactive_freq_screen_on < max_inactive_freq) {
+        max_inactive_freq = max_inactive_freq_screen_on;
+    }
     mutex_unlock(&gov_lock);
 }
 
