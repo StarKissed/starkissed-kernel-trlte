@@ -133,8 +133,8 @@ static u64 boostpulse_endtime;
 static int timer_slack_val = DEFAULT_TIMER_SLACK;
 
 #define DEFAULT_INACTIVE_FREQ_ON 1958400
-#define DEFAULT_INACTIVE_FREQ_OFF 1036800
-unsigned int max_inactive_freq = 2457600;
+#define DEFAULT_INACTIVE_FREQ_OFF 652800
+unsigned int max_inactive_freq = 1958400;
 unsigned int max_inactive_freq_screen_on = DEFAULT_INACTIVE_FREQ_ON;
 unsigned int max_inactive_freq_screen_off = DEFAULT_INACTIVE_FREQ_OFF;
 
