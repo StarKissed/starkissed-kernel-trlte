@@ -22,7 +22,7 @@
 #include <linux/regulator/rpm-smd-regulator.h>
 #include <linux/of.h>
 #include <linux/cpumask.h>
-#ifdef CONFIG_CPU_VOLTAGE_TABLE
+#ifdef CONFIG_CPU_VOLTAGE_CONTROL
 #include <linux/cpufreq.h>
 #endif
 #include <linux/clk/msm-clk-provider.h>
@@ -705,12 +705,12 @@ static void krait_update_uv(int *uv, int num, int boost_uv)
 	}
 }
 
-#ifdef CONFIG_CPU_VOLTAGE_TABLE
+#ifdef CONFIG_CPU_VOLTAGE_CONTROL
 
 #define CPU_VDD_MIN	 600
 #define CPU_VDD_MAX	 1800
 
-extern bool is_used_by_scaling(unsigned int freq);
+extern int use_for_scaling(unsigned int freq);
 
 ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
 {
@@ -728,7 +728,7 @@ ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
     /* format UV_mv table */
     for (i = 0; i < num_levels; i++) {
         /* show only those used in scaling */
-        if (!is_used_by_scaling(freq = cpu_clk[0]->fmax[i] / 1000))
+        if (!use_for_scaling(freq = cpu_clk[0]->fmax[i] / 1000))
             continue;
         
         len += sprintf(buf + len, "%dmhz: %u mV\n", freq / 1000,
@@ -752,7 +752,7 @@ ssize_t store_UV_mV_table(struct cpufreq_policy *policy, char *buf,
         return -1;
     
     for (i = 0; i < num_levels; i++) {
-        if (!is_used_by_scaling(cpu_clk[0]->fmax[i] / 1000))
+        if (!use_for_scaling(cpu_clk[0]->fmax[i] / 1000))
             continue;
         
         ret = sscanf(buf, "%u", &val);

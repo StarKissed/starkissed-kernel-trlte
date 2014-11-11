@@ -38,8 +38,8 @@
 #include <linux/earlysuspend.h>
 #endif
 
-#ifdef CONFIG_CPU_VOLTAGE_TABLE
-static struct cpufreq_frequency_table *dts_freq_table;
+#ifdef CONFIG_CPU_VOLTAGE_CONTROL
+static struct cpufreq_frequency_table *krait_freq_table;
 #endif
 
 #ifdef CONFIG_DEBUG_FS
@@ -629,18 +629,18 @@ static int cpufreq_parse_dt(struct device *dev)
 	freq_table[i].driver_data = i;
 	freq_table[i].frequency = CPUFREQ_TABLE_END;
 
-#ifdef CONFIG_CPU_VOLTAGE_TABLE
-    dts_freq_table =
-    devm_kzalloc(dev, (nf + 1) *
-                 sizeof(struct cpufreq_frequency_table),
-                 GFP_KERNEL);
-    
-    if (!dts_freq_table)
-        return -ENOMEM;
-    
-    for (i = 0, j = 0; i < nf; i++, j += 3)
-        dts_freq_table[i].frequency = data[j];
-    dts_freq_table[i].frequency = CPUFREQ_TABLE_END;
+#ifdef CONFIG_CPU_VOLTAGE_CONTROL
+	/* Create frequence table with unrounded values */
+	krait_freq_table = devm_kzalloc(dev, (nf + 1) * sizeof(*krait_freq_table),
+					GFP_KERNEL);
+	if (!krait_freq_table)
+		return -ENOMEM;
+
+	*krait_freq_table = *freq_table;
+
+	for (i = 0, j = 0; i < nf; i++, j += 3)
+		krait_freq_table[i].frequency = data[j];
+	krait_freq_table[i].frequency = CPUFREQ_TABLE_END;
 #endif
 
 	if (ports)
@@ -650,22 +650,6 @@ static int cpufreq_parse_dt(struct device *dev)
 
 	return 0;
 }
-
-#ifdef CONFIG_CPU_VOLTAGE_TABLE
-bool is_used_by_scaling(unsigned int freq)
-{
-    unsigned int i, cpu_freq;
-    
-    for (i = 0; dts_freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-        cpu_freq = dts_freq_table[i].frequency;
-        if (cpu_freq == CPUFREQ_ENTRY_INVALID)
-            continue;
-        if (freq == cpu_freq)
-            return true;
-    }
-    return false;
-}
-#endif
 
 #ifdef CONFIG_DEBUG_FS
 static int msm_cpufreq_show(struct seq_file *m, void *unused)
@@ -701,6 +685,26 @@ const struct file_operations msm_cpufreq_fops = {
 	.llseek		= seq_lseek,
 	.release	= seq_release,
 };
+#endif
+
+#ifdef CONFIG_CPU_VOLTAGE_CONTROL
+int use_for_scaling(unsigned int freq)
+{
+	unsigned int i, cpu_freq;
+
+	if (!krait_freq_table)
+		return -EINVAL;
+
+	for (i = 0; krait_freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+		cpu_freq = krait_freq_table[i].frequency;
+		if (cpu_freq == CPUFREQ_ENTRY_INVALID)
+			continue;
+		if (freq == cpu_freq)
+			return freq;
+	}
+
+	return -EINVAL;
+}
 #endif
 
 static int __init msm_cpufreq_probe(struct platform_device *pdev)
