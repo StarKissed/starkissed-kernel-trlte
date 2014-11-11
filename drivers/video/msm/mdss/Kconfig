@@ -49,7 +49,7 @@ config MDNIE_LITE_TUNING
 	default n
 
 config MDNIE_LITE_CONTROL
-	bool "MDNIe lite control interface"
+	bool "Simple MDNIe lite control interface"
 	depends on MDNIE_LITE_TUNING
 	default n
 
