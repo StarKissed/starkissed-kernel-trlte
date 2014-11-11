@@ -497,15 +497,14 @@ static ssize_t userspace_dvfs_lock_store(struct kobject *kobj, struct kobj_attri
 	if (new_userspace_dvfs_lock == userspace_dvfs_lock)
 		return count;
 
-	switch (new_userspace_dvfs_lock) {
-		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW :
-		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE :
-		case CPUFREQ_HARDLIMIT_USERSPACE_DVFS_REFUSE :
-			userspace_dvfs_lock = new_userspace_dvfs_lock;
-			return count;
-		default:
-			return -EINVAL;
-	}
+    if (new_userspace_dvfs_lock == CPUFREQ_HARDLIMIT_USERSPACE_DVFS_ALLOW
+        || new_userspace_dvfs_lock == CPUFREQ_HARDLIMIT_USERSPACE_DVFS_IGNORE
+        || new_userspace_dvfs_lock == CPUFREQ_HARDLIMIT_USERSPACE_DVFS_REFUSE) {
+        userspace_dvfs_lock = new_userspace_dvfs_lock;
+        return count;
+    } else {
+        return -EINVAL;
+    }
 
 	/* We should never get here */
 	return -EINVAL;
