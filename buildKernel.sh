@@ -34,7 +34,7 @@ else
 fi
 GOOSERVER=upload.goo.im:$KERNELHOST
 
-CPU_JOB_NUM=8
+CPU_JOB_NUM=12
 
 if [ -e $KERNELSPEC/buildimg/boot.img ]; then
     rm -R $KERNELSPEC/buildimg/boot.img
@@ -68,9 +68,9 @@ else
     starkissed Verifying
 fi
 
-make -j$CPU_JOB_NUM -s -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX
-make -j$CPU_JOB_NUM -s -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_"$TYPE"_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
-make -j$CPU_JOB_NUM -s -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_"$TYPE"_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
 if [ -e arch/arm/boot/zImage ]; then
 
