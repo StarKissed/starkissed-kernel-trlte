@@ -109,17 +109,17 @@ if [ -e arch/arm/boot/zImage ]; then
     if [ $publish == "y" ]; then
         starkissed Uploading
         if [ -e ~/.goo/ ]; then
-            rm -R ~/.goo/*."$TYPE".*.img
+            rm -R ~/.goo/(boot|recovery)."$TYPE".*.img
         fi
         cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
 
-        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i *."$TYPE".*.img); do
+        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i (boot|recovery)."$TYPE".*.img); do
             megacmd move $i $MEGASERVER/archive/$(basename $i)
         done
-        megacmd put ~/.goo/*."$TYPE".*.img $MEGASERVER
+        megacmd put ~/.goo/(boot|recovery)."$TYPE".*.img $MEGASERVER
 
-        existing=`ssh upload.goo.im ls $KERNELHOST/*."$TYPE".*.img`
-        scp -r ~/.goo/*."$TYPE".*.img $GOOSERVER
+        existing=`ssh upload.goo.im ls $KERNELHOST/(boot|recovery)."$TYPE".*.img`
+        scp -r ~/.goo/(boot|recovery)."$TYPE".*.img $GOOSERVER
         ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
     if [ "$TYPE" == "plz" ]; then
