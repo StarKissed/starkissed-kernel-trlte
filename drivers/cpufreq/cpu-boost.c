@@ -178,17 +178,16 @@ static int boost_mig_sync_thread(void *data)
 			continue;
 		}
 
-#ifdef CONFIG_CPUFREQ_HARDLIMIT
-        if (sync_threshold)
-            req_freq = min(check_cpufreq_hardlimit(sync_threshold), req_freq);
-#else
         if (sync_threshold)
             req_freq = min(sync_threshold, req_freq);
-#endif
 
 		cancel_delayed_work_sync(&s->boost_rem);
 
+#ifdef CONFIG_CPUFREQ_HARDLIMIT
+        s->boost_min = check_cpufreq_hardlimit(req_freq);
+#else
 		s->boost_min = req_freq;
+#endif
 
 		/* Force policy re-evaluation to trigger adjust notifier. */
 		get_online_cpus();
