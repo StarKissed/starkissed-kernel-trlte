@@ -1,5 +1,6 @@
 /*
- * Author: Jean-Pierre Rasquin <yank555.lu@gmail.com>
+ *  Copyright (C)  2013 Jean-Pierre Rasquin <yank555.lu@gmail.com>
+ *            (C)  2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -15,12 +16,12 @@
 #ifndef _LINUX_CPUFREQ_HARDLIMIT_H
 #define _LINUX_CPUFREQ_HARDLIMIT_H
 
-#define CPUFREQ_HARDLIMIT_VERSION "v2.0a by Yank555.lu"
+#define CPUFREQ_HARDLIMIT_VERSION "v2.0a Note 4 Edition"
 
 //#define CPUFREQ_HARDLIMIT_DEBUG // Add debugging prints in dmesg
 
-/* Default frequencies for n9005 */
-#define CPUFREQ_HARDLIMIT_MAX_SCREEN_ON_STOCK	2457600
+/* Default frequencies for n910X */
+#define CPUFREQ_HARDLIMIT_MAX_SCREEN_ON_STOCK	2803200
 #define CPUFREQ_HARDLIMIT_MAX_SCREEN_OFF_STOCK	422400
 #define CPUFREQ_HARDLIMIT_MIN_SCREEN_ON_STOCK	268000
 #define CPUFREQ_HARDLIMIT_MIN_SCREEN_OFF_STOCK	268000
