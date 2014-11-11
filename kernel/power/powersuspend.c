@@ -204,7 +204,7 @@ static ssize_t power_suspend_state_store(struct kobject *kobj,
 	if (mode != POWER_SUSPEND_USERSPACE)
 		return -EINVAL;
 
-    if (!sscanf(buf, "%d\n", &new_state))
+    if (!sscanf(buf, "%du", &new_state))
         return -EINVAL;
 
 #ifdef POWER_SUSPEND_DEBUG
@@ -232,7 +232,7 @@ static ssize_t power_suspend_mode_store(struct kobject *kobj,
 {
 	unsigned int new_mode;
 
-    if (!sscanf(buf, "%d\n", &new_mode))
+    if (!sscanf(buf, "%du", &new_mode))
         return -EINVAL;
 
     if (new_mode == mode)
