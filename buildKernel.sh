@@ -113,9 +113,9 @@ if [ -e arch/arm/boot/zImage ]; then
         fi
         cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
 
-        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i {boot,recovery}."$TYPE".*.img); do
-            megacmd move $i $MEGASERVER/archive/$(basename $i)
-        done
+#       for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i {boot,recovery}."$TYPE".*.img); do
+#           megacmd move $i $MEGASERVER/archive/$(basename $i)
+#       done
         megacmd put ~/.goo/{boot,recovery}."$TYPE".*.img $MEGASERVER
 
         existing=`ssh upload.goo.im ls $KERNELHOST/{boot,recovery}."$TYPE".*.img`
@@ -137,9 +137,9 @@ if [ -e arch/arm/boot/zImage ]; then
             fi
             cp -r $KERNELREPO/$PHILZZIP ~/.goo/$RECOVERZIP
 
-            for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
-                megacmd move $i $MEGASERVER/archive/$(basename $i)
-            done
+#           for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
+#               megacmd move $i $MEGASERVER/archive/$(basename $i)
+#           done
             megacmd put ~/.goo/*.zip $MEGASERVER
         fi
     else
@@ -173,9 +173,9 @@ if [ $publish == "y" ]; then
     fi
     cp -r $KERNELREPO/$LOCALZIP ~/.goo/$KERNELZIP
 
-    for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
-        megacmd move $i $MEGASERVER/archive/$(basename $i)
-    done
+#   for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
+#       megacmd move $i $MEGASERVER/archive/$(basename $i)
+#   done
     megacmd put ~/.goo/*.zip $MEGASERVER
 fi
 if [ 0 = 1 ]; then
