@@ -6,7 +6,7 @@
 # This script is designed by Twisted Playground / LoungeKatt for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
 HANDLE=LoungeKatt
-KERNELSPEC=/Volumes/android/starkissed-deported
+KERNELSPEC=/Volumes/android/starkissed-deport-trlte
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
@@ -109,17 +109,17 @@ if [ -e arch/arm/boot/zImage ]; then
     if [ $publish == "y" ]; then
         starkissed Uploading
         if [ -e ~/.goo/ ]; then
-            rm -R ~/.goo/(boot|recovery)."$TYPE".*.img
+            rm -R ~/.goo/{boot,recovery}."$TYPE".*.img
         fi
         cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
 
-        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i (boot|recovery)."$TYPE".*.img); do
+        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i {boot,recovery}."$TYPE".*.img); do
             megacmd move $i $MEGASERVER/archive/$(basename $i)
         done
-        megacmd put ~/.goo/(boot|recovery)."$TYPE".*.img $MEGASERVER
+        megacmd put ~/.goo/{boot,recovery}."$TYPE".*.img $MEGASERVER
 
-        existing=`ssh upload.goo.im ls $KERNELHOST/(boot|recovery)."$TYPE".*.img`
-        scp -r ~/.goo/(boot|recovery)."$TYPE".*.img $GOOSERVER
+        existing=`ssh upload.goo.im ls $KERNELHOST/{boot,recovery}."$TYPE".*.img`
+        scp -r ~/.goo/{boot,recovery}."$TYPE".*.img $GOOSERVER
         ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
     if [ "$TYPE" == "plz" ]; then
