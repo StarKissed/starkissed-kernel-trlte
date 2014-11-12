@@ -1,7 +1,10 @@
 /*
- * Author: Paul Reioux aka Faux123 <reioux@gmail.com>
+ * arch/arm/mach-msm/intelli_plug.c
  *
- * Copyright 2012~2014 Paul Reioux
+ * Copyright (C) 2012 Paul Reioux <reioux@gmail.com>
+ *           (C) 2013 Paul Reioux <reioux@gmail.com>
+ *           (C) 2014 Paul Reioux <reioux@gmail.com>
+ *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -55,7 +58,7 @@ static struct workqueue_struct *intelliplug_boost_wq;
 static unsigned int intelli_plug_active = 0;
 module_param(intelli_plug_active, uint, 0644);
 
-static unsigned int touch_boost_active = 1;
+static unsigned int touch_boost_active = 0;
 module_param(touch_boost_active, uint, 0644);
 
 static unsigned int nr_run_profile_sel = 0;
@@ -578,6 +581,7 @@ int __init intelli_plug_init(void)
 }
 
 MODULE_AUTHOR("Paul Reioux <reioux@gmail.com>");
+MODULE_AUTHOR("LoungeKatt <twistedumbrella@gmail.com>");
 MODULE_DESCRIPTION("'intell_plug' - An intelligent cpu hotplug driver for "
 	"Low Latency Frequency Transition capable processors");
 MODULE_LICENSE("GPL");
