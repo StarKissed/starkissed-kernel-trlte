@@ -1,0 +1,27 @@
+# StarKissed Extras
+
+on init
+
+on post-fs-data
+
+on boot
+    # Run sysinit
+    start sysinit
+
+on property:persist.service.adb.enable=1
+    start adbd
+
+on property:persist.service.adb.enable=0
+    stop adbd
+
+# adb over network
+on property:service.adb.tcp.port=5555
+    stop adbd
+    start adbd
+on property:service.adb.tcp.port=-1
+    stop adbd
+    start adbd
+
+service sysinit /system/bin/logwrapper /system/xbin/run-parts /system/etc/init.d
+    disabled
+    oneshot

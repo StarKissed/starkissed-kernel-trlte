@@ -81,9 +81,29 @@ GTAGS
 \#*#
 arch/arm/boot/compressed/ashldi3.S
 arch/arm/boot/compressed/piggy.xzkern
+arch/arm/boot/zImage
 
 */zImage
 */*.img
 */*.zip
 
 0
+out
+output
+
+0
+out
+output
+
+*.dtb
+*.dts
+
+starkissed/kernel/*/boot.img
+skrecovery/kernel/*/boot.img
+
+buildimg/boot.att-ramdisk/init.sku.rc
+buildimg/boot.can-ramdisk/init.sku.rc
+buildimg/boot.spr-ramdisk/init.sku.rc
+buildimg/boot.tmo-ramdisk/init.sku.rc
+buildimg/boot.vzw-ramdisk/init.sku.rc
+buildimg/boot.usc-ramdisk/init.sku.rc
