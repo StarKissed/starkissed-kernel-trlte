@@ -402,6 +402,8 @@ static void usb_wwan_indat_callback(struct urb *urb)
 				dev_err(dev, "%s: submit read urb failed:%d",
 						__func__, err);
 		}
+	} else {
+		usb_mark_last_busy(port->serial->dev);
 	}
 }
 
