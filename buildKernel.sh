@@ -14,7 +14,7 @@ LOCALZIP=$HANDLE"_StarKissed-trlte[Auto].zip"
 KERNELZIP="StarKissed-"$PUNCHCARD"-trlte[Auto].zip"
 AROMAZIP=$HANDLE"_StarKissed-trlte[Aroma].zip"
 AROMAHOST="StarKissed-"$PUNCHCARD"-trlte[Aroma].zip"
-PHILZZIP=$HANDLE"_Philz_Touch_6.58.9-trlte[NA].zip"
+PHILZZIP=$HANDLE"_Philz_6.58.9-trlte[NA].zip"
 RECOVERZIP="Philz_Touch_6.58.9-"$PUNCHCARD"-trlte[NA].zip"
 
 buildKernel () {
