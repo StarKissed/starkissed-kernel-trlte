@@ -124,13 +124,13 @@ choice
 		bool "SIO" if IOSCHED_SIO=y
 
 	config DEFAULT_FIFO
-		bool "FIFO" if IOSCHED_FIFO=y
+		bool "Fifo" if IOSCHED_FIFO=y
 
 	config DEFAULT_ZEN
-		bool "ZEN" if IOSCHED_ZEN=y
+		bool "Zen" if IOSCHED_ZEN=y
 
 	config DEFAULT_VR
-		bool "VR" if IOSCHED_VR=y
+		bool "V(R)" if IOSCHED_VR=y
 
 endchoice
 
