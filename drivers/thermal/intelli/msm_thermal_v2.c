@@ -40,6 +40,7 @@
 #include <mach/rpm-regulator.h>
 #include <linux/regulator/rpm-smd-regulator.h>
 #include <linux/regulator/consumer.h>
+#include <soc/qcom/cpufreq.h>
 
 #define MAX_CURRENT_UA 1000000
 #define MAX_RAILS 5
@@ -1176,7 +1177,7 @@ static void __ref do_freq_control(long temp)
 		limit_idx += msm_thermal_info.bootup_freq_step;
 		if (limit_idx >= limit_idx_high) {
 			limit_idx = limit_idx_high;
-			max_freq = UINT_MAX;
+			max_freq = MSM_CPUFREQ_NO_LIMIT;
 		} else
 			max_freq = table[limit_idx].frequency;
 	}
@@ -1435,7 +1436,7 @@ static __ref int do_freq_mitigation(void *data)
 		for_each_possible_cpu(cpu) {
 			max_freq_req = (cpus[cpu].max_freq) ?
 					msm_thermal_info.freq_limit :
-					UINT_MAX;
+					MSM_CPUFREQ_NO_LIMIT;
 			max_freq_req = min(max_freq_req,
 					cpus[cpu].user_max_freq);
 
@@ -1598,10 +1599,10 @@ static void __ref disable_msm_thermal(void)
 
 	get_online_cpus();
 	for_each_possible_cpu(cpu) {
-		if (cpus[cpu].limited_max_freq == UINT_MAX &&
+		if (cpus[cpu].limited_max_freq == MSM_CPUFREQ_NO_LIMIT &&
 			cpus[cpu].limited_min_freq == 0)
 			continue;
-		cpus[cpu].limited_max_freq = UINT_MAX;
+		cpus[cpu].limited_max_freq = MSM_CPUFREQ_NO_LIMIT;
 		cpus[cpu].limited_min_freq = 0;
 		update_cpu_freq(cpu);
 	}
@@ -1941,9 +1942,9 @@ int /*__devinit*/ msm_thermal_init(struct msm_thermal_data *pdata)
 		cpus[cpu].user_offline = 0;
 		cpus[cpu].hotplug_thresh_clear = false;
 		cpus[cpu].max_freq = false;
-		cpus[cpu].user_max_freq = UINT_MAX;
+		cpus[cpu].user_max_freq = MSM_CPUFREQ_NO_LIMIT;
 		cpus[cpu].user_min_freq = 0;
-		cpus[cpu].limited_max_freq = UINT_MAX;
+		cpus[cpu].limited_max_freq = MSM_CPUFREQ_NO_LIMIT;
 		cpus[cpu].limited_min_freq = 0;
 		cpus[cpu].freq_thresh_clear = false;
 	}

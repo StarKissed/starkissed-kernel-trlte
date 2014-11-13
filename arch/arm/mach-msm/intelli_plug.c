@@ -24,6 +24,7 @@
 #include <linux/slab.h>
 #include <linux/input.h>
 #include <linux/cpufreq.h>
+#include <soc/qcom/cpufreq.h>
 
 #ifdef CONFIG_POWERSUSPEND
 #include <linux/powersuspend.h>
@@ -79,7 +80,7 @@ struct ip_cpu_info {
 
 static DEFINE_PER_CPU(struct ip_cpu_info, ip_info);
 
-static unsigned int screen_off_max = UINT_MAX;
+static unsigned int screen_off_max = MSM_CPUFREQ_NO_LIMIT;
 module_param(screen_off_max, uint, 0644);
 
 #define CAPACITY_RESERVE	50
