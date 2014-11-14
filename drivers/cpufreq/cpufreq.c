@@ -334,29 +334,23 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
 extern void update_scaling_limits(unsigned int freq_min, unsigned int freq_max)
 {
-	int cpu;
-	struct cpufreq_policy *policy;
+	int cpu, ret;
+	struct cpufreq_policy *policy, new_policy;
 
 	for_each_possible_cpu(cpu) {
-        if (hardlimit_user_enforced_status() == HARDLIMIT_USER_DISABLED) {
-            return;
-        }
-		#ifdef CPUFREQ_HARDLIMIT_DEBUG
-		pr_info("[HARDLIMIT] cpufreq.c cpu%d \n", cpu);
-		#endif
-		policy = cpufreq_cpu_get(cpu);
+//      if (hardlimit_user_enforced_status() == HARDLIMIT_USER_DISABLED) {
+//          return;
+//      }
+        policy = cpufreq_cpu_get(cpu);
+        ret = cpufreq_get_policy(&new_policy, policy->cpu);
 		if (policy != NULL) {
-			#ifdef CPUFREQ_HARDLIMIT_DEBUG
-			pr_info("[HARDLIMIT] cpufreq.c cpu%d - update_scaling_limits : old_min = %u / old_max = %u / new_min = %u / new_max = %u \n",
-					cpu,
-					policy->min,
-					policy->max,
-					freq_min,
-					freq_max
-				);
-			#endif
-			policy->user_policy.min = policy->min = freq_min;
-			policy->user_policy.max = policy->max = freq_max;
+            policy->user_policy.min = new_policy.min = freq_min;
+            policy->user_policy.max = new_policy.max = freq_max;
+            if (hardlimit_user_enforced_status() == HARDLIMIT_USER_ENFORCED) {
+                new_policy.user_policy.min = freq_min;
+                new_policy.user_policy.max = freq_max;
+            }
+//          ret = cpufreq_set_policy(policy, &new_policy);
 		}
 	}
 }
