@@ -92,6 +92,9 @@
 #include <linux/secgpio_dvs.h>
 #endif
 
+#include <linux/model_type.h>
+unsigned int model_type = 0;
+
 static int kernel_init(void *);
 
 extern void init_IRQ(void);
@@ -590,6 +593,42 @@ asmlinkage void __init start_kernel(void)
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", boot_command_line);
+	if (strstr(boot_command_line, "bootloader=N910T"))
+	{
+		pr_alert("FOUND TMobile VARIANT\n");
+		model_type = 0;
+	}
+	else if (strstr(boot_command_line, "bootloader=N910P"))
+	{
+		pr_alert("FOUND Sprint VARIANT\n");
+		model_type = 1;
+	}
+	else if (strstr(boot_command_line, "bootloader=N910V"))
+	{
+		pr_alert("FOUND Verizon VARIANT\n");
+		model_type = 2;
+	}
+	else if (strstr(boot_command_line, "bootloader=N910W8"))
+	{
+		pr_alert("FOUND North America (Canada) VARIANT\n");
+		model_type = 3;
+	}
+	else if (strstr(boot_command_line, "bootloader=N910F"))
+	{
+		pr_alert("FOUND Europe VARIANT\n");
+		model_type = 4;
+	}
+	else if (strstr(boot_command_line, "bootloader=N910G"))
+	{
+		pr_alert("FOUND Singapore, India, Australia VARIANT\n");
+		model_type = 5;
+	}
+	else
+	{
+		pr_alert("FOUND OTHER VARIANT\n");
+		model_type = 6;
+	}
+	
 	parse_early_param();
 	parse_args("Booting kernel", static_command_line, __start___param,
 		   __stop___param - __start___param,
