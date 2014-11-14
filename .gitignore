@@ -97,4 +97,12 @@ buildimg/boot.att-ramdisk/init.sku.rc
 buildimg/boot.can-ramdisk/init.sku.rc
 buildimg/boot.spr-ramdisk/init.sku.rc
 buildimg/boot.tmo-ramdisk/init.sku.rc
+buildimg/boot.usc-ramdisk/init.sku.rc
 buildimg/boot.vzw-ramdisk/init.sku.rc
+
+buildimg/boot.att-ramdisk/default.prop
+buildimg/boot.can-ramdisk/default.prop
+buildimg/boot.spr-ramdisk/default.prop
+buildimg/boot.tmo-ramdisk/default.prop
+buildimg/boot.usc-ramdisk/default.prop
+buildimg/boot.vzw-ramdisk/default.prop
