@@ -1,0 +1,16 @@
+#!/sbin/sh
+
+export carrier=`getprop ro.product.device`
+if [ "$carrier" == "trlteatt" ]; then
+
+elif [ "$carrier" == "trltecan" ]; then
+
+elif [ "$carrier" == "trltespr" ]; then
+
+elif [ "$carrier" == "trltetmo" ]; then
+
+elif [ "$carrier" == "trlteusc" ]; then
+
+elif [ "$carrier" == "trltevzw" ]; then
+
+fi
