@@ -342,6 +342,8 @@ extern void update_scaling_limits(unsigned int freq_min, unsigned int freq_max)
           return;
       }
         policy = cpufreq_cpu_get(cpu);
+        if (!cpu_online(policy->cpu))
+            return;
         ret = cpufreq_get_policy(&new_policy, policy->cpu);
 		if (policy != NULL) {
             policy->user_policy.min = new_policy.min = new_policy.user_policy.min = freq_min;
