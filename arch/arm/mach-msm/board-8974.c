@@ -19,7 +19,9 @@
 #include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/of_platform.h>
+#ifdef CONFIG_ANDROID_PERSISTENT_RAM
 #include <linux/persistent_ram.h>
+#endif
 #include <linux/memory.h>
 #include <linux/regulator/machine.h>
 #include <linux/regulator/krait-regulator.h>
