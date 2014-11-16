@@ -186,7 +186,11 @@ static int boost_mig_sync_thread(void *data)
 #ifdef CONFIG_CPUFREQ_HARDLIMIT
         s->boost_min = check_cpufreq_hardlimit(req_freq);
 #else
+#ifdef CONFIG_CPUFREQ_LIMIT
+        s->boost_min = check_cpufreq_limit(req_freq);
+#else
 		s->boost_min = req_freq;
+#endif
 #endif
 
 		/* Force policy re-evaluation to trigger adjust notifier. */
