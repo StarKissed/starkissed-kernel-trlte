@@ -162,21 +162,18 @@ CONFIG_SND_SOC_3MIC_SUPPORT=y
 CONFIG_SND_SOC_VEQ_SUPPORT=y
 
 #EPDG
-CONFIG_NET_CORE=y
-CONFIG_NET_SCH_PRIO=y
-CONFIG_NET_SCHED=y   #depends on CONFIG_NET  which is enabled by default.. coz not seeing in the config file
-CONFIG_NET_CLS_BASIC=y # required if basic is being used as a filter. depends on CONFIG_NET_CLS so enabling it by default
-CONFIG_NET_CLS=y
-CONFIG_NET_CLS_ACT=y # for enabling the action target.
-CONFIG_NET_ACT_MIRRED=y  # for enabling the mirred target for redirecting the packet between the devices.
-CONFIG_NET_EMATCH=y   #basic uses extended matches so this has to be present
-CONFIG_NET_SCH_INGRESS=y # classifier for ingress packet
+# CONFIG_NET_CORE is not set
+# CONFIG_NET_SCH_PRIO is not set
+# CONFIG_NET_SCHED is not set
+# CONFIG_NET_CLS_BASIC is not set
+# CONFIG_NET_CLS is not set
+# CONFIG_NET_CLS_ACT is not set
+# CONFIG_NET_ACT_MIRRED is not set
+# CONFIG_NET_EMATCH is not set
+# CONFIG_NET_SCH_INGRESS is not set
 
 # Wifi features
 CONFIG_WLAN_REGION_CODE=402
-
-CONFIG_CPU_FREQ_LIMIT=y
-CONFIG_CPU_FREQ_LIMIT_USERSPACE=y
 
 CONFIG_RECOVERY_KERNEL=y
 
