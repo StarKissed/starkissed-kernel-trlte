@@ -9,6 +9,7 @@ ro.adb.secure=1
 persist.sys.strict_op_enable=false
 persist.sys.usb.config=mtp,adb
 ro.securestorage.support=false
+ro.securestorage.knox=false
 ro.build.selinux=0
 ro.config.knox=0
 ro.config.tima=0
