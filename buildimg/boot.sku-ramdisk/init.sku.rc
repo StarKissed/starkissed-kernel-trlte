@@ -18,8 +18,9 @@ on post-fs-data
     setprop selinux.reload_policy 0
 
 on boot
-    # Run sysinit
+    # Customization
     start sysinit
+    start deported
 
 # Reload SE Android Policy for MDM
 on property:persist.security.mdm.policy=1

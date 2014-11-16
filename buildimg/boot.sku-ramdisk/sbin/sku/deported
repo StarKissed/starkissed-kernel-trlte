@@ -1,5 +1,12 @@
-#!/sbin/sh
+#!/system/bin/sh
+ 
+# replace (u)random with erandom
+rm -f /dev/urandom
+ln -s /dev/erandom /dev/urandom
+rm -f /dev/random
+ln -s /dev/erandom /dev/random
 
+# custom carrier configuration
 export carrier=`getprop ro.product.device`
 if [ "$carrier" == "trlteatt" ]; then
 
