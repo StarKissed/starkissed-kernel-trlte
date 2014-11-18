@@ -242,8 +242,10 @@ static int msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 
 	switch (event) {
 	case CPUFREQ_INCOMPATIBLE:
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_debug("%s: mitigating cpu %d to freq max: %u min: %u\n",
 		KBUILD_MODNAME, policy->cpu, max_freq_req, min_freq_req);
+#endif
 
 		cpufreq_verify_within_limits(policy, min_freq_req,
 			max_freq_req);
@@ -557,8 +559,10 @@ static int request_optimum_current(struct psm_rail *rail, enum ocr_request req)
 		goto request_ocr_exit;
 	}
 	ret = 0; /*regulator_set_optimum_mode returns the mode on success*/
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_debug("%s: Requested optimum current mode: %d\n",
 		KBUILD_MODNAME, req);
+#endif
 
 request_ocr_exit:
 	return ret;
@@ -906,8 +910,10 @@ static void __ref do_core_control(long temp)
 				continue;
 			if (cpus_offlined & BIT(i) && !cpu_online(i))
 				continue;
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s: Set Offline: CPU%d Temp: %ld\n",
 					KBUILD_MODNAME, i, temp);
+#endif
 			ret = cpu_down(i);
 			if (ret)
 				pr_err("%s: Error %d offline core %d\n",
@@ -922,8 +928,10 @@ static void __ref do_core_control(long temp)
 			if (!(cpus_offlined & BIT(i)))
 				continue;
 			cpus_offlined &= ~BIT(i);
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s: Allow Online CPU%d Temp: %ld\n",
 					KBUILD_MODNAME, i, temp);
+#endif
 			/*
 			 * If this core is already online, then bring up the
 			 * next offlined core.
@@ -1238,9 +1246,11 @@ static int __ref msm_thermal_cpu_callback(struct notifier_block *nfb,
 		if (core_control_enabled &&
 			(msm_thermal_info.core_control_mask & BIT(cpu)) &&
 			(cpus_offlined & BIT(cpu))) {
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_debug(
 			"%s: Preventing cpu%d from coming online.\n",
 				KBUILD_MODNAME, cpu);
+#endif
 			return NOTIFY_BAD;
 		}
 	}
@@ -1301,8 +1311,10 @@ static enum alarmtimer_restart thermal_rtc_callback(struct alarm *al, ktime_t no
 #endif
 
 	schedule_work(&timer_work);
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_debug("%s: Time on alarm expiry: %ld %ld\n", KBUILD_MODNAME,
 			ts.tv_sec, ts.tv_usec);
+#endif
 
 #if !defined(ANDROID_ALARM_ACTIVATED)
         return ALARMTIMER_NORESTART;
@@ -1313,8 +1325,10 @@ static int hotplug_notify(enum thermal_trip_type type, int temp, void *data)
 {
 	struct cpu_info *cpu_node = (struct cpu_info *)data;
 
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_info("%s: %s reach temp threshold: %d\n", KBUILD_MODNAME,
 			cpu_node->sensor_type, temp);
+#endif
 
 	if (!(msm_thermal_info.core_control_mask & BIT(cpu_node->cpu)))
 		return 0;
@@ -1665,7 +1679,9 @@ static ssize_t __ref store_cc_enabled(struct kobject *kobj,
 
 	core_control_enabled = !!val;
 	if (core_control_enabled) {
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_info("%s: Core control enabled\n", KBUILD_MODNAME);
+#endif
 		register_cpu_notifier(&msm_thermal_cpu_notifier);
 		if (hotplug_task)
 			complete(&hotplug_notify_complete);
@@ -1673,7 +1689,9 @@ static ssize_t __ref store_cc_enabled(struct kobject *kobj,
 			pr_err("%s: Hotplug task is not initialized\n",
 					KBUILD_MODNAME);
 	} else {
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_info("%s: Core control disabled\n", KBUILD_MODNAME);
+#endif
 		unregister_cpu_notifier(&msm_thermal_cpu_notifier);
 	}
 
@@ -1758,8 +1776,10 @@ static ssize_t store_wakeup_ms(struct kobject *kobj,
 
 	if (wakeup_ms > 0) {
 		thermal_rtc_setup();
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_debug("%s: Timer started for %ums\n", KBUILD_MODNAME,
 				wakeup_ms);
+#endif
 	} else {
 		ret = alarm_cancel(&thermal_rtc);
 		if (ret)
@@ -1958,7 +1978,9 @@ int /*__devinit*/ msm_thermal_init(struct msm_thermal_data *pdata)
 		return -EINVAL;
 
 	enabled = 1;
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_info("%s: polling enabled!\n", KBUILD_MODNAME);
+#endif
 	ret = cpufreq_register_notifier(&msm_thermal_cpufreq_notifier,
 			CPUFREQ_POLICY_NOTIFIER);
 	if (ret)
