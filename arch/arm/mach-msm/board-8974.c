@@ -19,9 +19,6 @@
 #include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/of_platform.h>
-#ifdef CONFIG_ANDROID_PERSISTENT_RAM
-#include <linux/persistent_ram.h>
-#endif
 #include <linux/memory.h>
 #include <linux/regulator/machine.h>
 #include <linux/regulator/krait-regulator.h>
@@ -46,53 +43,9 @@
 #include "clock.h"
 #include "platsmp.h"
 
-#define PERSISTENT_RAM_BASE 0xbff00000
-#define PERSISTENT_RAM_SIZE SZ_1M
-#define RAM_CONSOLE_SIZE (124*SZ_1K * 2)
-
-#ifdef CONFIG_ANDROID_PERSISTENT_RAM
-static struct persistent_ram_descriptor pram_descs[] = {
-#ifdef CONFIG_ANDROID_RAM_CONSOLE
-        {
-                .name = "ram_console",
-                .size = RAM_CONSOLE_SIZE,
-        },
-#endif
-};
-
-static struct persistent_ram msm8974_persistent_ram = {
-        .start = PERSISTENT_RAM_BASE,
-        .size = PERSISTENT_RAM_SIZE,
-        .num_descs = ARRAY_SIZE(pram_descs),
-        .descs = pram_descs,
-};
-
-void __init add_persistent_ram(void)
-{
-    persistent_ram_early_init(&msm8974_persistent_ram);
-}
-#endif
-
-#ifdef CONFIG_ANDROID_RAM_CONSOLE
-static struct platform_device ram_console_device = {
-        .name = "ram_console",
-        .id = -1,
-};
-
-void __init add_ramconsole_devices(void)
-{
-    platform_device_register(&ram_console_device);
-}
-#endif /* CONFIG_ANDROID_RAM_CONSOLE */
-
 void __init msm_8974_reserve(void)
 {
-	reserve_info = &msm8974_reserve_info;
-	of_scan_flat_dt(dt_scan_for_memory_reserve, msm8974_reserve_table);
-	msm_reserve();
-#ifdef CONFIG_ANDROID_RAM_CONSOLE
-	add_persistent_ram();
-#endif
+	of_scan_flat_dt(dt_scan_for_memory_reserve, NULL);
 }
 
 static void __init msm8974_early_memory(void)
@@ -193,9 +146,6 @@ void __init msm8974_init(void)
 
 	msm_8974_init_gpiomux();
 	regulator_has_full_constraints();
-#ifdef CONFIG_ANDROID_RAM_CONSOLE
-        add_ramconsole_devices();
-#endif
 	msm8974_add_drivers();
 }
 
