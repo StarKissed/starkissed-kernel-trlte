@@ -6,7 +6,7 @@
 # This script is designed by Twisted Playground / LoungeKatt for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
 HANDLE=LoungeKatt
-KERNELSPEC=/Volumes/android/starkissed-deport-trlte
+KERNELSPEC=$(pwd)
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
@@ -34,7 +34,10 @@ else
 fi
 GOOSERVER=upload.goo.im:$KERNELHOST
 
-CPU_JOB_NUM=12
+# CPU_JOB_NUM=`grep processor /proc/cpuinfo|wc -l`
+CORES=`sysctl -a | grep machdep.cpu | grep core_count | awk '{print $2}'`
+THREADS=`sysctl -a | grep machdep.cpu | grep thread_count | awk '{print $2}'`
+CPU_JOB_NUM=$((($CORES * $THREADS) / 2))
 
 if [ -e $KERNELSPEC/buildimg/boot.img ]; then
     rm -R $KERNELSPEC/buildimg/boot.img
@@ -72,7 +75,7 @@ make -j$CPU_JOB_NUM -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX
 make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_"$TYPE"_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
 make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
-if [ -e arch/arm/boot/zImage ]; then
+if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
 
     if [ `find . -name "*.ko" | grep -c ko` > 0 ]; then
 
@@ -97,7 +100,7 @@ if [ -e arch/arm/boot/zImage ]; then
 
     fi
 
-    cp -R arch/arm/boot/zImage buildimg
+    cp -R $(pwd)/out/arch/arm/boot/zImage buildimg
 
     cd buildimg
     ./img.sh "$TYPE"
