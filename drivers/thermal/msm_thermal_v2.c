@@ -349,8 +349,10 @@ static int vdd_restriction_apply_voltage(struct rail *r, int level)
 	int ret = 0;
 
 	if (r->reg == NULL) {
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_info("Do not have regulator handle:%s, can't apply vdd\n",
 				r->name);
+#endif
 		return -EFAULT;
 	}
 	if (level == r->curr_level)
@@ -1230,7 +1232,9 @@ static void __ref check_temp(struct work_struct *work)
 	do_psm();
 	do_ocr();
 	do_freq_control(temp);
+#ifdef INTELLI_THERMAL_DEBUG
 	//pr_info("%s: worker is alive!\n", KBUILD_MODNAME);
+#endif
 reschedule:
 	if (enabled)
 		schedule_delayed_work(&check_temp_work,
@@ -1494,17 +1498,21 @@ static int freq_mitigation_notify(enum thermal_trip_type type,
 	switch (type) {
 	case THERMAL_TRIP_CONFIGURABLE_HI:
 		if (!cpu_node->max_freq) {
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s: Mitigating cpu %d frequency to %d\n",
 				KBUILD_MODNAME, cpu_node->cpu,
 				msm_thermal_info.freq_limit);
+#endif
 
 			cpu_node->max_freq = true;
 		}
 		break;
 	case THERMAL_TRIP_CONFIGURABLE_LOW:
 		if (cpu_node->max_freq) {
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s: Removing frequency mitigation for cpu%d\n",
 				KBUILD_MODNAME, cpu_node->cpu);
+#endif
 
 			cpu_node->max_freq = false;
 		}
@@ -1632,18 +1640,27 @@ static int __ref set_enabled(const char *val, const struct kernel_param *kp)
 		disable_msm_thermal();
 		hotplug_init();
 		freq_mitigation_init();
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_info("%s: intellithermal disabled!\n", KBUILD_MODNAME);
+#endif
 	} else {
 		if (!enabled) {
 			enabled = 1;
 			schedule_delayed_work(&check_temp_work,
 				msecs_to_jiffies(msm_thermal_info.poll_ms));
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s: rescheduling...\n", KBUILD_MODNAME);
-		} else
+#endif
+		}
+#ifdef INTELLI_THERMAL_DEBUG
+        else
 			pr_info("%s: already running...\n", KBUILD_MODNAME);
+#endif
 	}
 
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_info("%s: enabled = %d\n", KBUILD_MODNAME, enabled);
+#endif
 
 	return ret;
 }
@@ -2052,9 +2069,11 @@ static int vdd_restriction_reg_init(struct platform_device *pdev)
 			 */
 			if (freq_table_get)
 				ret = vdd_restriction_apply_freq(&rails[i], 0);
+#ifdef INTELLI_THERMAL_DEBUG
 			else
 				pr_info("%s:Defer vdd rstr freq init\n",
 						__func__);
+#endif
 		} else {
 			rails[i].reg = devm_regulator_get(&pdev->dev,
 					rails[i].name);
@@ -2432,8 +2451,10 @@ static int probe_vdd_rstr(struct device_node *node,
 	if (rails_cnt) {
 		ret = vdd_restriction_reg_init(pdev);
 		if (ret) {
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s:Failed to get regulators. KTM continues.\n",
 				__func__);
+#endif
 			goto read_node_fail;
 		}
 		vdd_rstr_enabled = true;
@@ -2441,9 +2462,11 @@ static int probe_vdd_rstr(struct device_node *node,
 read_node_fail:
 	vdd_rstr_probed = true;
 	if (ret) {
+#ifdef INTELLI_THERMAL_DEBUG
 		dev_info(&pdev->dev,
 			"%s:Failed reading node=%s, key=%s. KTM continues\n",
 			__func__, node->full_name, key);
+#endif
 		kfree(rails);
 		rails_cnt = 0;
 	}
@@ -2460,8 +2483,10 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 	char *key = NULL;
 
 	if (ocr_probed) {
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_info("%s: Nodes already probed\n",
 			__func__);
+#endif
 		goto read_ocr_exit;
 	}
 	ocr_rails = NULL;
@@ -2481,7 +2506,9 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 	ocr_rails = kzalloc(sizeof(struct psm_rail) * ocr_rail_cnt,
 			GFP_KERNEL);
 	if (!ocr_rails) {
+#ifdef INTELLI_THERMAL_DEBUG
 		pr_err("%s: Fail to allocate memory for ocr rails\n", __func__);
+#endif
 		ocr_rail_cnt = 0;
 		return -ENOMEM;
 	}
@@ -2498,8 +2525,10 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 	if (ocr_rail_cnt) {
 		ret = ocr_reg_init(pdev);
 		if (ret) {
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s:Failed to get regulators. KTM continues.\n",
 					__func__);
+#endif
 			goto read_ocr_fail;
 		}
 		ocr_enabled = true;
@@ -2568,8 +2597,10 @@ static int probe_psm(struct device_node *node, struct msm_thermal_data *data,
 	if (psm_rails_cnt) {
 		ret = psm_reg_init(pdev);
 		if (ret) {
+#ifdef INTELLI_THERMAL_DEBUG
 			pr_info("%s:Failed to get regulators. KTM continues.\n",
 					__func__);
+#endif
 			goto read_node_fail;
 		}
 		psm_enabled = true;
@@ -2578,9 +2609,11 @@ static int probe_psm(struct device_node *node, struct msm_thermal_data *data,
 read_node_fail:
 	psm_probed = true;
 	if (ret) {
+#ifdef INTELLI_THERMAL_DEBUG
 		dev_info(&pdev->dev,
 			"%s:Failed reading node=%s, key=%s. KTM continues\n",
 			__func__, node->full_name, key);
+#endif
 		kfree(psm_rails);
 		psm_rails_cnt = 0;
 	}
@@ -2711,7 +2744,9 @@ static int /*__devinit*/ msm_thermal_dev_probe(struct platform_device *pdev)
 	struct device_node *node = pdev->dev.of_node;
 	struct msm_thermal_data data;
 
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_info("%s: msm_thermal_dev_probe begin...\n", KBUILD_MODNAME);
+#endif
 
 	memset(&data, 0, sizeof(struct msm_thermal_data));
 
@@ -2782,7 +2817,9 @@ static int /*__devinit*/ msm_thermal_dev_probe(struct platform_device *pdev)
 	}
 	ret = msm_thermal_init(&data);
 
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_info("%s: msm_thermal_dev_probe completed!\n", KBUILD_MODNAME);
+#endif
 
 	return ret;
 fail:
@@ -2790,7 +2827,9 @@ fail:
 		pr_err("%s: Failed reading node=%s, key=%s\n",
 			__func__, node->full_name, key);
 
+#ifdef INTELLI_THERMAL_DEBUG
 	pr_info("%s: msm_thermal_dev_probe failed!\n", KBUILD_MODNAME);
+#endif
 
 	return ret;
 }
