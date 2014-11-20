@@ -35,7 +35,7 @@
 #include <linux/sysfs.h>
 #include <linux/types.h>
 #include <linux/alarmtimer.h>
-#include "../../staging/android/android_alarm.h"
+#include "../staging/android/android_alarm.h"
 #include <linux/thermal.h>
 #include <mach/rpm-regulator.h>
 #include <linux/regulator/rpm-smd-regulator.h>

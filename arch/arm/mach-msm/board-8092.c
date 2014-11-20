@@ -158,7 +158,11 @@ void __init mpq8092_add_drivers(void)
 	else
 		msm_clock_init(&mpq8092_clock_init_data);
 	tsens_tm_init_driver();
-	msm_thermal_device_init();
+#ifdef CONFIG_INTELLI_THERMAL
+    msm_thermal_init(NULL);
+#else
+    msm_thermal_device_init();
+#endif
 
 	emac_dt_update(0, MPQ8092_MAC_FUSE_PHYS, MPQ8092_MAC_FUSE_SIZE);
 }

@@ -6,7 +6,6 @@
 # This script is designed by Twisted Playground / LoungeKatt for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
 HANDLE=LoungeKatt
-KERNELSPEC=$(pwd)
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
@@ -20,7 +19,7 @@ RECOVERZIP="Philz_Touch_6.58.9-"$PUNCHCARD"-trlte[NA].zip"
 buildKernel () {
 
 PROPER=`echo "$TYPE" | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
-MODULEOUT=$KERNELSPEC/buildimg/boot."$TYPE"-ramdisk
+MODULEOUT=buildimg/boot."$TYPE"-ramdisk
 if [ "$TYPE" == "plz" ]; then
     MEGASERVER=mega:/trltesku/recovery/
     KERNELHOST=public_html/trltesku/recovery
@@ -39,20 +38,20 @@ CORES=`sysctl -a | grep machdep.cpu | grep core_count | awk '{print $2}'`
 THREADS=`sysctl -a | grep machdep.cpu | grep thread_count | awk '{print $2}'`
 CPU_JOB_NUM=$((($CORES * $THREADS) / 2))
 
-if [ -e $KERNELSPEC/buildimg/boot.img ]; then
-    rm -R $KERNELSPEC/buildimg/boot.img
+if [ -e buildimg/boot.img ]; then
+    rm -R buildimg/boot.img
 fi
-if [ -e $KERNELSPEC/buildimg/newramdisk.cpio.gz ]; then
-    rm -R $KERNELSPEC/buildimg/newramdisk.cpio.gz
+if [ -e buildimg/newramdisk.cpio.gz ]; then
+    rm -R buildimg/newramdisk.cpio.gz
 fi
-if [ -e $KERNELSPEC/buildimg/zImage ]; then
-    rm -R $KERNELSPEC/buildimg/zImage
+if [ -e buildimg/zImage ]; then
+    rm -R buildimg/zImage
 fi
 if [ -e arch/arm/boot/zImage ]; then
     rm -R arch/arm/boot/zImage
 fi
-if [ -e $KERNELSPEC/skrecovery/$LOCALZIP ];then
-    rm -R $KERNELSPEC/skrecovery/$LOCALZIP
+if [ -e skrecovery/$LOCALZIP ];then
+    rm -R skrecovery/$LOCALZIP
 fi
 
 if [ "$TYPE" == "plz" ]; then
@@ -75,7 +74,7 @@ make -j$CPU_JOB_NUM -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX
 make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_"$TYPE"_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
 make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
-if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
+if [ -e arch/arm/boot/zImage ]; then
 
     if [ `find . -name "*.ko" | grep -c ko` > 0 ]; then
 
@@ -100,7 +99,7 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
 
     fi
 
-    cp -R $(pwd)/out/arch/arm/boot/zImage buildimg
+    cp -R arch/arm/boot/zImage buildimg
 
     cd buildimg
     ./img.sh "$TYPE"
@@ -132,7 +131,7 @@ if [ -e $(pwd)/out/arch/arm/boot/zImage ]; then
         rm *.zip
         zip -r $PHILZZIP *
         cd ../
-        cp -R $KERNELSPEC/plzrecovery/$PHILZZIP $KERNELREPO/$PHILZZIP
+        cp -R plzrecovery/$PHILZZIP $KERNELREPO/$PHILZZIP
         if [ $publish == "y" ]; then
             starkissed Uploading
             if [ -e ~/.goo/ ]; then
@@ -167,7 +166,7 @@ cd skrecovery
 rm *.zip
 zip -r $LOCALZIP *
 cd ../
-cp -R $KERNELSPEC/skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
+cp -R skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
 
 if [ $publish == "y" ]; then
     starkissed Uploading
@@ -188,7 +187,7 @@ if [ 0 = 1 ]; then
     cd starkissed
     zip -r $AROMAZIP *
     cd ../
-    cp -R $KERNELSPEC/starkissed/$AROMAZIP $KERNELREPO/$AROMAZIP
+    cp -R starkissed/$AROMAZIP $KERNELREPO/$AROMAZIP
 fi
 starkissed Inactive
 
@@ -252,5 +251,3 @@ case $profile in
     exit
 ;;
 esac
-
-cd $KERNELSPEC
