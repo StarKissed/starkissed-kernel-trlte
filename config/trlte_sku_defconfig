@@ -1,4 +1,4 @@
-CONFIG_LOCALVERSION="-Deported[SKU]"
+CONFIG_LOCALVERSION="-Deported"
 
 # TCP Congestion Control
 CONFIG_TCP_CONG_ADVANCED=y
