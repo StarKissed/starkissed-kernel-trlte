@@ -38,7 +38,3 @@ on property:service.adb.tcp.port=-1
 service sysinit /sbin/sku/busybox run-parts /system/etc/init.d
     disabled
     oneshot
-
-service deported /sbin/sku/deported
-    disabled
-    oneshot

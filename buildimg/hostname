@@ -1,0 +1,24 @@
+#!/bin/sh
+# hostname redirector for Linux kernel builds
+# (c) Copyright 2011 TJ <linux@tjworld.net>
+# (C) Copyright 2014 LoungeKatt <twistedumbrella@gmail.com>
+# Licensed on terms of the General Public License, version 3
+
+# file that contains the username to return to the kernel build scripts/mkcompile_h
+LINUX_COMPILE_HOST=$HOME/.linux/compile-host
+
+# get the current path and remove the directory containing this script so the real
+# command can be called and its output filtered
+DIRNAME=$(dirname $0)
+NEWPATH=$(IFS=:; for dir in $PATH; do if [ "$dir" != "$DIRNAME" ]; then echo -n "${dir}:"; fi; done)
+
+if [ -r "$LINUX_COMPILE_HOST" ]; then
+ # calling process ID, required to see if it is the kernel build calling or not
+ if ps -p $PPID -o args= | grep -q mkcompile_h; then 
+  cat $LINUX_COMPILE_HOST
+  exit 0
+ fi
+fi
+
+# execute the system command otherwise
+PATH=$NEWPATH hostname
