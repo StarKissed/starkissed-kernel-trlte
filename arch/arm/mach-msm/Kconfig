@@ -1823,5 +1823,11 @@ config SEC_THERMISTOR
         default n
         help
         Use thermistor driver for checking temperature near AP chip.
-        
+
+config HAS_MACH_MEMUTILS
+        default n
+        bool "Motorola MSM memcpy enhancements"
+        help
+        Faster memcpy performance for Krait
+
 endif
