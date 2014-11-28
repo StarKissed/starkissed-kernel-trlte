@@ -216,10 +216,9 @@ case $profile in
     buildKernel
     TYPE=usc
     buildKernel
+    TYPE=vzw
+    buildKernel
     if [ 0 = 1 ]; then
-        TYPE=vzw
-        BUILD=NI1
-        buildKernel
         TYPE=att
         buildKernel
     fi
