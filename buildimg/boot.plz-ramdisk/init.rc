@@ -1,7 +1,7 @@
 import /init.recovery.${ro.hardware}.rc
 
 on early-init
-    setsebool debugfs 1
+     setsebool debugfs 1
 
     # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
     write /sys/fs/selinux/checkreqprot 0
@@ -59,6 +59,8 @@ on init
     mount_all fstab.qcom
     #load_persist_props
     setprop persist.service.cdrom.enable 0
+    #setprop selinux.reload_policy 0
+
 
 on fs
     mkdir /dev/usb-ffs 0770 shell shell
@@ -73,6 +75,7 @@ on fs
     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
+
 
 on boot
 

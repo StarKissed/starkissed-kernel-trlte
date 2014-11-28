@@ -50,8 +50,12 @@ run_program("/sbin/busybox", "dd", "if=/tmp/boot.img", "of=/dev/block/platform/m
 ui_print(">>> Install Complete");
 endif;
 ui_print(">>> Wiping Device Cache");
+mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/cache", "/cache");
+mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/userdata", "/data");
 delete_recursive("/cache");
 delete_recursive("/data/dalvik-cache");
+unmount("/cache");
+unmount("/data");
 ui_print(" ");
 ui_print(">>> Please Reboot!");
 ui_print(" ");
