@@ -195,10 +195,13 @@ starkissed Inactive
 
 rm -fR $(find . -name '*.orig'|xargs)
 
-echo "1. StarKissed"
-echo "2. Deported"
+echo
+echo "1. Deported"
+echo "2. Package"
 echo "3. Carrier"
 echo "4. Recovery"
+echo "5. Versions"
+echo
 echo "Please Choose: "
 read profile
 
@@ -247,6 +250,18 @@ case $profile in
     read publish
     TYPE=plz
     buildKernel
+    exit
+;;
+5)
+    echo "Bootloaders"
+    echo
+    echo "att - N/A"
+    echo "can - NJ3"
+    echo "spr - NIE"
+    echo "tmo - NK4"
+    echo "usc - N/A"
+    echo "vzw - NI1"
+    echo
     exit
 ;;
 esac
