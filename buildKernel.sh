@@ -6,7 +6,7 @@
 # This script is designed by Twisted Playground / LoungeKatt for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
 HANDLE=LoungeKatt
-KERNELREPO=$DROPBOX_SERVER/TwistedServer/Playground/kernels
+KERNELREPO=$DROPBOX_SERVER/TwistedServer/StarKissed/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 LOCALZIP=$HANDLE"_StarKissed-trlte[Auto].zip"
@@ -39,19 +39,19 @@ THREADS=`sysctl -a | grep machdep.cpu | grep thread_count | awk '{print $2}'`
 CPU_JOB_NUM=$((($CORES * $THREADS) / 2))
 
 if [ -e buildimg/boot.img ]; then
-    rm -R buildimg/boot.img
+    rm -rf buildimg/boot.img
 fi
 if [ -e buildimg/newramdisk.cpio.gz ]; then
-    rm -R buildimg/newramdisk.cpio.gz
+    rm -rf buildimg/newramdisk.cpio.gz
 fi
 if [ -e buildimg/zImage ]; then
-    rm -R buildimg/zImage
+    rm -rf buildimg/zImage
 fi
 if [ -e arch/arm/boot/zImage ]; then
-    rm -R arch/arm/boot/zImage
+    rm -rf arch/arm/boot/zImage
 fi
 if [ -e skrecovery/$LOCALZIP ];then
-    rm -R skrecovery/$LOCALZIP
+    rm -rf skrecovery/$LOCALZIP
 fi
 
 if [ "$TYPE" == "plz" ]; then

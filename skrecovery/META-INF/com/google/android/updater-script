@@ -12,7 +12,6 @@ ui_print("                                            ");
 ui_print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
 ui_print(" ");
 
-ui_print(">>> Installing Kernel...");
 if getprop("ro.product.device") == "trltetmo" then ui_print(" Installing T-Mobile Kernel");
 package_extract_file("kernel/tmo/boot.img", "/tmp/boot.img");
 set_perm(0, 0, 0777, "/tmp/boot.img");

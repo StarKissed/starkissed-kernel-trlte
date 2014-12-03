@@ -1212,9 +1212,6 @@ on property:init.svc.bootanim=stopped
     restorecon /data/media/obb
     start auditd
 
-on property:sys.boot_completed=1
-    write /sys/block/mmcblk0/queue/scheduler cfq
-
 # icd
 on property:init.svc.media=restarting
     check_icd

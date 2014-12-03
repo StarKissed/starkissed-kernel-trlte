@@ -1,5 +1,3 @@
-[![ScreenShot](http://img.youtube.com/vi/gAYL5H46QnQ/0.jpg)](http://www.youtube.com/watch?v=gAYL5H46QnQ)
-
 
 ```
         Linux kernel release 3.x <http://kernel.org/>
