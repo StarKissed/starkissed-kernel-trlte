@@ -1,3 +1,12 @@
+if [ -e dt.img ]; then
+    rm -rf dt.img
+fi
+if [ -e newramdisk.cpio.gz ]; then
+    rm -rf newramdisk.cpio.gz
+fi
+if [ -e boot.img ]; then
+    rm -rf boot.img
+fi
 binaries/./dtbtool -o dt.img -s 4096 -p ../scripts/dtc/ ../arch/arm/boot/dts/
 chmod a+r dt.img
 binaries/./mkbootfs boot.$1-ramdisk | gzip > newramdisk.cpio.gz

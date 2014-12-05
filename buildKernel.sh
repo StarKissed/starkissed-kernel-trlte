@@ -38,12 +38,6 @@ CORES=`sysctl -a | grep machdep.cpu | grep core_count | awk '{print $2}'`
 THREADS=`sysctl -a | grep machdep.cpu | grep thread_count | awk '{print $2}'`
 CPU_JOB_NUM=$((($CORES * $THREADS) / 2))
 
-if [ -e buildimg/boot.img ]; then
-    rm -rf buildimg/boot.img
-fi
-if [ -e buildimg/newramdisk.cpio.gz ]; then
-    rm -rf buildimg/newramdisk.cpio.gz
-fi
 if [ -e buildimg/zImage ]; then
     rm -rf buildimg/zImage
 fi
