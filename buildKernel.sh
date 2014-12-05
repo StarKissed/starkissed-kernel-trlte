@@ -109,14 +109,9 @@ if [ -e arch/arm/boot/zImage ]; then
         fi
         cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
 
-#       for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i {boot,recovery}."$TYPE".*.img); do
-#           megacmd move $i $MEGASERVER/archive/$(basename $i)
-#       done
-        megacmd put ~/.goo/{boot,recovery}."$TYPE".*.img $MEGASERVER
-
-        existing=`ssh upload.goo.im ls $KERNELHOST/{boot,recovery}."$TYPE".*.img`
+#       existing=`ssh upload.goo.im ls $KERNELHOST/{boot,recovery}."$TYPE".*.img`
         scp -r ~/.goo/{boot,recovery}."$TYPE".*.img $GOOSERVER
-        ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
+#       ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
     if [ "$TYPE" == "plz" ]; then
         cp -r $KERNELREPO/trltesku/$CARRIERIM plzrecovery/recovery.img
@@ -139,7 +134,6 @@ if [ -e arch/arm/boot/zImage ]; then
             megacmd put ~/.goo/*.zip $MEGASERVER
         fi
     else
-        cp -r $KERNELREPO/trltesku/$CARRIERIM starkissed/kernel/"$TYPE"/boot.img
         cp -r $KERNELREPO/trltesku/$CARRIERIM skrecovery/kernel/"$TYPE"/boot.img
     fi
     starkissed Inactive
@@ -173,15 +167,6 @@ if [ $publish == "y" ]; then
 #       megacmd move $i $MEGASERVER/archive/$(basename $i)
 #   done
     megacmd put ~/.goo/*.zip $MEGASERVER
-fi
-if [ 0 = 1 ]; then
-    if [ -e starkissed/$AROMAZIP ];then
-        rm -R starkissed/$AROMAZIP
-    fi
-    cd starkissed
-    zip -r $AROMAZIP *
-    cd ../
-    cp -R starkissed/$AROMAZIP $KERNELREPO/$AROMAZIP
 fi
 starkissed Inactive
 

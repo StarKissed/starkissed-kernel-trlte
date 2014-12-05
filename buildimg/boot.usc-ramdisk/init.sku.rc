@@ -41,3 +41,12 @@ on property:service.adb.tcp.port=-1
 service sysinit /sbin/sku/busybox run-parts /system/etc/init.d
     disabled
     oneshot
+
+service deported /sbin/sku/deport.sh
+     class late_start
+     user root
+     disabled
+     oneshot
+
+on property:sys.boot_completed=1
+     start deported
