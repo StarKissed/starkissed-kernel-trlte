@@ -162,6 +162,11 @@ config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
             help
               Use the CPUFreq governor 'pegasusq' as default.
 
+config CPU_FREQ_DEFAULT_GOV_BIOSHOCK
+	bool "BioShock"
+	select CPU_FREQ_GOV_BIOSHOCK
+	help
+	  Default governor of BioShock kernel
 
 config CPU_FREQ_DEFAULT_GOV_SMARTASS2
   bool "smartassV2"
@@ -306,11 +311,14 @@ config CPU_FREQ_GOV_CONSERVATIVE
 	  environment.  The frequency is gracefully increased and decreased
 	  rather than jumping to 100% when speed is required.
 
-	  If you have a desktop machine then you should really be considering
-	  the 'ondemand' governor instead, however if you are using a laptop,
-	  PDA or even an AMD64 based computer (due to the unacceptable
-	  step-by-step latency issues between the minimum and maximum frequency
-	  transitions in the CPU) you will probably want to use this governor.
+config CPU_FREQ_GOV_BIOSHOCK
+	tristate "'bioshock' cpufreq bioshock"
+	depends on CPU_FREQ
+	help
+	  'bioshock' - More aggressive version of conservative
+
+config CPU_FREQ_GOV_PEGASUSQ
+	tristate "'pegasusq' cpufreq policy governor"
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_conservative.
