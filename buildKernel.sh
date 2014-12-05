@@ -20,14 +20,14 @@ buildKernel () {
 
 PROPER=`echo "$TYPE" | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
 MODULEOUT=buildimg/boot."$TYPE"-ramdisk
+MEGASERVER=mega:/trltesku/
+KERNELHOST=public_html/trltesku
 if [ "$TYPE" == "plz" ]; then
-    MEGASERVER=mega:/trltesku/recovery/
-    KERNELHOST=public_html/trltesku/recovery
+    IMAGETYPE=recovery
     CARRIERIM=recovery."$TYPE".img
     IMAGEFILE=recovery."$TYPE".$PUNCHCARD.img
 else
-    MEGASERVER=mega:/trltesku/
-    KERNELHOST=public_html/trltesku
+    IMAGETYPE=boot
     CARRIERIM=boot."$TYPE".img
     IMAGEFILE=boot."$TYPE".$PUNCHCARD.img
 fi
@@ -109,8 +109,8 @@ if [ -e arch/arm/boot/zImage ]; then
         fi
         cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
 
-#       existing=`ssh upload.goo.im ls $KERNELHOST/{boot,recovery}."$TYPE".*.img`
-        scp -r ~/.goo/{boot,recovery}."$TYPE".*.img $GOOSERVER
+#       existing=`ssh upload.goo.im ls $KERNELHOST/"$IMAGETYPE"."$TYPE".*.img`
+        scp -r ~/.goo/"$IMAGETYPE"."$TYPE".*.img $GOOSERVER
 #       ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
     fi
     if [ "$TYPE" == "plz" ]; then
