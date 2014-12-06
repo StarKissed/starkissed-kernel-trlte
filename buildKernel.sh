@@ -9,28 +9,15 @@ HANDLE=LoungeKatt
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/StarKissed/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
-LOCALZIP=$HANDLE"_StarKissed-trlte[Auto].zip"
 KERNELZIP="StarKissed-"$PUNCHCARD"-trlte[Auto].zip"
-AROMAZIP=$HANDLE"_StarKissed-trlte[Aroma].zip"
-AROMAHOST="StarKissed-"$PUNCHCARD"-trlte[Aroma].zip"
-PHILZZIP=$HANDLE"_Philz_6.58.9-trlte[NA].zip"
 RECOVERZIP="Philz_Touch_6.58.9-"$PUNCHCARD"-trlte[NA].zip"
 
 buildKernel () {
 
 PROPER=`echo "$TYPE" | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
-MODULEOUT=buildimg/boot."$TYPE"-ramdisk
+RAMDISKOUT=buildimg/boot."$TYPE"-ramdisk
 MEGASERVER=mega:/trltesku/
 KERNELHOST=public_html/trltesku
-if [ "$TYPE" == "plz" ]; then
-    IMAGETYPE=recovery
-    CARRIERIM=recovery."$TYPE".img
-    IMAGEFILE=recovery."$TYPE".$PUNCHCARD.img
-else
-    IMAGETYPE=boot
-    CARRIERIM=boot."$TYPE".img
-    IMAGEFILE=boot."$TYPE".$PUNCHCARD.img
-fi
 GOOSERVER=upload.goo.im:$KERNELHOST
 
 # CPU_JOB_NUM=`grep processor /proc/cpuinfo|wc -l`
@@ -41,9 +28,6 @@ CPU_JOB_NUM=$((($CORES * $THREADS) / 2))
 if [ -e arch/arm/boot/zImage ]; then
     rm -rf arch/arm/boot/zImage
 fi
-if [ -e skrecovery/$LOCALZIP ];then
-    rm -rf skrecovery/$LOCALZIP
-fi
 
 if [ "$TYPE" == "plz" ]; then
     cp -r config/trlte_plz_defconfig arch/arm/configs/apq8084_sec_trlte_"$TYPE"_defconfig
@@ -52,10 +36,10 @@ else
 fi
 cp -R config/trlte_sec_defconfig  arch/arm/configs/apq8084_sec_defconfig
 if [ "$TYPE" != "plz" ]; then
-    cp -R buildimg/boot.sku-ramdisk/* $MODULEOUT/
+    cp -R buildimg/boot.sku-ramdisk/* $RAMDISKOUT/
 fi
 
-if [ $publish == "y" ]; then
+if [ $package == "y" ]; then
     starkissed Compiling
 else
     starkissed Verifying
@@ -71,21 +55,21 @@ if [ -e arch/arm/boot/zImage ]; then
 
         find . -name "*.ko" | xargs ${TOOLCHAIN_PREFIX}strip --strip-unneeded
 
-        if [ ! -d $MODULEOUT ]; then
-            mkdir $MODULEOUT
+        if [ ! -d $RAMDISKOUT ]; then
+            mkdir $RAMDISKOUT
         fi
-        if [ ! -d $MODULEOUT/lib ]; then
-            mkdir $MODULEOUT/lib
+        if [ ! -d $RAMDISKOUT/lib ]; then
+            mkdir $RAMDISKOUT/lib
         fi
-        if [ ! -d $MODULEOUT/lib/modules ]; then
-            mkdir $MODULEOUT/lib/modules
+        if [ ! -d $RAMDISKOUT/lib/modules ]; then
+            mkdir $RAMDISKOUT/lib/modules
         else
-            rm -r $MODULEOUT/lib/modules
-            mkdir $MODULEOUT/lib/modules
+            rm -r $RAMDISKOUT/lib/modules
+            mkdir $RAMDISKOUT/lib/modules
         fi
 
         for j in $(find . -name "*.ko"); do
-            cp -R "${j}" $MODULEOUT/lib/modules
+            cp -R "${j}" $RAMDISKOUT/lib/modules
         done
 
     fi
@@ -94,44 +78,36 @@ if [ -e arch/arm/boot/zImage ]; then
 
     cd buildimg
     ./img.sh "$TYPE"
-
-    echo "building boot package"
-    cp -r boot.img $KERNELREPO/trltesku/$CARRIERIM
     cd ../
 
-    if [ $publish == "y" ]; then
-        starkissed Uploading
-        if [ -e ~/.goo/ ]; then
-            rm -R ~/.goo/{boot,recovery}."$TYPE".*.img
-        fi
-        cp -r  $KERNELREPO/trltesku/$CARRIERIM ~/.goo/$IMAGEFILE
-
-#       existing=`ssh upload.goo.im ls $KERNELHOST/"$IMAGETYPE"."$TYPE".*.img`
-        scp -r ~/.goo/"$IMAGETYPE"."$TYPE".*.img $GOOSERVER
-#       ssh upload.goo.im mv -t $KERNELHOST/archive/ $existing
-    fi
     if [ "$TYPE" == "plz" ]; then
-        cp -r $KERNELREPO/trltesku/$CARRIERIM plzrecovery/recovery.img
+        if [ $package != "y" ]; then
+            cp -R buildimg/boot.img $KERNELREPO/images/trlte-recovery.img
+        fi
+        cp -r buildimg/boot.img plzrecovery/recovery.img
         starkissed Packaging
         cd plzrecovery
-        rm *.zip
-        zip -r $PHILZZIP *
+        if [ -e ~/.goo/ ]; then
+            rm -R ~/.goo/Philz_Touch*.zip
+        fi
+        zip -r ~/.goo/$RECOVERZIP *
         cd ../
-        cp -R plzrecovery/$PHILZZIP $KERNELREPO/$PHILZZIP
-        if [ $publish == "y" ]; then
+        if [ $package == "y" ]; then
             starkissed Uploading
-            if [ -e ~/.goo/ ]; then
-                rm -R ~/.goo/*.zip
-            fi
-            cp -r $KERNELREPO/$PHILZZIP ~/.goo/$RECOVERZIP
 
-#           for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
-#               megacmd move $i $MEGASERVER/archive/$(basename $i)
-#           done
-            megacmd put ~/.goo/*.zip $MEGASERVER
+            for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i Philz_Touch); do
+                megacmd move $i $MEGASERVER/archive/$(basename $i)
+            done
+            megacmd put ~/.goo/$RECOVERZIP $MEGASERVER
+            existing=`ssh upload.goo.im ls $KERNELHOST/Philz_Touch*.zip`
+            scp -r ~/.goo/$RECOVERZIP $GOOSERVER
+            ssh upload.goo.im rm $existing
         fi
     else
-        cp -r $KERNELREPO/trltesku/$CARRIERIM skrecovery/kernel/"$TYPE"/boot.img
+        if [ $package != "y" ]; then
+            cp -R buildimg/boot.img $KERNELREPO/images/trlte-deported.img
+        fi
+        cp -r buildimg/boot.img skrecovery/kernel/"$TYPE"/boot.img
     fi
     starkissed Inactive
 else
@@ -148,22 +124,22 @@ GOOSERVER=upload.goo.im:$KERNELHOST
 
 starkissed Packaging
 cd skrecovery
-rm *.zip
-zip -r $LOCALZIP *
+if [ -e ~/.goo/ ]; then
+    rm -R ~/.goo/Deported*.zip
+fi
+zip -r ~/.goo/$KERNELZIP *
 cd ../
-cp -R skrecovery/$LOCALZIP $KERNELREPO/$LOCALZIP
 
-if [ $publish == "y" ]; then
+if [ $package == "y" ]; then
     starkissed Uploading
-    if [ -e ~/.goo/ ]; then
-        rm -R ~/.goo/*.zip
-    fi
-    cp -r $KERNELREPO/$LOCALZIP ~/.goo/$KERNELZIP
 
-#   for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i .zip); do
-#       megacmd move $i $MEGASERVER/archive/$(basename $i)
-#   done
-    megacmd put ~/.goo/*.zip $MEGASERVER
+    for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i Deported); do
+        megacmd move $i $MEGASERVER/archive/$(basename $i)
+    done
+    megacmd put ~/.goo/$KERNELZIP $MEGASERVER
+    existing=`ssh upload.goo.im ls $KERNELHOST/Deported*.zip`
+    scp -r ~/.goo/$KERNELZIP $GOOSERVER
+    ssh upload.goo.im rm $existing
 fi
 starkissed Inactive
 
@@ -174,61 +150,50 @@ rm -fR $(find . -name '*.orig'|xargs)
 echo
 echo "1. Deported"
 echo "2. Package"
-echo "3. Carrier"
-echo "4. Recovery"
-echo "5. Versions"
+echo "3. Recovery"
+echo "4. Versions"
 echo
 echo "Please Choose: "
 read profile
 
 case $profile in
 1)
-    echo "Publish Image?"
-    read publish
     echo "Publish Package?"
     read package
     TYPE=tmo
     buildKernel
-    TYPE=spr
-    buildKernel
-    TYPE=can
-    buildKernel
-    TYPE=usc
-    buildKernel
-    TYPE=vzw
-    buildKernel
-    if [ 0 = 1 ]; then
-        TYPE=att
-        buildKernel
-    fi
     if [ $package == "y" ]; then
+        TYPE=spr
+        buildKernel
+        TYPE=can
+        buildKernel
+        TYPE=usc
+        buildKernel
+        TYPE=vzw
+        buildKernel
+        if [ 0 = 1 ]; then
+            TYPE=att
+            buildKernel
+        fi
         buildAroma
     fi
     exit
 ;;
 2)
     echo "Publish Package?"
-    read publish
+    read package
     buildAroma
     exit
 ;;
 3)
-    echo "Which Carrier?"
-    read carrier
-    echo "Publish Image?"
-    read publish
-    TYPE=$carrier
-    buildKernel
-    exit
-;;
-4)
-    echo "Publish Image?"
-    read publish
+    echo "Publish Package?"
+    read package
     TYPE=plz
     buildKernel
     exit
 ;;
-5)
+4)
+    starkissed Verifying
     echo "Bootloaders"
     echo
     echo "att - N/A"
@@ -238,6 +203,7 @@ case $profile in
     echo "usc - N/A"
     echo "vzw - NI1"
     echo
+    starkissed Inactive
     exit
 ;;
 esac
