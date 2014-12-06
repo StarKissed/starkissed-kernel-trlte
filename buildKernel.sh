@@ -69,7 +69,7 @@ if [ -e arch/arm/boot/zImage ]; then
         fi
 
         for j in $(find . -name "*.ko"); do
-            cp -R "${j}" $RAMDISKOUT/lib/modules
+            cp -r "${j}" $RAMDISKOUT/lib/modules
         done
 
     fi
@@ -82,13 +82,16 @@ if [ -e arch/arm/boot/zImage ]; then
 
     if [ "$TYPE" == "plz" ]; then
         if [ $package != "y" ]; then
-            cp -R buildimg/boot.img $KERNELREPO/images/trlte-recovery.img
+            if [ -e $KERNELREPO/images/trlte-recovery.img ]; then
+                rm -r $KERNELREPO/images/trlte-recovery.img
+            fi
+            cp -r buildimg/boot.img $KERNELREPO/images/trlte-recovery.img
         fi
         cp -r buildimg/boot.img plzrecovery/recovery.img
         starkissed Packaging
         cd plzrecovery
         if [ -e ~/.goo/ ]; then
-            rm -R ~/.goo/Philz_Touch*.zip
+            rm -r ~/.goo/Philz_Touch*.zip
         fi
         zip -r ~/.goo/$RECOVERZIP *
         cd ../
@@ -105,7 +108,10 @@ if [ -e arch/arm/boot/zImage ]; then
         fi
     else
         if [ $package != "y" ]; then
-            cp -R buildimg/boot.img $KERNELREPO/images/trlte-deported.img
+            if [ -e $KERNELREPO/images/trlte-deported.img ]; then
+                rm -r $KERNELREPO/images/trlte-deported.img
+            fi
+            cp -r buildimg/boot.img $KERNELREPO/images/trlte-deported.img
         fi
         cp -r buildimg/boot.img skrecovery/kernel/"$TYPE"/boot.img
     fi
