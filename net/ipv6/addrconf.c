@@ -1174,7 +1174,7 @@ enum {
 #endif
 	IPV6_SADDR_RULE_ORCHID,
 	IPV6_SADDR_RULE_PREFIX,
-#ifdef CONFIG_IPV6_OPTIMISTIC_DAD
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 	IPV6_SADDR_RULE_NOT_OPTIMISTIC,
 #endif
 	IPV6_SADDR_RULE_MAX
@@ -1204,6 +1204,7 @@ static inline int ipv6_saddr_preferred(int type)
 	return 0;
 }
 
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 static inline bool ipv6_use_optimistic_addr(struct inet6_dev *idev)
 {
 #ifdef CONFIG_IPV6_OPTIMISTIC_DAD
@@ -1212,6 +1213,7 @@ static inline bool ipv6_use_optimistic_addr(struct inet6_dev *idev)
 	return false;
 #endif
 }
+#endif
 
 static int ipv6_get_saddr_eval(struct net *net,
 			       struct ipv6_saddr_score *score,
@@ -1272,6 +1274,7 @@ static int ipv6_get_saddr_eval(struct net *net,
 			ret -= 128;	/* 30 is enough */
 		score->scopedist = ret;
 		break;
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 	case IPV6_SADDR_RULE_PREFERRED:
 	    {
 		/* Rule 3: Avoid deprecated and optimistic addresses */
@@ -1283,6 +1286,13 @@ static int ipv6_get_saddr_eval(struct net *net,
 		      !(score->ifa->flags & avoid);
 		break;
 	    }
+#else
+    case IPV6_SADDR_RULE_PREFERRED:
+        /* Rule 3: Avoid deprecated and optimistic addresses */
+        ret = ipv6_saddr_preferred(score->addr_type) ||
+        !(score->ifa->flags & (IFA_F_DEPRECATED|IFA_F_OPTIMISTIC));
+        break;
+#endif
 #ifdef CONFIG_IPV6_MIP6
 	case IPV6_SADDR_RULE_HOA:
 	    {
@@ -1330,7 +1340,7 @@ static int ipv6_get_saddr_eval(struct net *net,
 			ret = score->ifa->prefix_len;
 		score->matchlen = ret;
 		break;
-#ifdef CONFIG_IPV6_OPTIMISTIC_DAD
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 	case IPV6_SADDR_RULE_NOT_OPTIMISTIC:
 		/* Optimistic addresses still have lower precedence than other
 		 * preferred addresses.
@@ -1533,9 +1543,13 @@ int ipv6_chk_addr(struct net *net, const struct in6_addr *addr,
 		if (!net_eq(dev_net(ifp->idev->dev), net))
 			continue;
 		if (ipv6_addr_equal(&ifp->addr, addr) &&
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 		    (!(ifp->flags&IFA_F_TENTATIVE) ||
 		     (ipv6_use_optimistic_addr(ifp->idev) &&
 		      ifp->flags&IFA_F_OPTIMISTIC)) &&
+#else
+            !(ifp->flags&IFA_F_TENTATIVE) &&
+#endif
 		    (dev == NULL || ifp->idev->dev == dev ||
 		     !(ifp->scope&(IFA_LINK|IFA_HOST) || strict))) {
 			rcu_read_unlock_bh();
@@ -3268,8 +3282,12 @@ static void addrconf_dad_start(struct inet6_ifaddr *ifp)
 	 * Optimistic nodes can start receiving
 	 * Frames right away
 	 */
-	if (ifp->flags & IFA_F_OPTIMISTIC) {
+	if (ifp->flags & IFA_F_OPTIMISTIC)
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
+    {
+#endif
 		ip6_ins_rt(ifp->rt);
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 		if (ipv6_use_optimistic_addr(idev)) {
 			/* Because optimistic nodes can use this address,
 			 * notify listeners. If DAD fails, RTM_DELADDR is sent.
@@ -3277,6 +3295,7 @@ static void addrconf_dad_start(struct inet6_ifaddr *ifp)
 			ipv6_ifa_notify(RTM_NEWADDR, ifp);
 		}
 	}
+#endif
 
 	addrconf_dad_kick(ifp);
 out:
@@ -4221,7 +4240,9 @@ static inline void ipv6_store_devconf(struct ipv6_devconf *cnf,
 	array[DEVCONF_ACCEPT_SOURCE_ROUTE] = cnf->accept_source_route;
 #ifdef CONFIG_IPV6_OPTIMISTIC_DAD
 	array[DEVCONF_OPTIMISTIC_DAD] = cnf->optimistic_dad;
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 	array[DEVCONF_USE_OPTIMISTIC] = cnf->use_optimistic;
+#endif
 #endif
 #ifdef CONFIG_IPV6_MROUTE
 	array[DEVCONF_MC_FORWARDING] = cnf->mc_forwarding;
@@ -4949,6 +4970,7 @@ static struct addrconf_sysctl_table
 			.proc_handler   = proc_dointvec,
 
 		},
+#ifdef CONFIG_IPV6_USE_OPTIMISTIC
 		{
 			.procname       = "use_optimistic",
 			.data           = &ipv6_devconf.use_optimistic,
@@ -4957,6 +4979,7 @@ static struct addrconf_sysctl_table
 			.proc_handler   = proc_dointvec,
 
 		},
+#endif
 #endif
 #ifdef CONFIG_IPV6_MROUTE
 		{
