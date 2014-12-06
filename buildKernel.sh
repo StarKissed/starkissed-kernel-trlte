@@ -38,9 +38,6 @@ CORES=`sysctl -a | grep machdep.cpu | grep core_count | awk '{print $2}'`
 THREADS=`sysctl -a | grep machdep.cpu | grep thread_count | awk '{print $2}'`
 CPU_JOB_NUM=$((($CORES * $THREADS) / 2))
 
-if [ -e buildimg/zImage ]; then
-    rm -rf buildimg/zImage
-fi
 if [ -e arch/arm/boot/zImage ]; then
     rm -rf arch/arm/boot/zImage
 fi
