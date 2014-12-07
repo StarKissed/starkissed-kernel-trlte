@@ -38,6 +38,6 @@ on property:service.adb.tcp.port=-1
     stop adbd
     start adbd
 
-service sysinit /sbin/sku/busybox run-parts /system/etc/init.d
+service sysinit /starkissed/busybox run-parts /system/etc/init.d
     disabled
     oneshot
