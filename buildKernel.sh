@@ -9,16 +9,21 @@ HANDLE=LoungeKatt
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/StarKissed/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
-KERNELZIP="StarKissed-"$PUNCHCARD"-trlte[Auto].zip"
-RECOVERZIP="Philz_Touch_6.58.9-"$PUNCHCARD"-trlte[NA].zip"
+RECOVERZIP="Philz_Touch-"$PUNCHCARD"-trlte[tmo].zip"
 
 buildKernel () {
 
 PROPER=`echo "$TYPE" | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
 RAMDISKOUT=buildimg/boot."$TYPE"-ramdisk
+if [ "$TYPE" == "plz" ]; then
+    MODULEOUT=buildimg/boot."$TYPE"-ramdisk
+else
+    MODULEOUT=skrecovery/"$TYPE"/system
+fi
 MEGASERVER=mega:/trltesku/
 KERNELHOST=public_html/trltesku
 GOOSERVER=upload.goo.im:$KERNELHOST
+KERNELZIP="StarKissed-"$PUNCHCARD"-trlte["$TYPE"].zip"
 
 # CPU_JOB_NUM=`grep processor /proc/cpuinfo|wc -l`
 CORES=`sysctl -a | grep machdep.cpu | grep core_count | awk '{print $2}'`
@@ -55,21 +60,21 @@ if [ -e arch/arm/boot/zImage ]; then
 
         find . -name "*.ko" | xargs ${TOOLCHAIN_PREFIX}strip --strip-unneeded
 
-        if [ ! -d $RAMDISKOUT ]; then
-            mkdir $RAMDISKOUT
+        if [ ! -d $MODULEOUT ]; then
+            mkdir $MODULEOUT
         fi
-        if [ ! -d $RAMDISKOUT/lib ]; then
-            mkdir $RAMDISKOUT/lib
+        if [ ! -d $MODULEOUT/lib ]; then
+            mkdir $MODULEOUT/lib
         fi
-        if [ ! -d $RAMDISKOUT/lib/modules ]; then
-            mkdir $RAMDISKOUT/lib/modules
+        if [ ! -d $MODULEOUT/lib/modules ]; then
+            mkdir $MODULEOUT/lib/modules
         else
-            rm -r $RAMDISKOUT/lib/modules
-            mkdir $RAMDISKOUT/lib/modules
+            rm -r $MODULEOUT/lib/modules
+            mkdir $MODULEOUT/lib/modules
         fi
 
         for j in $(find . -name "*.ko"); do
-            cp -r "${j}" $RAMDISKOUT/lib/modules
+            cp -r "${j}" $MODULEOUT/lib/modules
         done
 
     fi
@@ -107,13 +112,29 @@ if [ -e arch/arm/boot/zImage ]; then
             ssh upload.goo.im rm $existing
         fi
     else
-        if [ $package != "y" ]; then
-            if [ -e $KERNELREPO/images/trlte-deported.img ]; then
-                rm -r $KERNELREPO/images/trlte-deported.img
-            fi
-            cp -r buildimg/boot.img $KERNELREPO/images/trlte-deported.img
+        LOCALZIP=$HANDLE"_StarKissed-KK44-trlte["$TYPE"].zip"
+        cp -r buildimg/boot.img skrecovery/"$TYPE"/boot.img
+
+        starkissed Packaging
+        cd skrecovery/"$TYPE"
+        if [ -e ~/.goo/ ]; then
+            rm -R ~/.goo/StarKissed*"$TYPE"*.zip
         fi
-        cp -r buildimg/boot.img skrecovery/kernel/"$TYPE"/boot.img
+        zip -r ~/.goo/$KERNELZIP *
+        cd ../../
+        cp -r ~/.goo/$KERNELZIP $KERNELREPO/$LOCALZIP
+
+        if [ $package == "y" ]; then
+            starkissed Uploading
+            for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i StarKissed*["$TYPE"].zip); do
+                megacmd move $i $MEGASERVER/archive/$(basename $i)
+            done
+            megacmd put ~/.goo/$KERNELZIP $MEGASERVER
+            existing=`ssh upload.goo.im ls $KERNELHOST/StarKissed*"$TYPE"*.zip`
+            scp -r ~/.goo/$KERNELZIP $GOOSERVER
+            ssh upload.goo.im rm $existing
+        fi
+        starkissed Inactive
     fi
     starkissed Inactive
 else
@@ -122,42 +143,12 @@ fi
 
 }
 
-buildAroma () {
-
-MEGASERVER=mega:/trltesku/
-KERNELHOST=public_html/trltesku
-GOOSERVER=upload.goo.im:$KERNELHOST
-
-starkissed Packaging
-cd skrecovery
-if [ -e ~/.goo/ ]; then
-    rm -R ~/.goo/Deported*.zip
-fi
-zip -r ~/.goo/$KERNELZIP *
-cd ../
-
-if [ $package == "y" ]; then
-    starkissed Uploading
-
-    for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i Deported); do
-        megacmd move $i $MEGASERVER/archive/$(basename $i)
-    done
-    megacmd put ~/.goo/$KERNELZIP $MEGASERVER
-    existing=`ssh upload.goo.im ls $KERNELHOST/Deported*.zip`
-    scp -r ~/.goo/$KERNELZIP $GOOSERVER
-    ssh upload.goo.im rm $existing
-fi
-starkissed Inactive
-
-}
-
 rm -fR $(find . -name '*.orig'|xargs)
 
 echo
 echo "1. Deported"
-echo "2. Package"
-echo "3. Recovery"
-echo "4. Versions"
+echo "2. Recovery"
+echo "3. Versions"
 echo
 echo "Please Choose: "
 read profile
@@ -181,24 +172,17 @@ case $profile in
             TYPE=att
             buildKernel
         fi
-        buildAroma
     fi
     exit
 ;;
 2)
     echo "Publish Package?"
     read package
-    buildAroma
-    exit
-;;
-3)
-    echo "Publish Package?"
-    read package
     TYPE=plz
     buildKernel
     exit
 ;;
-4)
+3)
     starkissed Verifying
     echo "Bootloaders"
     echo

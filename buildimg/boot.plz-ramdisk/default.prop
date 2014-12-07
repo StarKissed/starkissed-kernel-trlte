@@ -39,7 +39,7 @@ ro.board.platform=apq8084
 # ro.build.product is obsolete; use ro.product.device
 ro.build.product=trlte
 ro.product.model=SM-N910T
-ro.product.device=trlte
+ro.product.device=trltetmo
 # Do not try to parse ro.build.description or .fingerprint
 ro.build.description=cm_trlte-userdebug 4.4.4 KTU84Q bec960b953 test-keys
 ro.build.fingerprint=samsung/cm_trlte/trlte:4.4.4/KTU84Q/bec960b953:userdebug/test-keys

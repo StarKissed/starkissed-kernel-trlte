@@ -90,8 +90,8 @@ arch/arm/boot/zImage
 out
 output
 
-starkissed/kernel/*/boot.img
-skrecovery/kernel/*/boot.img
+boot.img
+recovery.img
 
 buildimg/boot.att-ramdisk/init.sku.rc
 buildimg/boot.can-ramdisk/init.sku.rc
