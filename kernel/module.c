@@ -3149,6 +3149,7 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 {
 	/* Module within temporary copy. */
 	struct module *mod;
+	Elf_Shdr *pcpusec;
 	int err;
 
 	mod = setup_load_info(info, flags);
@@ -3163,10 +3164,17 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 	err = module_frob_arch_sections(info->hdr, info->sechdrs,
 					info->secstrings, mod);
 	if (err < 0)
-		return ERR_PTR(err);
+		goto out;
 
-	/* We will do a special allocation for per-cpu sections later. */
-	info->sechdrs[info->index.pcpu].sh_flags &= ~(unsigned long)SHF_ALLOC;
+	pcpusec = &info->sechdrs[info->index.pcpu];
+	if (pcpusec->sh_size) {
+		/* We have a special allocation for this section. */
+		err = percpu_modalloc(mod,
+				      pcpusec->sh_size, pcpusec->sh_addralign);
+		if (err)
+			goto out;
+		pcpusec->sh_flags &= ~(unsigned long)SHF_ALLOC;
+	}
 
 	/* Determine total sizes, and put offsets in sh_entsize.  For now
 	   this is done generically; there doesn't appear to be any
@@ -3177,22 +3185,17 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 	/* Allocate and move to the final place */
 	err = move_module(mod, info);
 	if (err)
-		return ERR_PTR(err);
+		goto free_percpu;
 
 	/* Module has been copied to its final place now: return it. */
 	mod = (void *)info->sechdrs[info->index.mod].sh_addr;
 	kmemleak_load_module(mod, info);
 	return mod;
-}
 
-static int alloc_module_percpu(struct module *mod, struct load_info *info)
-{
-	Elf_Shdr *pcpusec = &info->sechdrs[info->index.pcpu];
-	if (!pcpusec->sh_size)
-		return 0;
-
-	/* We have a special allocation for this section. */
-	return percpu_modalloc(mod, pcpusec->sh_size, pcpusec->sh_addralign);
+free_percpu:
+	percpu_modfree(mod);
+out:
+	return ERR_PTR(err);
 }
 
 /* mod is no longer valid after this! */
@@ -3584,11 +3587,6 @@ static int load_module(struct load_info *info, const char __user *uargs,
 		add_taint_module(mod, TAINT_FORCED_MODULE, LOCKDEP_STILL_OK);
 	}
 #endif
-
-	/* To avoid stressing percpu allocator, do this once we're unique. */
-	err = alloc_module_percpu(mod, info);
-	if (err)
-		goto unlink_mod;
 
 	/* Now module is in final location, initialize linked lists, etc. */
 	err = module_unload_init(mod);

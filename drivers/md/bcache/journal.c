@@ -182,14 +182,9 @@ bsearch:
 		pr_debug("starting binary search, l %u r %u", l, r);
 
 		while (l + 1 < r) {
-			seq = list_entry(list->prev, struct journal_replay,
-					 list)->j.seq;
-
 			m = (l + r) >> 1;
-			read_bucket(m);
 
-			if (seq != list_entry(list->prev, struct journal_replay,
-					      list)->j.seq)
+			if (read_bucket(m))
 				l = m;
 			else
 				r = m;
@@ -622,7 +617,7 @@ static void journal_write_unlocked(struct closure *cl)
 		bio_reset(bio);
 		bio->bi_sector	= PTR_OFFSET(k, i);
 		bio->bi_bdev	= ca->bdev;
-		bio->bi_rw	= REQ_WRITE|REQ_SYNC|REQ_META|REQ_FLUSH|REQ_FUA;
+		bio->bi_rw	= REQ_WRITE|REQ_SYNC|REQ_META|REQ_FLUSH;
 		bio->bi_size	= sectors << 9;
 
 		bio->bi_end_io	= journal_write_endio;

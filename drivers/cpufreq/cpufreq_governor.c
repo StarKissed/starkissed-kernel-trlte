@@ -19,9 +19,6 @@
 #include <linux/export.h>
 #include <linux/kernel_stat.h>
 #include <linux/slab.h>
-#include <linux/tick.h>
-#include <linux/types.h>
-#include <linux/workqueue.h>
 
 #include "cpufreq_governor.h"
 

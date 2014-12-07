@@ -31,12 +31,10 @@
 #include "led.h"
 
 #define IEEE80211_AUTH_TIMEOUT		(HZ / 5)
-#define IEEE80211_AUTH_TIMEOUT_LONG	(HZ / 2)
 #define IEEE80211_AUTH_TIMEOUT_SHORT	(HZ / 10)
 #define IEEE80211_AUTH_MAX_TRIES	3
 #define IEEE80211_AUTH_WAIT_ASSOC	(HZ * 5)
 #define IEEE80211_ASSOC_TIMEOUT		(HZ / 5)
-#define IEEE80211_ASSOC_TIMEOUT_LONG	(HZ / 2)
 #define IEEE80211_ASSOC_TIMEOUT_SHORT	(HZ / 10)
 #define IEEE80211_ASSOC_MAX_TRIES	3
 
@@ -239,9 +237,8 @@ ieee80211_determine_chantype(struct ieee80211_sub_if_data *sdata,
 			     struct ieee80211_channel *channel,
 			     const struct ieee80211_ht_operation *ht_oper,
 			     const struct ieee80211_vht_operation *vht_oper,
-			     struct cfg80211_chan_def *chandef, bool tracking)
+			     struct cfg80211_chan_def *chandef, bool verbose)
 {
-	struct ieee80211_if_managed *ifmgd = &sdata->u.mgd;
 	struct cfg80211_chan_def vht_chandef;
 	u32 ht_cfreq, ret;
 
@@ -260,7 +257,7 @@ ieee80211_determine_chantype(struct ieee80211_sub_if_data *sdata,
 	ht_cfreq = ieee80211_channel_to_frequency(ht_oper->primary_chan,
 						  channel->band);
 	/* check that channel matches the right operating channel */
-	if (!tracking && channel->center_freq != ht_cfreq) {
+	if (channel->center_freq != ht_cfreq) {
 		/*
 		 * It's possible that some APs are confused here;
 		 * Netgear WNDR3700 sometimes reports 4 higher than
@@ -268,10 +265,11 @@ ieee80211_determine_chantype(struct ieee80211_sub_if_data *sdata,
 		 * since we look at probe response/beacon data here
 		 * it should be OK.
 		 */
-		sdata_info(sdata,
-			   "Wrong control channel: center-freq: %d ht-cfreq: %d ht->primary_chan: %d band: %d - Disabling HT\n",
-			   channel->center_freq, ht_cfreq,
-			   ht_oper->primary_chan, channel->band);
+		if (verbose)
+			sdata_info(sdata,
+				   "Wrong control channel: center-freq: %d ht-cfreq: %d ht->primary_chan: %d band: %d - Disabling HT\n",
+				   channel->center_freq, ht_cfreq,
+				   ht_oper->primary_chan, channel->band);
 		ret = IEEE80211_STA_DISABLE_HT | IEEE80211_STA_DISABLE_VHT;
 		goto out;
 	}
@@ -325,7 +323,7 @@ ieee80211_determine_chantype(struct ieee80211_sub_if_data *sdata,
 				channel->band);
 		break;
 	default:
-		if (!(ifmgd->flags & IEEE80211_STA_DISABLE_VHT))
+		if (verbose)
 			sdata_info(sdata,
 				   "AP VHT operation IE has invalid channel width (%d), disable VHT\n",
 				   vht_oper->chan_width);
@@ -334,7 +332,7 @@ ieee80211_determine_chantype(struct ieee80211_sub_if_data *sdata,
 	}
 
 	if (!cfg80211_chandef_valid(&vht_chandef)) {
-		if (!(ifmgd->flags & IEEE80211_STA_DISABLE_VHT))
+		if (verbose)
 			sdata_info(sdata,
 				   "AP VHT information is invalid, disable VHT\n");
 		ret = IEEE80211_STA_DISABLE_VHT;
@@ -347,7 +345,7 @@ ieee80211_determine_chantype(struct ieee80211_sub_if_data *sdata,
 	}
 
 	if (!cfg80211_chandef_compatible(chandef, &vht_chandef)) {
-		if (!(ifmgd->flags & IEEE80211_STA_DISABLE_VHT))
+		if (verbose)
 			sdata_info(sdata,
 				   "AP VHT information doesn't match HT, disable VHT\n");
 		ret = IEEE80211_STA_DISABLE_VHT;
@@ -363,27 +361,18 @@ out:
 	if (ret & IEEE80211_STA_DISABLE_VHT)
 		vht_chandef = *chandef;
 
-	/*
-	 * Ignore the DISABLED flag when we're already connected and only
-	 * tracking the APs beacon for bandwidth changes - otherwise we
-	 * might get disconnected here if we connect to an AP, update our
-	 * regulatory information based on the AP's country IE and the
-	 * information we have is wrong/outdated and disables the channel
-	 * that we're actually using for the connection to the AP.
-	 */
 	while (!cfg80211_chandef_usable(sdata->local->hw.wiphy, chandef,
-					tracking ? 0 :
-						   IEEE80211_CHAN_DISABLED)) {
+					IEEE80211_CHAN_DISABLED)) {
 		if (WARN_ON(chandef->width == NL80211_CHAN_WIDTH_20_NOHT)) {
 			ret = IEEE80211_STA_DISABLE_HT |
 			      IEEE80211_STA_DISABLE_VHT;
-			break;
+			goto out;
 		}
 
 		ret |= chandef_downgrade(chandef);
 	}
 
-	if (chandef->width != vht_chandef.width && !tracking)
+	if (chandef->width != vht_chandef.width && verbose)
 		sdata_info(sdata,
 			   "capabilities/regulatory prevented using AP HT/VHT configuration, downgraded\n");
 
@@ -423,7 +412,7 @@ static int ieee80211_config_bw(struct ieee80211_sub_if_data *sdata,
 
 	/* calculate new channel (type) based on HT/VHT operation IEs */
 	flags = ieee80211_determine_chantype(sdata, sband, chan, ht_oper,
-					     vht_oper, &chandef, true);
+					     vht_oper, &chandef, false);
 
 	/*
 	 * Downgrade the new channel if we associated with restricted
@@ -3472,13 +3461,10 @@ static int ieee80211_probe_auth(struct ieee80211_sub_if_data *sdata)
 
 	if (tx_flags == 0) {
 		auth_data->timeout = jiffies + IEEE80211_AUTH_TIMEOUT;
-		auth_data->timeout_started = true;
+		ifmgd->auth_data->timeout_started = true;
 		run_again(ifmgd, auth_data->timeout);
 	} else {
-		auth_data->timeout =
-			round_jiffies_up(jiffies + IEEE80211_AUTH_TIMEOUT_LONG);
-		auth_data->timeout_started = true;
-		run_again(ifmgd, auth_data->timeout);
+		auth_data->timeout_started = false;
 	}
 
 	return 0;
@@ -3515,11 +3501,7 @@ static int ieee80211_do_assoc(struct ieee80211_sub_if_data *sdata)
 		assoc_data->timeout_started = true;
 		run_again(&sdata->u.mgd, assoc_data->timeout);
 	} else {
-		assoc_data->timeout =
-			round_jiffies_up(jiffies +
-					 IEEE80211_ASSOC_TIMEOUT_LONG);
-		assoc_data->timeout_started = true;
-		run_again(&sdata->u.mgd, assoc_data->timeout);
+		assoc_data->timeout_started = false;
 	}
 
 	return 0;
@@ -3924,7 +3906,7 @@ static int ieee80211_prep_channel(struct ieee80211_sub_if_data *sdata,
 	ifmgd->flags |= ieee80211_determine_chantype(sdata, sband,
 						     cbss->channel,
 						     ht_oper, vht_oper,
-						     &chandef, false);
+						     &chandef, true);
 
 	sdata->needed_rx_chains = min(ieee80211_ht_vht_rx_chains(sdata, cbss),
 				      local->rx_chains);

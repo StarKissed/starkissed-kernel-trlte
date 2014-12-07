@@ -386,12 +386,10 @@ static int dm_blk_ioctl(struct block_device *bdev, fmode_t mode,
 			unsigned int cmd, unsigned long arg)
 {
 	struct mapped_device *md = bdev->bd_disk->private_data;
-	struct dm_table *map;
+	struct dm_table *map = dm_get_live_table(md);
 	struct dm_target *tgt;
 	int r = -ENOTTY;
 
-retry:
-	map = dm_get_live_table(md);
 	if (!map || !dm_table_get_size(map))
 		goto out;
 
@@ -411,11 +409,6 @@ retry:
 
 out:
 	dm_table_put(map);
-
-	if (r == -ENOTCONN) {
-		msleep(10);
-		goto retry;
-	}
 
 	return r;
 }
