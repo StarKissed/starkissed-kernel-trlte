@@ -6,7 +6,6 @@ ro.secure=1
 ro.allow.mock.location=0
 ro.debuggable=1
 ro.adb.secure=1
-persist.sys.strict_op_enable=false
 persist.sys.usb.config=mtp,adb
 ro.securestorage.support=false
 ro.securestorage.knox=false

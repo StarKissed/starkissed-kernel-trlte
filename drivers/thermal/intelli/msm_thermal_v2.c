@@ -1,5 +1,5 @@
 /*
- * drivers/cpufreq/cpufreq_yankactive.c
+ * drivers/thermal/intelli/msm_thermal_v2.c
  *
  * Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Paul Reioux <reioux@gmail.com>
@@ -39,7 +39,7 @@
 #include <linux/sysfs.h>
 #include <linux/types.h>
 #include <linux/alarmtimer.h>
-#include "../staging/android/android_alarm.h"
+#include "../../staging/android/android_alarm.h"
 #include <linux/thermal.h>
 #include <mach/rpm-regulator.h>
 #include <linux/regulator/rpm-smd-regulator.h>

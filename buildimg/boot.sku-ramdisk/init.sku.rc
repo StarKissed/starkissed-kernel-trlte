@@ -1,8 +1,6 @@
 # StarKissed Extras
 
 on early-init
-    mount debugfs debugfs /sys/kernel/debug
-
     # Force stock max frequency during initial boot
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2649600
 
@@ -22,8 +20,8 @@ on boot
     start sysinit
 
 # Reload SE Android Policy for MDM
-on property:persist.security.mdm.policy=1
-    setprop selinux.reload_policy 1
+# on property:persist.security.mdm.policy=1
+#     setprop selinux.reload_policy 1
 
 on property:selinux.reload_policy=1
     chown system system /sys/fs/selinux/enforce
