@@ -80,6 +80,10 @@ const struct linux_logo * __init_refok fb_find_logo(int depth)
 		if (MACH_IS_MAC)
 			logo = &logo_mac_clut224;
 #endif
+#ifdef CONFIG_LOGO_SKU_CLUT224
+        /* StarKissed Linux logo on Android */
+        logo = &logo_sku_clut224;
+#endif
 #ifdef CONFIG_LOGO_PARISC_CLUT224
 		/* PA-RISC Linux logo */
 		logo = &logo_parisc_clut224;
