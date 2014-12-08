@@ -44,13 +44,14 @@ make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
 if [ -e arch/arm/boot/zImage ]; then
 
+    if [ ! -d $MODULEOUT ]; then
+        mkdir $MODULEOUT
+    fi
+
     if [ `find . -name "*.ko" | grep -c ko` > 0 ]; then
 
         find . -name "*.ko" | xargs ${TOOLCHAIN_PREFIX}strip --strip-unneeded
 
-        if [ ! -d $MODULEOUT ]; then
-            mkdir $MODULEOUT
-        fi
         if [ ! -d $MODULEOUT/lib ]; then
             mkdir $MODULEOUT/lib
         fi
@@ -68,6 +69,9 @@ if [ -e arch/arm/boot/zImage ]; then
     fi
 
     cp -r arch/arm/boot/zImage buildimg
+    for k in $(find skrecovery -name "system"); do
+        cp -r buildimg/system/etc "${k}"
+    done
 
     cd buildimg
     ./img.sh "$TYPE"

@@ -15,6 +15,8 @@ ui_print(" ");
 if getprop("ro.product.device") == "trlteusc" then ui_print(">>> Installing U.S. Cellular Kernel");
 mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/system", "/system");
 package_extract_dir("system", "/system");
+set_perm_recursive(0, 2000, 0755, 0750, "/system/etc/init.d");
+set_perm(0, 0, 0755, "/system/etc/init.d");
 unmount("/system");
 package_extract_file("boot.img", "/tmp/boot.img");
 set_perm(0, 0, 0777, "/tmp/boot.img");
