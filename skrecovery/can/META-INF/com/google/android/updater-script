@@ -28,6 +28,8 @@ unmount("/cache");
 unmount("/data");
 ui_print(">>> Install Completed");
 endif;
+if getprop("ro.product.device") != "trltecan" then ui_print("[can] Device Not Found!");
+endif;
 ui_print(" ");
 ui_print(">>> Please Reboot!");
 ui_print(" ");
