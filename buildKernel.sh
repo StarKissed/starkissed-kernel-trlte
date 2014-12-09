@@ -63,14 +63,14 @@ if [ -e arch/arm/boot/zImage ]; then
         fi
 
         for j in $(find . -name "*.ko"); do
-            cp -r "${j}" $MODULEOUT/lib/modules
+            cp -R "${j}" $MODULEOUT/lib/modules
         done
 
     fi
 
     cp -r arch/arm/boot/zImage buildimg
     for k in $(find skrecovery -name "system"); do
-        cp -r buildimg/system/etc "${k}"
+        cp -R buildimg/system/etc "${k}"
     done
 
     cd buildimg
