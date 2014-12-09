@@ -458,7 +458,8 @@ static ssize_t store_max77843_rgb_pattern(struct device *dev,
 		max77843_rgb_set_state(&max77843_rgb->led[RED], led_dynamic_current, LED_BLINK);
 		break;
 	case MISSED_NOTI:
-		max77843_rgb_blink(dev, 500, 5000);
+        max77843_rgb_ramp(dev, leds_control.noti_ramp_up, leds_control.noti_ramp_down);
+		max77843_rgb_blink(dev, leds_control.noti_delay_on, leds_control.noti_delay_off);
 		if(led_lowpower_mode == 1)
 			max77843_rgb_set_state(&max77843_rgb->led[BLUE], 0x0a, LED_BLINK);
 		else
@@ -793,9 +794,17 @@ static DEVICE_ATTR(led_lowpower, 0660, NULL,  store_max77843_rgb_lowpower);
 static struct leds_control {
     u8 	current_low;
     u8 	current_high;
+    u8 	noti_ramp_up;
+    u8 	noti_ramp_down;
+    u8 	noti_delay_on;
+    u8 	noti_delay_off;
 } leds_control = {
     .current_low = 5,
     .current_high = 40,
+    .noti_ramp_up = 800,
+    .noti_ramp_down = 800,
+    .noti_delay_on = 500,
+    .noti_delay_off = 5000,
 };
 
 extern struct class *sec_class;
