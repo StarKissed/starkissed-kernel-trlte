@@ -15,6 +15,7 @@
 #include <linux/interrupt.h>
 #include <linux/init.h>
 #include <linux/device.h>
+#include <linux/sysfs_helpers.h>
 #include <linux/platform_device.h>
 #include <linux/leds.h>
 #include <linux/err.h>
@@ -385,10 +386,14 @@ static ssize_t store_max77843_rgb_lowpower(struct device *dev,
 	}
 
 	led_lowpower_mode = led_lowpower;
-	if (led_lowpower_mode == 1)
-		led_dynamic_current = BASE_LOW_POWER_CURRENT;
-	else
-		led_dynamic_current = BASE_DYNAMIC_LED_CURRENT;
+//	if (led_lowpower_mode == 1)
+//		led_dynamic_current = BASE_LOW_POWER_CURRENT;
+//	else
+//		led_dynamic_current = BASE_DYNAMIC_LED_CURRENT;
+    led_dynamic_current = (led_lowpower_mode) ? leds_control.current_low : leds_control.current_high;
+    max77843_rgb_set_state(&max77843_rgb->led[RED], led_dynamic_current, LED_BLINK);
+    max77843_rgb_set_state(&max77843_rgb->led[GREEN], led_dynamic_current, LED_BLINK);
+    max77843_rgb_set_state(&max77843_rgb->led[BLUE], led_dynamic_current, LED_BLINK);
 	pr_info("led_lowpower mode set to %i, led_dynamic_current set to %d\n", led_lowpower, led_dynamic_current);
 	dev_dbg(dev, "led_lowpower mode set to %i\n", led_lowpower);
 
@@ -410,8 +415,8 @@ static ssize_t store_max77843_rgb_brightness(struct device *dev,
 
 	led_lowpower_mode = 0;
 
-	if (brightness > LED_MAX_CURRENT)
-		brightness = LED_MAX_CURRENT;
+    max_brightness = (led_lowpower_mode) ? leds_control.current_low : leds_control.current_high;
+    brightness = (brightness * max_brightness) / LED_MAX_CURRENT;
 
 	led_dynamic_current = brightness;
 
@@ -709,6 +714,71 @@ static DEVICE_ATTR(delay_off, 0640, led_delay_off_show, led_delay_off_store);
 static DEVICE_ATTR(blink, 0640, NULL, led_blink_store);
 
 #ifdef SEC_LED_SPECIFIC
+static ssize_t show_leds_property(struct device *dev,
+                                  struct device_attribute *attr, char *buf);
+
+static ssize_t store_leds_property(struct device *dev,
+                                   struct device_attribute *attr,
+                                   const char *buf, size_t len);
+
+#define LEDS_ATTR(_name)				\
+{							\
+.attr = {					\
+.name = #_name,			\
+.mode = S_IRUGO | S_IWUSR | S_IWGRP,	\
+},					\
+.show = show_leds_property,			\
+.store = store_leds_property,			\
+}
+
+static struct device_attribute leds_control_attrs[] = {
+    LEDS_ATTR(led_lowpower_current),
+    LEDS_ATTR(led_highpower_current),
+};
+
+enum {
+    LOWPOWER_CURRENT = 0,
+    HIGHPOWER_CURRENT,
+};
+
+static ssize_t show_leds_property(struct device *dev,
+                                  struct device_attribute *attr, char *buf)
+{
+    const ptrdiff_t offset = attr - leds_control_attrs;
+    
+    switch (offset) {
+        case LOWPOWER_CURRENT:
+            return sprintf(buf, "%d", leds_control.current_low);
+        case HIGHPOWER_CURRENT:
+            return sprintf(buf, "%d", leds_control.current_high);
+    }
+    
+    return -EINVAL;
+}
+
+static ssize_t store_leds_property(struct device *dev,
+                                   struct device_attribute *attr,
+                                   const char *buf, size_t len)
+{
+    int val;
+    const ptrdiff_t offset = attr - leds_control_attrs;
+    
+    if(sscanf(buf, "%d", &val) != 1)
+        return -EINVAL;
+    
+    switch (offset) {
+        case LOWPOWER_CURRENT:
+            sanitize_min_max(val, 0, LED_MAX_CURRENT);
+            leds_control.current_low = val;
+            break;
+        case HIGHPOWER_CURRENT:
+            sanitize_min_max(val, 0, LED_MAX_CURRENT);
+            leds_control.current_high = val;
+            break;
+    }
+    
+    return len;
+}
 /* below nodes is SAMSUNG specific nodes */
 static DEVICE_ATTR(led_r, 0660, NULL, store_led_r);
 static DEVICE_ATTR(led_g, 0660, NULL, store_led_g);
@@ -719,6 +789,16 @@ static DEVICE_ATTR(led_pattern, 0660, NULL, store_max77843_rgb_pattern);
 static DEVICE_ATTR(led_blink, 0660, NULL,  store_max77843_rgb_blink);
 static DEVICE_ATTR(led_brightness, 0660, NULL, store_max77843_rgb_brightness);
 static DEVICE_ATTR(led_lowpower, 0660, NULL,  store_max77843_rgb_lowpower);
+
+static struct leds_control {
+    u8 	current_low;
+    u8 	current_high;
+} leds_control = {
+    .current_low = 5,
+    .current_high = 40,
+};
+
+extern struct class *sec_class;
 #endif
 
 static struct attribute *led_class_attrs[] = {
@@ -815,6 +895,10 @@ static int max77843_rgb_probe(struct platform_device *pdev)
 		dev_err(dev, "Failed to create sysfs group for samsung specific led\n");
 		goto alloc_err_flash;
 	}
+
+    for(i = 0; i < ARRAY_SIZE(leds_control_attrs); i++) {
+        ret = sysfs_create_file(&led_dev->kobj, &leds_control_attrs[i].attr);
+    }
 
 	platform_set_drvdata(pdev, max77843_rgb);
 
