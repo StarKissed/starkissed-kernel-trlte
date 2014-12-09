@@ -33,7 +33,6 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 
 #include "smart_mtp_s6e3ha2x01.h"
 #include "smart_dimming.h"
-#include "mdss_samsung_dsi_panel_common.h"
 
 #include "smart_mtp_2p2_gamma.h"
 
@@ -115,8 +114,8 @@ int color_mods[5][21] = {
 };
 unsigned int panelval = 2;
 extern int mipi_samsung_disp_send_cmd(
-		enum mipi_samsung_cmd_list cmd,
-		unsigned char lock);
+    enum mipi_samsung_cmd_list cmd,
+    unsigned char lock);
 
 static int char_to_int(char data1)
 {
@@ -5261,7 +5260,7 @@ struct smartdim_conf_hmt *smart_S6E3_get_conf_hmt(void) {
 
 void panel_load_colors(unsigned int val)
 {
-	panelval = val;
-	wrap_smart_dimming_init();
-	mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
+    panelval = val;
+    wrap_smart_dimming_init();
+    mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
 }
