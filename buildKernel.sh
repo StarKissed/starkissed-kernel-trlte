@@ -90,10 +90,10 @@ if [ -e arch/arm/boot/zImage ]; then
 
     if [ $package == "y" ]; then
         starkissed Uploading
-        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i StarKissed*["$TYPE"].zip); do
-            megacmd move $i $MEGASERVER/archive/$(basename $i)
-        done
-        megacmd put ~/.goo/$KERNELZIP $MEGASERVER
+#        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i StarKissed*["$TYPE"].zip); do
+#            megacmd move $i $MEGASERVER/archive/$(basename $i)
+#        done
+#        megacmd put ~/.goo/$KERNELZIP $MEGASERVER
         existing=`ssh upload.goo.im ls $KERNELHOST/StarKissed*"$TYPE"*.zip`
         scp -r ~/.goo/$KERNELZIP $GOOSERVER
         ssh upload.goo.im rm $existing
