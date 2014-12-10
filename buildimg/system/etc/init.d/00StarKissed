@@ -6,3 +6,10 @@ rm -f /dev/urandom
 ln -s /dev/erandom /dev/urandom
 rm -f /dev/random
 ln -s /dev/erandom /dev/random
+
+# Seeder
+mount -o remount,rw -t auto /data
+/starkissed/rngd
+sleep 2
+echo -8 > /proc/$(pgrep /starkissed/rngd)/oom_adj
+renice +8 /starkissed/rngd
