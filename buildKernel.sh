@@ -97,7 +97,8 @@ if [ -e arch/arm/boot/zImage ]; then
         existing=`ssh upload.goo.im ls $KERNELHOST/StarKissed*"$TYPE"*.zip`
         scp -r ~/.goo/$KERNELZIP $GOOSERVER
         ssh upload.goo.im rm $existing
-    else
+    fi
+    if [ "$TYPE" == "tmo" ]; then
         if [ -e $KERNELREPO/$LOCALZIP ]; then
             rm $KERNELREPO/$LOCALZIP
         fi
@@ -112,12 +113,16 @@ fi
 
 rm -fR $(find . -name '*.orig'|xargs)
 
-echo
-echo "1. Deported"
-echo "2. Versions"
-echo
-echo "Please Choose: "
-read profile
+if [ "$1" == "deported" ]; then
+    profile=1
+else
+    echo
+    echo "1. Deported"
+    echo "2. Versions"
+    echo
+    echo "Please Choose: "
+    read profile
+fi
 
 case $profile in
 1)
