@@ -2129,7 +2129,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 				struct cpufreq_policy *new_policy)
 {
 	int ret = 0, failed = 1;
-	struct cpufreq_policy *cpu0_policy = NULL;
+	struct cpufreq_policy *cpu0_policy = cpufreq_cpu_get(0);
 
 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_policy->cpu,
 		new_policy->min, new_policy->max);
@@ -2168,7 +2168,6 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 			CPUFREQ_NOTIFY, new_policy);
 
 	if (policy->cpu >= 1) {
-		cpu0_policy = cpufreq_cpu_get(0);
 		policy->min = cpu0_policy->min;
 		policy->max = cpu0_policy->max;
 	} else {
@@ -2391,6 +2390,7 @@ int cpufreq_update_policy(unsigned int cpu)
 {
 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
 	struct cpufreq_policy new_policy;
+    struct cpufreq_policy *cpu0_policy = cpufreq_cpu_get(0);
 	int ret;
 
 	if (!policy) {
@@ -2415,14 +2415,23 @@ int cpufreq_update_policy(unsigned int cpu)
 		);
 	#endif
     /* Yank555.lu - Enforce hardlimit */
-    new_policy.min = check_cpufreq_hardlimit(policy->user_policy.min);
-    new_policy.max = check_cpufreq_hardlimit(policy->user_policy.max);
+    if (policy->cpu >= 1) {
+        new_policy.min = check_cpufreq_hardlimit(cpu0_policy->user_policy.min);
+        new_policy.max = check_cpufreq_hardlimit(cpu0_policy->user_policy.max);
+    } else {
+        new_policy.min = check_cpufreq_hardlimit(policy->user_policy.min);
+        new_policy.max = check_cpufreq_hardlimit(policy->user_policy.max);
+    }
 #else
     new_policy.min = policy->user_policy.min;
     new_policy.max = policy->user_policy.max;
 #endif
     new_policy.policy = policy->user_policy.policy;
-    new_policy.governor = policy->user_policy.governor;
+    if (policy->cpu >= 1 && cpu0_policy) {
+        new_policy.governor = cpu0_policy->user_policy.governor;
+    } else {
+        new_policy.governor = policy->user_policy.governor;
+    }
 
 	/*
 	 * BIOS might change freq behind our back
