@@ -317,16 +317,6 @@ config CPU_FREQ_GOV_BIOSHOCK
 	help
 	  'bioshock' - More aggressive version of conservative
 
-config CPU_FREQ_GOV_PEGASUSQ
-	tristate "'pegasusq' cpufreq policy governor"
-
-	  To compile this driver as a module, choose M here: the
-	  module will be called cpufreq_conservative.
-
-	  For details, take a look at linux/Documentation/cpu-freq.
-
-	  If in doubt, say N.
-
 config CPU_FREQ_GOV_INTELLIDEMAND
         tristate "'intellidemand' cpufreq policy governor"
         select CPU_FREQ_TABLE
