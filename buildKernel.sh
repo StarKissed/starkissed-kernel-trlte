@@ -8,6 +8,7 @@
 HANDLE=LoungeKatt
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/StarKissed/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
+#TOOLCHAIN_PREFIX=/Volumes/android/linaro-toolchain-eabi-4.8/bin/arm-none-linux-gnueabi-
 PUNCHCARD=`date "+%m-%d-%Y_%H.%M"`
 
 buildKernel () {
@@ -18,7 +19,7 @@ MODULEOUT=skrecovery/"$TYPE"/system
 MEGASERVER=mega:/trltesku/
 KERNELHOST=public_html/trltesku
 GOOSERVER=upload.goo.im:$KERNELHOST
-KERNELZIP="StarKissed-"$PUNCHCARD"-trlte["$TYPE"].zip"
+KERNELZIP="StarKissed-"$PUNCHCARD"-trlte"$TYPE".zip"
 
 # CPU_JOB_NUM=`grep processor /proc/cpuinfo|wc -l`
 CORES=`sysctl -a | grep machdep.cpu | grep core_count | awk '{print $2}'`
@@ -77,7 +78,7 @@ if [ -e arch/arm/boot/zImage ]; then
     ./img.sh "$TYPE"
     cd ../
 
-    LOCALZIP=$HANDLE"_StarKissed-KK44-trlte["$TYPE"].zip"
+    LOCALZIP=$HANDLE"_StarKissed-KK44-trlte"$TYPE".zip"
     cp -r buildimg/boot.img skrecovery/"$TYPE"/boot.img
 
     starkissed Packaging
@@ -90,11 +91,11 @@ if [ -e arch/arm/boot/zImage ]; then
 
     if [ $package == "y" ]; then
         starkissed Uploading
-#        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i StarKissed*["$TYPE"].zip); do
+#        for i in $(megacmd list $MEGASERVER 2>&1 | awk '{print $1}' | grep -i StarKissed*trlte"$TYPE".zip); do
 #            megacmd move $i $MEGASERVER/archive/$(basename $i)
 #        done
 #        megacmd put ~/.goo/$KERNELZIP $MEGASERVER
-        existing=`ssh upload.goo.im ls $KERNELHOST/StarKissed*"$TYPE"*.zip`
+        existing=`ssh upload.goo.im ls $KERNELHOST/StarKissed*trlte"$TYPE"*.zip`
         scp -r ~/.goo/$KERNELZIP $GOOSERVER
         ssh upload.goo.im rm $existing
     fi
