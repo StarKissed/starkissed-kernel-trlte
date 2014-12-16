@@ -527,6 +527,9 @@ void w1_master_search(void);
 #if defined(CONFIG_W1_SLAVE_DS28E15) || defined(CONFIG_W1_SLAVE_DS28EL35)
 static ssize_t w1_master_attribute_show_verify_mac(struct device *dev, struct device_attribute *attr, char *buf)
 {
+#ifdef CONFIG_SVIEW_BYPASS
+    return sprintf(buf, "%d\n", 0);
+#else
 	int result = -1;
 #if defined(CONFIG_SEC_FACTORY) && defined(CONFIG_W1_SLAVE_DS28EL35)
 	struct w1_master *md = dev_to_w1_master(dev);
@@ -548,11 +551,17 @@ static ssize_t w1_master_attribute_show_verify_mac(struct device *dev, struct de
 #endif
 
 	return sprintf(buf, "%d\n", result);
+#endif
 }
 
 static ssize_t w1_master_attribute_show_check_id(struct device *dev, struct device_attribute *attr, char *buf)
 {
+#ifdef CONFIG_SVIEW_BYPASS
+    return sprintf(buf, "%d\n", 1);
+#else
 	return sprintf(buf, "%d\n", id);
+#endif
+    
 }
 
 static ssize_t w1_master_attribute_show_check_color(struct device *dev, struct device_attribute *attr, char *buf)
@@ -562,7 +571,12 @@ static ssize_t w1_master_attribute_show_check_color(struct device *dev, struct d
 
 static ssize_t w1_master_attribute_show_check_model(struct device *dev, struct device_attribute *attr, char *buf)
 {
+#ifdef CONFIG_SVIEW_BYPASS
+    return sprintf(buf, "%d\n", 2);
+#else
 	return sprintf(buf, "%d\n", model);
+#endif
+    
 }
 
 static ssize_t w1_master_attribute_show_check_detect(struct device *dev, struct device_attribute *attr, char *buf)
