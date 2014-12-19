@@ -114,11 +114,11 @@ fi
 
 rm -fR $(find . -name '*.orig'|xargs)
 
-if [ "$1" == "deported" ]; then
+if [ "$1" == "trlte" ]; then
     profile=1
 else
     echo
-    echo "1. Deported"
+    echo "1. Trophaeum"
     echo "2. Versions"
     echo
     echo "Please Choose: "
