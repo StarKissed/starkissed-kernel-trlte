@@ -28,6 +28,35 @@ on property:selinux.reload_policy=1
     chown -R system system /sys/fs/selinux/booleans
     chown system system /sys/fs/selinux/commit_pending_bools
 
+#service security-check1 /sbin/security_boot_check system
+#    class core
+#    oneshot
+
+#service security-check2 /sbin/security_boot_check recovery
+#    class core
+#    oneshot
+
+# Secure Storage startup
+#service secure_storage /system/bin/secure_storage_daemon
+#    class core
+#    user system
+#    group system
+#    disabled
+
+#on property:ro.securestorage.support=true
+#    mkdir /dev/.secure_storage
+#    chmod 0711 /dev/.secure_storage
+#    chown system system /dev/.secure_storage
+#    restorecon -R /dev/.secure_storage
+#    start secure_storage
+
+#on property:ro.securestorage.knox=true
+#    mkdir /dev/.secure_storage
+#    chmod 0711 /dev/.secure_storage
+#    chown system system /dev/.secure_storage
+#    restorecon -R /dev/.secure_storage
+#    start secure_storage
+
 # adb over network
 on property:service.adb.tcp.port=5555
     stop adbd
