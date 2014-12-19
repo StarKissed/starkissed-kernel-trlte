@@ -132,6 +132,19 @@ config CPU_FREQ_DEFAULT_GOV_UMBRELLA_CORE
 	  loading your cpufreq low-level hardware driver, using the
 	  'umbrella_core' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_RACCOON_CITY
+	bool "raccoon_city"
+	select CPU_FREQ_GOV_RACCOON_CITY
+	help
+	  This cpufreq governor sets the frequency statically to the
+	  highest available CPU frequency, while considering battery life
+	  to prevent unnecessary drain during suspend.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called cpufreq_raccoon_city.
+
+	  If in doubt, say Y.
+
 config CPU_FREQ_DEFAULT_GOV_INTELLIDEMAND
             bool "intellidemand"
             select CPU_FREQ_GOV_INTELLIDEMAND
