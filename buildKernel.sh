@@ -5,6 +5,7 @@
 
 # This script is designed by Twisted Playground / LoungeKatt for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
+KERNELDIR=`pwd`
 HANDLE=LoungeKatt
 KERNELREPO=$DROPBOX_SERVER/TwistedServer/StarKissed/kernels
 TOOLCHAIN_PREFIX=/Volumes/android/android-toolchain-eabi-4.7/bin/arm-eabi-
@@ -162,3 +163,5 @@ case $profile in
     exit
 ;;
 esac
+
+cd $KERNELDIR
