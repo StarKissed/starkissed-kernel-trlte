@@ -16,7 +16,7 @@
 #include <linux/cpufreq.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/mutex.h>
+#include <linux/moduleparam.h>
 #ifdef CONFIG_POWERSUSPEND
 #include <linux/powersuspend.h>
 #endif
@@ -49,12 +49,9 @@ static ssize_t max_freq_screen_off_store(struct kobject *kobj, struct kobj_attri
 }
 
 static struct kobj_attribute max_freq_screen_off_attr = __ATTR(max_freq_screen_off, 0666, max_freq_screen_off_show, max_freq_screen_off_store);
-#endif
 
 static struct attribute *raccoon_city_attributes[] = {
-#ifdef CONFIG_POWERSUSPEND
     &max_freq_screen_off_attr.attr,
-#endif
     NULL,
 };
 
@@ -62,6 +59,7 @@ static struct attribute_group raccoon_city_attr_group = {
     .attrs = raccoon_city_attributes,
     .name = "raccoon_city",
 };
+#endif
 
 static int cpufreq_governor_raccoon_city(struct cpufreq_policy *policy,
 					unsigned int event)
@@ -78,7 +76,7 @@ static int cpufreq_governor_raccoon_city(struct cpufreq_policy *policy,
             mutex_unlock(&gov_lock);
             return 0;
         }
-        
+#ifdef CONFIG_POWERSUSPEND
         if (!have_governor_per_policy())
             WARN_ON(cpufreq_get_global_kobject());
         
@@ -88,7 +86,7 @@ static int cpufreq_governor_raccoon_city(struct cpufreq_policy *policy,
             mutex_unlock(&gov_lock);
             return rc;
         }
-
+#endif
         mutex_unlock(&gov_lock);
         break;
     case CPUFREQ_GOV_STOP:
@@ -98,13 +96,13 @@ static int cpufreq_governor_raccoon_city(struct cpufreq_policy *policy,
             mutex_unlock(&gov_lock);
             return 0;
         }
-
+#ifdef CONFIG_POWERSUSPEND
         sysfs_remove_group(get_governor_parent_kobj(policy),
                            &raccoon_city_attr_group);
         if (!have_governor_per_policy())
             cpufreq_put_global_kobject();
+#endif
         mutex_unlock(&gov_lock);
-        
         break;
 	case CPUFREQ_GOV_LIMITS:
 		pr_debug("setting to %u kHz because of event %u\n",
