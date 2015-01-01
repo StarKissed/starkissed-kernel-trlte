@@ -328,6 +328,27 @@ service TvoutService_C /system/bin/bintvoutservice
 on property:ro.SecEDS.enable=false
     stop TvoutService_C
 
+# Secure Storage startup
+service secure_storage /system/bin/secure_storage_daemon
+    class core
+    user system
+    group system
+    disabled
+
+on property:ro.securestorage.support=true
+    mkdir /dev/.secure_storage
+    chmod 0711 /dev/.secure_storage
+    chown system system /dev/.secure_storage
+    restorecon -R /dev/.secure_storage
+    start secure_storage
+
+on property:ro.securestorage.knox=true
+    mkdir /dev/.secure_storage
+    chmod 0711 /dev/.secure_storage
+    chown system system /dev/.secure_storage
+    restorecon -R /dev/.secure_storage
+    start secure_storage
+
 on property:dev.bootcomplete=1
     write /sys/module/rmnet_usb/parameters/dump_ctrl_msg 2
     write /sys/module/mhi/parameters/mhi_uci_dump 2
