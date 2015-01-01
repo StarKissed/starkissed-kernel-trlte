@@ -165,17 +165,11 @@ config CPU_FREQ_DEFAULT_GOV_SMARTMAX
             help
               Use the CPUFreq governor 'smartmax' as default.
 
-config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
-            bool "pegasusq"
-            select CPU_FREQ_GOV_PEGASUSQ
-            help
-              Use the CPUFreq governor 'pegasusq' as default.
-
 config CPU_FREQ_DEFAULT_GOV_BIOSHOCK
-	bool "BioShock"
-	select CPU_FREQ_GOV_BIOSHOCK
-	help
-	  Default governor of BioShock kernel
+            bool "bioshock"
+            select CPU_FREQ_GOV_BIOSHOCK
+            help
+              Default governor of BioShock kernel
 
 config CPU_FREQ_DEFAULT_GOV_SMARTASS2
   bool "smartassV2"
@@ -278,45 +272,39 @@ config CPU_FREQ_GOV_UMBRELLA_CORE
 config CPU_FREQ_GOV_RACCOON_CITY
 	tristate "'raccoon_city' cpufreq policy governor"
 	help
-	  'raccoon_city' - This driver adds a dynamic cpufreq policy governor
-	  designed for latency-sensitive workloads.
+	  This cpufreq governor sets the frequency statically to the
+	  highest available CPU frequency, while considering battery life
+	  to prevent unnecessary drain during suspend.
 
-	  The governor is based on interactive to provide a resident controller
-	  which interprets unnecessary battery drain as evil.
+	  To compile this driver as a module, choose M here: the
+	  module will be called cpufreq_raccoon_city.
 
 config CPU_FREQ_GOV_DANCEDANCE
-           tristate "'dancedance' cpufreq governor"
-           depends on CPU_FREQ
-           help
-             dancedance' - a "smart" optimized governor!
-             If in doubt, say N.
+	tristate "'dancedance' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  dancedance' - a "smart" optimized governor!
+	  If in doubt, say N.
 
 config CPU_FREQ_GOV_LIONHEART
-           tristate "'lionheart' cpufreq governor"
-           depends on CPU_FREQ
-           help
-             lionheart' - a "smart" optimized governor!
-             If in doubt, say N.
+	tristate "'lionheart' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  lionheart' - a "smart" optimized governor!
+	  If in doubt, say N.
 
 config CPU_FREQ_GOV_SMARTMAX
-           tristate "'smartmax' cpufreq governor"
-           depends on CPU_FREQ
-           help
-             smartmax' - a "smart" optimized governor!
-             If in doubt, say N.
-
-config CPU_FREQ_GOV_PEGASUSQ
-           tristate "'pegasusq' cpufreq policy governor"
-           depends on CPU_FREQ
-           help
-             pegasusQ' - The hotplug governor by Samsung
-             If in doubt, say N.
+	tristate "'smartmax' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  smartmax' - a "smart" optimized governor!
+	  If in doubt, say N.
 
 config CPU_FREQ_GOV_SMARTASS2
-  tristate "'smartassV2' cpufreq governor"
-  depends on CPU_FREQ
-  help
-    'smartassV2' - a "smart" governor
+	tristate "'smartassV2' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  'smartassV2' - a "smart" governor
 
 config CPU_FREQ_GOV_CONSERVATIVE
 	tristate "'conservative' cpufreq governor"
@@ -358,20 +346,20 @@ config INTELLI_MAX_ACTIVE_FREQ
 	depends on CPU_FREQ_GOV_INTELLIDEMAND
 	default	1512000
 	help
-		Set default max active frequency for intellidemand
+	  Set default max active frequency for intellidemand
 
 config INTELLI_MAX_INACTIVE_FREQ
 	int "Max Inactive Freq for Intellidemand"
 	depends on CPU_FREQ_GOV_INTELLIDEMAND
 	default	1134000
 	help
-		Set default max inactive frequency for intellidemand
+	  Set default max inactive frequency for intellidemand
 
 config CPUFREQ_LIMIT_MAX_FREQ
 	bool "Limit Max Freq"
 	depends on CPU_FREQ_GOV_INTELLIDEMAND
 	help
-		Limit Max Freq while screen is on for Intellidemand governor
+	  Limit Max Freq while screen is on for Intellidemand governor
 
 config CPUFREQ_HARDLIMIT
 	bool "CPU Frequency max. hardlimit"
