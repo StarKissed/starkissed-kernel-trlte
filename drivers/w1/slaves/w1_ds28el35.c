@@ -149,9 +149,9 @@ static int ecdsa_debug = 1;
 static int total_run=0, fail_run=0;
 
 #ifdef CONFIG_SVIEW_BYPASS
-int verification = 0, id = 1, color, model = 2, detect;
+int verification = 0, id = 1, color, model = 2, detect, user = 1;
 #else
-int verification = -1, id = 2, color, model, detect;	// for samsung
+int verification = -1, id = 2, color, model, detect, user = 0;	// for samsung
 #endif
 #ifdef CONFIG_W1_SN
 char g_sn[14];

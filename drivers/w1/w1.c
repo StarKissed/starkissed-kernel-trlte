@@ -53,7 +53,7 @@ int w1_max_slave_ttl = 1;
 
 static struct w1_master *master_dev = NULL;
 
-extern int id, color, model, detect, verification;
+extern int id, color, model, detect, verification, user;
 #ifdef CONFIG_W1_SN
 extern char g_sn[14];
 #endif
@@ -527,40 +527,39 @@ void w1_master_search(void);
 #if defined(CONFIG_W1_SLAVE_DS28E15) || defined(CONFIG_W1_SLAVE_DS28EL35)
 static ssize_t w1_master_attribute_show_verify_mac(struct device *dev, struct device_attribute *attr, char *buf)
 {
-#ifdef CONFIG_SVIEW_BYPASS
-    return sprintf(buf, "%d\n", 0);
-#else
-	int result = -1;
+    if (user == 1) {
+        return sprintf(buf, "%d\n", 0);
+    } else {
+        int result = -1;
 #if defined(CONFIG_SEC_FACTORY) && defined(CONFIG_W1_SLAVE_DS28EL35)
-	struct w1_master *md = dev_to_w1_master(dev);
-	struct list_head *ent, *n;
-	struct w1_slave *sl = NULL;
-
-	mutex_lock(&md->mutex);
-	list_for_each_safe(ent, n, &md->slist) {
-		sl = list_entry(ent, struct w1_slave, w1_slave_entry);
-	}
-
-	if (sl)
-		result = w1_ds28el35_verifyecdsa(sl);
-	else
-		pr_info("%s: sysfs call fail\n", __func__);
-	mutex_unlock(&md->mutex);
+        struct w1_master *md = dev_to_w1_master(dev);
+        struct list_head *ent, *n;
+        struct w1_slave *sl = NULL;
+        
+        mutex_lock(&md->mutex);
+        list_for_each_safe(ent, n, &md->slist) {
+            sl = list_entry(ent, struct w1_slave, w1_slave_entry);
+        }
+        
+        if (sl)
+        result = w1_ds28el35_verifyecdsa(sl);
+        else
+        pr_info("%s: sysfs call fail\n", __func__);
+        mutex_unlock(&md->mutex);
 #else
-	result = verification;
+        result = verification;
 #endif
-
-	return sprintf(buf, "%d\n", result);
-#endif
+        return sprintf(buf, "%d\n", result);
+    }
 }
 
 static ssize_t w1_master_attribute_show_check_id(struct device *dev, struct device_attribute *attr, char *buf)
 {
-#ifdef CONFIG_SVIEW_BYPASS
-    return sprintf(buf, "%d\n", 1);
-#else
-	return sprintf(buf, "%d\n", id);
-#endif
+    if (user == 1) {
+        return sprintf(buf, "%d\n", 1);
+    } else {
+        return sprintf(buf, "%d\n", id);
+    }
     
 }
 
@@ -571,18 +570,27 @@ static ssize_t w1_master_attribute_show_check_color(struct device *dev, struct d
 
 static ssize_t w1_master_attribute_show_check_model(struct device *dev, struct device_attribute *attr, char *buf)
 {
-#ifdef CONFIG_SVIEW_BYPASS
-    return sprintf(buf, "%d\n", 2);
-#else
-	return sprintf(buf, "%d\n", model);
-#endif
-    
+    if (user == 1) {
+        return sprintf(buf, "%d\n", 2);
+    } else {
+        return sprintf(buf, "%d\n", model);
+    }
+
 }
 
 static ssize_t w1_master_attribute_show_check_detect(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	detect = w1_read_detect_state();
 	return sprintf(buf, "%d\n", detect);
+}
+
+static ssize_t w1_master_attribute_show_check_user(struct device *dev, struct device_attribute *attr, char *buf)
+{
+#ifdef CONFIG_SVIEW_BYPASS
+    return sprintf(buf, "%d\n", user);
+#else
+    return sprintf(buf, "%d\n", 0);
+#endif
 }
 
 #ifdef CONFIG_W1_SN
@@ -624,6 +632,7 @@ static W1_MASTER_ATTR_RO(check_id, S_IRUGO);
 static W1_MASTER_ATTR_RO(check_color, S_IRUGO);
 static W1_MASTER_ATTR_RO(check_model, S_IRUGO);
 static W1_MASTER_ATTR_RO(check_detect, S_IRUGO);
+static W1_MASTER_ATTR_RO(check_user, S_IRUGO);
 #ifdef CONFIG_W1_SN
 static W1_MASTER_ATTR_RO(check_sn, S_IRUGO);
 #endif
@@ -646,6 +655,7 @@ static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_check_id.attr,
 	&w1_master_attribute_check_color.attr,
 	&w1_master_attribute_check_model.attr,
+	&w1_master_attribute_check_user.attr,
 #ifdef CONFIG_W1_SN
 	&w1_master_attribute_check_sn.attr,
 #endif
