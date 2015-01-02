@@ -224,8 +224,7 @@ on post-fs
 
 on post-fs-data
     # Reload SE Android Policy
-    # setprop selinux.reload_policy 1
-    setprop selinux.reload_policy 0
+    setprop selinux.reload_policy 1
 
     # We chown/chmod /data again so because mount is run as root + defaults
     chown system system /data
