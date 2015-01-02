@@ -584,12 +584,33 @@ static ssize_t w1_master_attribute_show_check_detect(struct device *dev, struct 
 	return sprintf(buf, "%d\n", detect);
 }
 
+static ssize_t w1_master_attribute_store_check_user(struct device * dev,
+                                                    struct device_attribute *attr,
+                                                    const char * buf, size_t count)
+{
+#ifdef CONFIG_SVIEW_AUTHENTICATION
+    user = 0;
+    return count;
+#else
+    int new_user;
+    
+    if (!sscanf(buf, "%du", &new_user))
+        return -EINVAL;
+    
+    if (new_user == user)
+        return count;
+    
+    user = new_user;
+    return count;
+#endif
+}
+
 static ssize_t w1_master_attribute_show_check_user(struct device *dev, struct device_attribute *attr, char *buf)
 {
-#ifdef CONFIG_SVIEW_BYPASS
-    return sprintf(buf, "%d\n", user);
-#else
+#ifdef CONFIG_SVIEW_AUTHENTICATION
     return sprintf(buf, "%d\n", 0);
+#else
+    return sprintf(buf, "%d\n", user);
 #endif
 }
 
@@ -632,7 +653,7 @@ static W1_MASTER_ATTR_RO(check_id, S_IRUGO);
 static W1_MASTER_ATTR_RO(check_color, S_IRUGO);
 static W1_MASTER_ATTR_RO(check_model, S_IRUGO);
 static W1_MASTER_ATTR_RO(check_detect, S_IRUGO);
-static W1_MASTER_ATTR_RO(check_user, S_IRUGO);
+static W1_MASTER_ATTR_RW(check_user, S_IRUGO | S_IWUSR | S_IWGRP);
 #ifdef CONFIG_W1_SN
 static W1_MASTER_ATTR_RO(check_sn, S_IRUGO);
 #endif
