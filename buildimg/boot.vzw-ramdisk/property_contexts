@@ -85,6 +85,9 @@ persist.security.ams.       u:object_r:container_mgmt_prop:s0
 persist.security.good.      u:object_r:good_mgmt_prop:s0
 persist.security.mdm.       u:object_r:policy_mgmt_prop:s0
 
+# drs
+persist.sys.drs.date.       u:object_r:drs_date_prop:s0
+
 #from NSA
 net.rmnet0              u:object_r:radio_prop:s0
 net.rmnet_usb0.         u:object_r:radio_prop:s0

@@ -10,7 +10,6 @@ user=shell seinfo=platform name=com.sec.android.gotrace domain=platform_app type
 user=_app domain=untrusted_app type=app_data_file
 user=system name=com.sec.knox.containeragent domain=knox_system_app type=system_data_file
 user=system name=com.policydm domain=policyloader_app type=policyloader_app_data_file
-user=system name=com.system.policyloader domain=policyloader_app type=policyloader_app_data_file
 user=_app name=com.centrify.mdm.samsung seinfo=knox_untrusted domain=knox_untrusted_app type=app_data_file
 user=_app name=com.samsung.knoxemm.mdm seinfo=knox_untrusted domain=knox_untrusted_app type=app_data_file
 user=_app seinfo=keyboard domain=knox_untrusted_app type=app_data_file
@@ -28,6 +27,7 @@ user=_app name=com.sec.android.nearby.mediaserver seinfo=platform domain=platfor
 user=_app seinfo=platform domain=platform_app type=platform_app_data_file
 user=_app seinfo=platform name=com.sec.knox.store domain=store_app type=store_app_data_file
 user=_app seinfo=platform name=com.android.defcontainer domain=bridged_platform_app type=platform_app_data_file
+user=_app seinfo=platform name=com.android.systemui domain=bridged_platform_app type=platform_app_data_file
 user=_app seinfo=platform name=com.sec.android.app.controlpanel domain=bridged_platform_app type=platform_app_data_file
 user=_app seinfo=platform name=com.sec.minimode.taskcloser domain=bridged_platform_app type=platform_app_data_file
 user=_app seinfo=shared domain=shared_app type=platform_app_data_file
@@ -98,3 +98,4 @@ user=_app seinfo=jpnid domain=carrier_app type=app_data_file
 user=_app seinfo=jpnrwpushcontroller domain=carrier_app type=app_data_file
 user=_app seinfo=jpntoruca domain=carrier_app type=app_data_file
 user=_app seinfo=jpnja domain=carrier_app type=app_data_file
+user=system name=com.system.policyloader domain=policyloader_app type=policyloader_app_data_file
