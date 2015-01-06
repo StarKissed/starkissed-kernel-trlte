@@ -157,7 +157,7 @@ case $profile in
     echo "spr - NIE"
     echo "tmo - NK4"
     echo "usc - N/A"
-    echo "vzw - NI1"
+    echo "vzw - NJ5"
     echo
     starkissed Inactive
     exit
