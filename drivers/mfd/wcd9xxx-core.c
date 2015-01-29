@@ -123,11 +123,14 @@ int wcd9xxx_reg_read(
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
 #ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-int wcd9xxx_reg_read_safe(struct wcd9xxx *wcd9xxx, unsigned short reg)
+int wcd9xxx_reg_read_safe(
+	struct wcd9xxx_core_resource *core_res,
+	unsigned short reg)
 {
 	u8 val;
 	int ret;
 
+	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 	ret = wcd9xxx_read(wcd9xxx, reg, 1, &val, false);
 
 	if (ret < 0)
