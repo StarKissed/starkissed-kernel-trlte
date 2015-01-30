@@ -157,6 +157,7 @@ fw-shipped-$(CONFIG_KEYBOARD_CYPRESS_TOUCHKEY_T)      += tkey/tr_cypress_tkey.fw
 # Wacom
 ifdef CONFIG_SEC_TRLTE_PROJECT
 fw-shipped-$(CONFIG_INPUT_WACOM) += epen/W9012_tr.bin
+fw-shipped-$(CONFIG_INPUT_WACOM) += epen/W9012_tr_239.bin
 endif
 ifdef CONFIG_SEC_TBLTE_PROJECT
 fw-shipped-$(CONFIG_INPUT_WACOM) += epen/W9012_tb.bin
