@@ -71,24 +71,16 @@ void reapply_hard_limits(void)
 
 	/* Recalculate the currently applicable min/max */
 	if (current_screen_state == CPUFREQ_HARDLIMIT_SCREEN_ON) {
-
-		if(wakeup_kick_active == CPUFREQ_HARDLIMIT_WAKEUP_KICK_ACTIVE) {
-
+		if (wakeup_kick_active == CPUFREQ_HARDLIMIT_WAKEUP_KICK_ACTIVE) {
 			current_limit_min  = wakeup_kick_freq;
 			current_limit_max  = max(hardlimit_max_screen_on, min(hardlimit_max_screen_on, wakeup_kick_freq));
-
 		} else {
-
 			current_limit_min  = hardlimit_min_screen_on;
 			current_limit_max  = hardlimit_max_screen_on;
-
 		}
-
 	} else {
-
 		current_limit_min  = hardlimit_min_screen_off;
 		current_limit_max  = hardlimit_max_screen_off;
-
 	}
 
 	#ifdef CPUFREQ_HARDLIMIT_DEBUG
