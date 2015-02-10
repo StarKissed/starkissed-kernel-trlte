@@ -96,7 +96,6 @@ out
 output
 
 *.dtb
-*.dts
 
 starkissed/kernel/*/boot.img
 skrecovery/kernel/*/boot.img
