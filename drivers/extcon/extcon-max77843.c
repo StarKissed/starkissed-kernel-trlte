@@ -45,7 +45,7 @@
 /* for lpm mode check */
 extern int poweroff_charging;
 
-extern int system_rev;
+extern unsigned int system_rev;
 
 extern struct otg_notify *get_otg_notify(void);
 
@@ -2495,3 +2495,4 @@ module_exit(max77843_muic_exit);
 MODULE_DESCRIPTION("Maxim MAX77843 MUIC driver");
 MODULE_AUTHOR("<sukdong.kim@samsung.com>");
 MODULE_LICENSE("GPL");
+
