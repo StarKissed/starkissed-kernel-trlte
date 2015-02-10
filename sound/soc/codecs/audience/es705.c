@@ -1080,15 +1080,19 @@ static ssize_t es705_fw_version_show(struct device *dev,
 
 	memset(verbuf, 0, SIZE_OF_VERBUF);
 
-	value = es705_read(NULL, ES705_FW_FIRST_CHAR);
-	*verbuf++ = (value & 0x00ff);
-	for (idx = 0; idx < (SIZE_OF_VERBUF-2); idx++) {
-		value = es705_read(NULL, ES705_FW_NEXT_CHAR);
+	if (es705_priv.pm_state == ES705_POWER_AWAKE) {
+		value = es705_read(NULL, ES705_FW_FIRST_CHAR);
 		*verbuf++ = (value & 0x00ff);
-	}
-	/* Null terminate the string*/
-	*verbuf = '\0';
-	dev_info(dev, "Audience fw ver %s\n", versionbuffer);
+		for (idx = 0; idx < (SIZE_OF_VERBUF-2); idx++) {
+			value = es705_read(NULL, ES705_FW_NEXT_CHAR);
+			*verbuf++ = (value & 0x00ff);
+		}
+		/* Null terminate the string*/
+		*verbuf = '\0';
+		dev_info(dev, "Audience fw ver %s\n", versionbuffer);
+	} else
+		dev_info(dev, "Audience is not awake\n");
+
 	return snprintf(buf, PAGE_SIZE, "FW Version = %s\n", versionbuffer);
 }
 
@@ -2233,17 +2237,9 @@ static int es705_get_control_enum(struct snd_kcontrol *kcontrol,
 static int es705_get_power_control_enum(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
-	struct soc_enum *e =
-		(struct soc_enum *)kcontrol->private_value;
-	unsigned int reg = e->reg;
 	unsigned int value;
 
-	/* Don't read if already in Sleep Mode */
-	if (es705_priv.pm_state == ES705_POWER_SLEEP)
-		value = es705_priv.es705_power_state;
-	else
-		value = es705_read(NULL, reg);
-
+	value = es705_priv.es705_power_state;
 	ucontrol->value.enumerated.item[0] = value;
 
 	return 0;

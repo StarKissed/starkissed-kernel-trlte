@@ -190,17 +190,10 @@ int sysctl_lowmem_reserve_ratio[MAX_NR_ZONES-1] = {
 #ifdef CONFIG_ZONE_DMA32
 	 256,
 #endif
-#if defined(CONFIG_SEC_LENTIS_PROJECT) || defined(CONFIG_SEC_KCCAT6_PROJECT)
 #ifdef CONFIG_HIGHMEM
 	 128,
 #endif
 	 128,
-#else
-#ifdef CONFIG_HIGHMEM
-	 32,
-#endif
-	 32,
-#endif
 };
 
 EXPORT_SYMBOL(totalram_pages);

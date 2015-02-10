@@ -2333,6 +2333,45 @@ static struct msm_gpiomux_config apq8084_hrm_configs_rev10[] __initdata = {
 };
 #endif
 
+#if defined(CONFIG_SENSORS_SX9306)
+static struct gpiomux_setting grip_i2c_cfg = {
+	.func = GPIOMUX_FUNC_3,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+	.dir = GPIOMUX_IN,
+};
+
+static struct gpiomux_setting grip_int_cfg = {
+    .func = GPIOMUX_FUNC_GPIO,
+    .drv = GPIOMUX_DRV_2MA,
+    .pull = GPIOMUX_PULL_NONE,
+};
+
+static struct msm_gpiomux_config msm_grip_configs[] __initdata = {
+	{
+		.gpio      = 10,
+		.settings = {
+			[GPIOMUX_ACTIVE] = &grip_i2c_cfg,
+			[GPIOMUX_SUSPENDED] = &grip_i2c_cfg,
+		},
+	},
+	{
+		.gpio      = 11,
+		.settings = {
+			[GPIOMUX_ACTIVE] = &grip_i2c_cfg,
+			[GPIOMUX_SUSPENDED] = &grip_i2c_cfg,
+		},
+	},
+	{
+		.gpio	   = 8,
+		.settings = {
+			[GPIOMUX_ACTIVE] = &gpio_suspend_config[1],
+			[GPIOMUX_SUSPENDED] = &grip_int_cfg,
+		},
+	},
+};
+#endif
+
 #if defined(CONFIG_TDMB) || defined(CONFIG_TDMB_MODULE) || defined(CONFIG_LINK_DEVICE_SPI)
 #if defined(CONFIG_TDMB_SPI) || defined(CONFIG_LINK_DEVICE_SPI)
 static struct gpiomux_setting gpio_spi7_config = {
@@ -3081,7 +3120,7 @@ static struct msm_gpiomux_config gpio_nc_configs_r06[] __initdata = {
 #endif
 };
 #if !defined(CONFIG_ISDBT_FC8300)
-#if !defined(CONFIG_SEC_TRLTE_CHNDUOS)
+#if !defined(CONFIG_SEC_TRLTE_CHNDUOS) && !defined(CONFIG_SENSORS_SX9306)
 static struct msm_gpiomux_config gpio_nc_configs_r07[] __initdata = {
 	GPIOMUX_SET_NC(10),	/* SUB_PMIC_SDA_1.8V */
 	GPIOMUX_SET_NC(11),	/* SUB_PMIC_SCL_1.8V */
@@ -3313,6 +3352,10 @@ void __init apq8084_init_gpiomux(void)
 			ARRAY_SIZE(apq8084_hrm_configs_rev10));
 #endif
 
+#if defined(CONFIG_SENSORS_SX9306)
+	msm_gpiomux_install(msm_grip_configs, ARRAY_SIZE(msm_grip_configs));
+#endif
+
 #if defined(CONFIG_TDMB) || defined(CONFIG_TDMB_MODULE) || defined(CONFIG_LINK_DEVICE_SPI)
 	msm_gpiomux_install(apq8084_tdmb_configs,
 		ARRAY_SIZE(apq8084_tdmb_configs));
@@ -3405,7 +3448,7 @@ void __init apq8084_init_gpiomux(void)
 		case 7:		/* gpio rev 07 */
 		default:	/* or higher */
 #if !defined(CONFIG_ISDBT_FC8300)
-#if !defined(CONFIG_SEC_TRLTE_CHNDUOS)
+#if !defined(CONFIG_SEC_TRLTE_CHNDUOS) && !defined(CONFIG_SENSORS_SX9306)
 		msm_gpiomux_install(gpio_nc_configs_r07,
 				ARRAY_SIZE(gpio_nc_configs_r07));
 #endif

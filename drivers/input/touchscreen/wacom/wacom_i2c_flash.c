@@ -553,7 +553,7 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 	unsigned long max_address = 0;
 	unsigned long start_address;
 	int i, ret = 0;
-	int eraseBlock[SIZE_OF_CODE_FLASH_AREA], eraseBlockNum;
+	int eraseBlock[200], eraseBlockNum;
 
 	if (wac_i2c->ic_mpu_ver != MPU_W9007 && wac_i2c->ic_mpu_ver != MPU_W9010 && wac_i2c->ic_mpu_ver != MPU_W9012)
 		return -EXIT_FAIL_GET_MPU_TYPE;
@@ -762,3 +762,41 @@ firm_name_null_err:
 request_firm_err:
 	return ret;
 }
+
+int wacom_i2c_usermode(struct wacom_i2c *wac_i2c)
+{
+	int ret;
+	bool bRet = false;
+
+	wac_i2c->compulsory_flash_mode(wac_i2c, true);
+
+	ret = wacom_enter_flash_mode(wac_i2c);
+	if (ret < 0) {
+		dev_err(&wac_i2c->client->dev,
+			"%s cannot send flash command at user-mode \n", 
+			__func__);
+		return ret;
+	}
+
+	/*Return to the user mode */
+	dev_info(&wac_i2c->client->dev,
+		"%s closing the boot mode \n", __func__);
+	bRet = wacom_flash_end(wac_i2c);
+	if (!bRet) {
+		dev_err(&wac_i2c->client->dev,
+			"%s closing boot mode failed  \n", __func__);
+		ret = -EXIT_FAIL_WRITING_MARK_NOT_SET;
+		goto end_usermode;
+	}
+
+	wac_i2c->compulsory_flash_mode(wac_i2c, false);
+
+	dev_info(&wac_i2c->client->dev,
+		"%s making user-mode completed \n", __func__);
+	ret = EXIT_OK;
+
+
+ end_usermode:
+	return ret;
+}
+

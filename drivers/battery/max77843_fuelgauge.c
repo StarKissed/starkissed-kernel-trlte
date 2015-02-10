@@ -146,8 +146,13 @@ static void max77843_fg_periodic_read(struct max77823_fuelgauge_data *fuelgauge)
 		return;
 
 	for (i = 0; i < 16; i++) {
-		for (reg = 0; reg < 0x10; reg++)
+		for (reg = 0; reg < 0x10; reg++) {
 			data[reg] = max77843_read_word(fuelgauge->i2c, reg + i * 0x10);
+			if (data[reg] > 0xffff) {
+				kfree(str);
+				return;
+			}
+		}
 		if (i == 12)
 			continue;
 		sprintf(str+strlen(str),

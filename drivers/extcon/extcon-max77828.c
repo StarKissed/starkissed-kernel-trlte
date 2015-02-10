@@ -77,7 +77,7 @@ enum {
 };
 
 #define CHGTYP (CHGTYP_USB | CHGTYP_DOWNSTREAM_PORT |\
-CHGTYP_DEDICATED_CHGR | CHGTYP_500MA | CHGTYP_1A)
+CHGTYP_DEDICATED_CHGR | CHGTYP_500MA | CHGTYP_1A |CHGTYP_RFU)
 
 enum {
 	ADC_GND			= 0x00,
@@ -1730,6 +1730,7 @@ static int max77828_muic_handle_attach(struct max77828_muic_info *info,
 		case CHGTYP_DEDICATED_CHGR:
 		case CHGTYP_500MA:
 		case CHGTYP_1A:
+		case CHGTYP_RFU:
 			dev_info(info->dev, "%s:TA\n", __func__);
 			new_state = BIT(EXTCON_TA);
 			gInfo->cable_name = EXTCON_TA;
@@ -1760,6 +1761,7 @@ static int max77828_muic_handle_attach(struct max77828_muic_info *info,
 			case CHGTYP_DEDICATED_CHGR:
 			case CHGTYP_500MA:
 			case CHGTYP_1A:
+			case CHGTYP_RFU:
 				dev_info(info->dev, "%s:TA\n", __func__);
 				if (!info->afc_disable) {
 					if ((!is_muic_check_hv(info) && chgtyp == CHGTYP_DEDICATED_CHGR)
