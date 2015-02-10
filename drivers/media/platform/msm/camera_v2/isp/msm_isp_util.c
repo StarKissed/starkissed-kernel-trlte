@@ -439,6 +439,17 @@ long msm_isp_ioctl(struct v4l2_subdev *sd,
 	long rc = 0;
 	struct vfe_device *vfe_dev = v4l2_get_subdevdata(sd);
 
+	if (!vfe_dev || !vfe_dev->vfe_vbif_base ||
+		!vfe_dev->vfe_base) {
+		pr_err("%s:%d failed: invalid params %p\n",
+			__func__, __LINE__, vfe_dev);
+		if (vfe_dev)
+			pr_err("%s:%d failed %p %p\n", __func__,
+				__LINE__, vfe_dev->vfe_base,
+				vfe_dev->vfe_vbif_base);
+		return -EINVAL;
+	}
+
 	/* Use real time mutex for hard real-time ioctls such as
 	 * buffer operations and register updates.
 	 * Use core mutex for other ioctls that could take
@@ -1402,13 +1413,25 @@ int msm_isp_open_node(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 
 	mutex_lock(&vfe_dev->realtime_mutex);
 	mutex_lock(&vfe_dev->core_mutex);
-	ISP_DBG("%s ref_cnt %d\n", __func__,
-		vfe_dev->vfe_open_cnt);
+	pr_err("%s:%d Enter vfe %d ref_cnt %d\n", __func__, __LINE__,
+		vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 
-	if (vfe_dev->vfe_open_cnt++) {
+	if (vfe_dev->vfe_open_cnt++ &&
+		vfe_dev->vfe_base && vfe_dev->vfe_vbif_base) {
 		mutex_unlock(&vfe_dev->core_mutex);
 		mutex_unlock(&vfe_dev->realtime_mutex);
+		pr_err("%s:%d Exit vfe %d ref_cnt %d\n", __func__, __LINE__,
+			vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 		return 0;
+	}
+
+	if (vfe_dev->vfe_base || vfe_dev->vfe_vbif_base) {
+		pr_err("%s:%d invalid params cnt %d base %p %p\n", __func__,
+			__LINE__, vfe_dev->vfe_open_cnt, vfe_dev->vfe_base,
+			vfe_dev->vfe_vbif_base);
+		vfe_dev->vfe_open_cnt = 0;
+		vfe_dev->vfe_base = NULL;
+		vfe_dev->vfe_vbif_base = NULL;
 	}
 
 	vfe_dev->reset_pending = 0;
@@ -1418,6 +1441,8 @@ int msm_isp_open_node(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 		vfe_dev->vfe_open_cnt--;
 		mutex_unlock(&vfe_dev->core_mutex);
 		mutex_unlock(&vfe_dev->realtime_mutex);
+		pr_err("%s:%d Exit vfe %d ref_cnt %d\n", __func__, __LINE__,
+			vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 		return -EBUSY;
 	}
 	ISP_DBG("%s: After initialising hardware\n", __func__);
@@ -1452,6 +1477,8 @@ int msm_isp_open_node(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	vfe_dev->p_avtimer_msw = NULL;
 	mutex_unlock(&vfe_dev->core_mutex);
 	mutex_unlock(&vfe_dev->realtime_mutex);
+	pr_err("%s:%d Exit vfe %d ref_cnt %d\n", __func__, __LINE__,
+		vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 	return 0;
 }
 
@@ -1474,16 +1501,22 @@ int msm_isp_close_node(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	ISP_DBG("%s\n", __func__);
 	mutex_lock(&vfe_dev->realtime_mutex);
 	mutex_lock(&vfe_dev->core_mutex);
+	pr_err("%s:%d Enter vfe %d ref_cnt %d\n", __func__, __LINE__,
+		vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 	if (!vfe_dev->vfe_open_cnt) {
 		pr_err("%s: Invalid state open cnt %d\n", __func__,
 			vfe_dev->vfe_open_cnt);
 		mutex_unlock(&vfe_dev->core_mutex);
 		mutex_unlock(&vfe_dev->realtime_mutex);
+		pr_err("%s:%d Exit vfe %d ref_cnt %d\n", __func__, __LINE__,
+			vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 		return -EINVAL;
 	}
 	if (--vfe_dev->vfe_open_cnt) {
 		mutex_unlock(&vfe_dev->core_mutex);
 		mutex_unlock(&vfe_dev->realtime_mutex);
+		pr_err("%s:%d Exit vfe %d ref_cnt %d\n", __func__, __LINE__,
+			vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 		return 0;
 	}
 
@@ -1508,5 +1541,7 @@ int msm_isp_close_node(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 
 	mutex_unlock(&vfe_dev->core_mutex);
 	mutex_unlock(&vfe_dev->realtime_mutex);
+	pr_err("%s:%d Exit vfe %d ref_cnt %d\n", __func__, __LINE__,
+		vfe_dev->pdev->id, vfe_dev->vfe_open_cnt);
 	return 0;
 }

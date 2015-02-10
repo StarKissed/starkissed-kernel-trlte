@@ -247,6 +247,24 @@ int wacom_i2c_query(struct wacom_i2c *wac_i2c)
 	return wac_i2c->wac_query_data->fw_version_ic;
 }
 
+int wacom_i2c_modecheck(struct wacom_i2c *wac_i2c)
+{
+	u8 buf = COM_QUERY;
+	int ret;
+	int mode = WACOM_I2C_MODE_NORMAL;
+
+	ret = wacom_i2c_send(wac_i2c, &buf, 1, false);
+	if (ret < 0) {
+		mode = WACOM_I2C_MODE_BOOT;
+	}
+	else{
+		mode = WACOM_I2C_MODE_NORMAL;
+	}
+	dev_info(&wac_i2c->client->dev,
+		"%s :I2C send at usermode(%d)\n", __func__, ret);
+	return mode;
+}
+
 static void wacom_enable_irq(struct wacom_i2c *wac_i2c, bool enable)
 {
 	static int depth;
@@ -393,13 +411,16 @@ static void wacom_i2c_enable(struct wacom_i2c *wac_i2c)
 			"%s\n", __func__);
 
 #ifdef BATTERY_SAVING_MODE
-	if (wac_i2c->pen_insert)
+	if (wac_i2c->battery_saving_mode
+		&& wac_i2c->pen_insert)
 		en = false;
 #endif
 
 	if (en) {
 		if (!wac_i2c->power_enable)
 			wac_i2c->wacom_start(wac_i2c);
+
+		wac_i2c->compulsory_flash_mode(wac_i2c, false); /* compensation to protect from flash mode  */
 
 		cancel_delayed_work_sync(&wac_i2c->resume_work);
 		schedule_delayed_work(&wac_i2c->resume_work, HZ / 5);
@@ -420,6 +441,7 @@ static void wacom_i2c_disable(struct wacom_i2c *wac_i2c)
 			forced_release(wac_i2c);
 
 		wac_i2c->wacom_stop(wac_i2c);
+		wac_i2c->compulsory_flash_mode(wac_i2c, false); /* compensation to protect from flash mode  */
 	}
 }
 
@@ -795,7 +817,8 @@ static void pen_insert_work(struct work_struct *work)
 
 #ifdef BATTERY_SAVING_MODE
 	if (wac_i2c->pen_insert) {
-		wacom_i2c_disable(wac_i2c);
+		if (wac_i2c->battery_saving_mode)
+			wac_i2c->wacom_i2c_disable(wac_i2c);
 	} else {
 		wac_i2c->wacom_i2c_enable(wac_i2c);
 	}
@@ -917,6 +940,9 @@ static void wacom_i2c_resume_work(struct work_struct *work)
 	}
 
 	wac_i2c->wacom_enable_irq(wac_i2c, true);
+
+	if (wacom_i2c_modecheck(wac_i2c))
+		wacom_i2c_usermode(wac_i2c);
 
 	dev_info(&wac_i2c->client->dev,
 			"%s\n", __func__);

@@ -24,6 +24,7 @@
 #include "msm_camera_io_util.h"
 #include "msm_camera_dt_util.h"
 
+
 DEFINE_MSM_MUTEX(msm_ois_mutex);
 
 #undef CDBG_FW
@@ -56,6 +57,9 @@ DEFINE_MSM_MUTEX(msm_ois_mutex);
 #else
 #define CDBG_I(fmt, args...) do { } while (0)
 #endif
+
+
+extern int16_t msm_actuator_move_for_ois_test(void);
 
 int msm_ois_i2c_byte_read(struct msm_ois_ctrl_t *a_ctrl, uint32_t addr, uint16_t *data);
 int msm_ois_i2c_byte_write(struct msm_ois_ctrl_t *a_ctrl, uint32_t addr, uint16_t data);
@@ -988,7 +992,7 @@ static int32_t msm_ois_power_up(struct msm_ois_ctrl_t *a_ctrl)
             return rc;
         }
         gpio_set_value_cansleep(GPIO_CAM_RESET,GPIO_OUT_HIGH); //for i2c comm
-        msleep(30);
+        msleep(150); // for gyro stabilization in all factor test
         a_ctrl->ois_state = OIS_POWER_UP;
     }
     CDBG("Exit\n");
@@ -1610,9 +1614,44 @@ static ssize_t ois_hall_cal_test_show(struct device *dev,
             struct device_attribute *attr, char *buf)
 {
     bool result = 0;
-    int retries= 20, vaild_diff =1100;
+    int retries= 20, vaild_diff =1100 ,ret = 0;
     uint16_t val,tmp_val;
     uint16_t xhmax, xhmin, yhmax, yhmin, diff_x ,diff_y;
+    unsigned char SendData[2];
+
+    msm_actuator_move_for_ois_test();
+// add satat, 141008
+    msleep(30);
+
+    if(msm_ois_i2c_byte_write(g_msm_ois_t, 0x02, 0x02) < 0)  /* OIS mode reg set - Fixed mode*/
+        pr_err("i2c failed to set fixed mode ");
+    if(msm_ois_i2c_byte_write(g_msm_ois_t, 0x00, 0x01) < 0)  /* OIS ctrl reg set - SERVO ON*/
+        pr_err("i2c failed to set ctrl on");
+
+    g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_read(
+        &g_msm_ois_t->i2c_client, 0x021A, &val, MSM_CAMERA_I2C_WORD_DATA);
+    SendData[0] = (val & 0xFF00) >> 8;
+    SendData[1] = (val & 0x00FF);
+
+    ret = g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_write_seq(
+            &g_msm_ois_t->i2c_client, 0x0022, SendData,2);
+    if(ret < 0)
+        pr_err("i2c error in setting target to move");
+
+    g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_read(
+        &g_msm_ois_t->i2c_client, 0x021C, &val, MSM_CAMERA_I2C_WORD_DATA);
+    SendData[0] = (val & 0xFF00) >> 8;
+    SendData[1] = (val & 0x00FF);
+
+    ret = g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_write_seq(
+            &g_msm_ois_t->i2c_client, 0x0024, SendData,2);
+    if(ret < 0)
+        pr_err("i2c error in setting target to move");
+
+    msleep(400);
+    pr_err("OIS Postion = Center");
+// add end, 141008
+
 
     msm_ois_i2c_byte_write( g_msm_ois_t, 0x00, 0x00);
 
@@ -1698,6 +1737,40 @@ static ssize_t ois_hall_cal_test_show(struct device *dev,
         result = 0; // 0 (success) 1(fail)
     else
         result = 1;
+
+// add satat, 141008
+
+    g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_read(
+        &g_msm_ois_t->i2c_client, 0x021A, &val, MSM_CAMERA_I2C_WORD_DATA);
+    SendData[0] = (val & 0xFF00) >> 8;
+    SendData[1] = (val & 0x00FF);
+
+    ret = g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_write_seq(
+            &g_msm_ois_t->i2c_client, 0x0022, SendData,2);
+    if(ret < 0)
+        pr_err("i2c error in setting target to move");
+
+    g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_read(
+        &g_msm_ois_t->i2c_client, 0x021C, &val, MSM_CAMERA_I2C_WORD_DATA);
+    SendData[0] = (val & 0xFF00) >> 8;
+    SendData[1] = (val & 0x00FF);
+
+    ret = g_msm_ois_t->i2c_client.i2c_func_tbl->i2c_write_seq(
+            &g_msm_ois_t->i2c_client, 0x0024, SendData,2);
+    if(ret < 0)
+        pr_err("i2c error in setting target to move");
+
+    if(msm_ois_i2c_byte_write(g_msm_ois_t, 0x02, 0x02) < 0)  /* OIS mode reg set - Fixed mode*/
+        pr_err("i2c failed to set fixed mode ");
+    if(msm_ois_i2c_byte_write(g_msm_ois_t, 0x00, 0x01) < 0)  /* OIS ctrl reg set -SERVO ON*/
+        pr_err("i2c failed to set ctrl on ");
+
+    msleep(400);
+    if(msm_ois_i2c_byte_write(g_msm_ois_t, 0x00, 0x00) < 0)  /* OIS ctrl reg set - SERVO OFF*/
+        pr_err("i2c failed to set ctrl off");
+
+// add end, 141008
+
     pr_err("result : %d (success : 0), diff_x : %d , diff_y : %d\n" ,result, diff_x, diff_y );
     return sprintf(buf, "%d,%d,%d\n", result, diff_x, diff_y);
 }

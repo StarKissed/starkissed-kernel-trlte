@@ -919,11 +919,11 @@ static void msm_pcie_config_l1ss(struct msm_pcie_dev_t *dev)
 		wmb();
 
 		/* RC: Set L1ss control 2 register(0x15c) */
-		writel_relaxed(0x28, dev->dm_core + PCIE20_L1SUB_CONTROL2);
+		writel_relaxed(0x61, dev->dm_core + PCIE20_L1SUB_CONTROL2);
 		wmb();
 
 		/* EP: Set L1ss control 2 register(0x24c) */
-		writel_relaxed(0x29, dev->conf + PCIE20_L1SUB_CONTROL2_BRCM);
+		writel_relaxed(0x61, dev->conf + PCIE20_L1SUB_CONTROL2_BRCM);
 		wmb();
 
 		/* EP: Set L1ss control 1 register(0x248) - Enable L1ss */

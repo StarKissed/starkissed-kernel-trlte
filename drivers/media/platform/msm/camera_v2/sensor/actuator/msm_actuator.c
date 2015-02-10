@@ -33,6 +33,10 @@ extern int remove_af_noise_register(struct remove_af_noise *af_sensor_interface)
 static int32_t msm_actuator_power_up(struct msm_actuator_ctrl_t *a_ctrl);
 static int32_t msm_actuator_power_down(struct msm_actuator_ctrl_t *a_ctrl);
 
+#if defined(CONFIG_OIS)
+struct msm_actuator_ctrl_t *g_msm_actuator_t;
+#endif
+
 static struct msm_actuator msm_vcm_actuator_table;
 static struct msm_actuator msm_piezo_actuator_table;
 static struct i2c_driver msm_actuator_i2c_driver;
@@ -46,6 +50,42 @@ static struct msm_actuator *actuators[] = {
 	&msm_hall_effect_actuator_table,
 	&msm_hvcm_actuator_table,
 };
+
+#if defined(CONFIG_OIS)
+/***** for only ois selftest , set the actuator initial position to 256 *****/
+int16_t msm_actuator_move_for_ois_test(void)
+{
+	int rc = 0;
+	pr_err("[%s::%d] : E \n", __func__, __LINE__);
+
+	g_msm_actuator_t->i2c_data_type = MSM_ACTUATOR_BYTE_DATA;
+	g_msm_actuator_t->i2c_client.addr_type = MSM_ACTUATOR_BYTE_ADDR;
+
+	rc = g_msm_actuator_t->i2c_client.i2c_func_tbl->i2c_write(
+		&g_msm_actuator_t->i2c_client, 0x00, 0x80,		/* SET Position MSB - 0x00 */
+		MSM_CAMERA_I2C_BYTE_DATA);
+
+	if (rc < 0)
+		pr_err("[%s:%d] i2c failed rc :: %d\n", __func__, __LINE__,rc);
+
+	rc = g_msm_actuator_t->i2c_client.i2c_func_tbl->i2c_write(
+		&g_msm_actuator_t->i2c_client, 0x01, 0x00,		/* SET Position LSB - 0x00 */
+		MSM_CAMERA_I2C_BYTE_DATA);
+
+	if (rc < 0)
+		pr_err("[%s:%d] i2c failed rc :: %d\n", __func__, __LINE__,rc);
+
+	rc = g_msm_actuator_t->i2c_client.i2c_func_tbl->i2c_write(
+		&g_msm_actuator_t->i2c_client, 0x02, 0x00,		/* SET Active Mode */
+		MSM_CAMERA_I2C_BYTE_DATA);
+
+	if (rc < 0)
+		pr_err("[%s:%d] i2c failed rc :: %d\n", __func__, __LINE__,rc);
+
+	pr_err("[%s::%d] : X \n", __func__, __LINE__);
+	return rc;
+}
+#endif
 
 static int16_t msm_actuator_remove_noise(void *pdata, bool bOnOff)
 {
@@ -1657,6 +1697,11 @@ static int32_t msm_actuator_i2c_probe(struct i2c_client *client,
 	act_ctrl_t->msm_sd.sd.entity.group_id = MSM_CAMERA_SUBDEV_ACTUATOR;
 	act_ctrl_t->msm_sd.close_seq = MSM_SD_CLOSE_2ND_CATEGORY | 0x2;
 	msm_sd_register(&act_ctrl_t->msm_sd);
+
+#if defined(CONFIG_OIS)
+	g_msm_actuator_t = act_ctrl_t;
+#endif
+
 	if (act_ctrl_t) {
 		af_sensor_interface.af_func = &msm_actuator_remove_noise;
 		af_sensor_interface.af_pdata = (void *)act_ctrl_t;
@@ -1754,6 +1799,10 @@ static int32_t msm_actuator_platform_probe(struct platform_device *pdev)
 	msm_actuator_t->msm_sd.sd.entity.group_id = MSM_CAMERA_SUBDEV_ACTUATOR;
 	msm_actuator_t->msm_sd.close_seq = MSM_SD_CLOSE_2ND_CATEGORY | 0x2;
 	msm_sd_register(&msm_actuator_t->msm_sd);
+
+#if defined(CONFIG_OIS)
+	g_msm_actuator_t = msm_actuator_t;
+#endif
 
 	if (msm_actuator_t) {
 		af_sensor_interface.af_func = &msm_actuator_remove_noise;

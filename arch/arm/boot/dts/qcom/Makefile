@@ -117,7 +117,8 @@ dtb-$(CONFIG_SEC_TRLTE_PROJECT) = apq8084-sec-trlte-r00.dtb \
 	apq8084-sec-trlte-r08.dtb \
 	apq8084-sec-trlte-r09.dtb \
 	apq8084-sec-trlte-r10.dtb \
-	apq8084-sec-trlte-r12.dtb
+	apq8084-sec-trlte-r12.dtb \
+	apq8084-sec-trlte-r13.dtb
 
 dtb-$(CONFIG_SEC_TBLTE_PROJECT) = apq8084-sec-tblte-r03.dtb \
 	apq8084-sec-tblte-r04.dtb \
@@ -126,7 +127,8 @@ dtb-$(CONFIG_SEC_TBLTE_PROJECT) = apq8084-sec-tblte-r03.dtb \
 	apq8084-sec-tblte-r08.dtb \
 	apq8084-sec-tblte-r09.dtb \
 	apq8084-sec-tblte-r10.dtb \
-	apq8084-sec-tblte-r12.dtb
+	apq8084-sec-tblte-r12.dtb \
+	apq8084-sec-tblte-r13.dtb
 
 # For KCCAT6
 dtb-$(CONFIG_SEC_KCCAT6_PROJECT) = apq8084-sec-kccat6-r00.dtb \
@@ -149,7 +151,8 @@ dtb-$(CONFIG_SEC_TRLTE_CHNDUOS) = apq8084-sec-trlte-chnduos-r00.dtb \
 	apq8084-sec-trlte-chnduos-r08.dtb \
 	apq8084-sec-trlte-chnduos-r09.dtb \
 	apq8084-sec-trlte-chnduos-r10.dtb \
-	apq8084-sec-trlte-chnduos-r12.dtb
+	apq8084-sec-trlte-chnduos-r12.dtb \
+	apq8084-sec-trlte-chnduos-r13.dtb
 
 # For TRLTE CHINA CMCC DUOS
 dtb-$(CONFIG_SEC_TRLTE_CMCC) = apq8084-sec-trlte-r00.dtb \

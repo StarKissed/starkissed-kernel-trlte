@@ -80,8 +80,13 @@
 
 /* { 0x1F, 0xAA, 0xBB, 0xCC, 0xDD} : 0x1F is fixed value. */
 #ifdef CONFIG_SEC_TRLTE_PROJECT
+#if defined(CONFIG_MACH_TRLTE_ATT) || defined(CONFIG_MACH_TRLTE_TMO)
 #define WACOM_FW_NAME_W9012		"epen/W9012_tr.bin"
-#define WACOM_FW_CHECKSUM		{ 0x1F, 0x26, 0xE7, 0x61, 0xE6, } /* ver 0x0234 */
+#define WACOM_FW_CHECKSUM		{ 0x1F, 0xEE, 0x3C, 0x80, 0x41, } /* ver 0x0237 */
+#else
+#define WACOM_FW_NAME_W9012		"epen/W9012_tr_239.bin"
+#define WACOM_FW_CHECKSUM		{ 0x1F, 0x76, 0x4E, 0x9B, 0x88, } /* ver 0x0239 */
+#endif
 #undef USE_REDUCE_QUERY_TIME
 
 #else // CONFIG_SEC_TBLTE_PROJECT
@@ -304,4 +309,5 @@ extern int ldi_fps(unsigned int input_fps);
 extern int wacom_factory_probe(struct device *dev);
 extern void wacom_factory_release(struct device *dev);
 extern int get_lcd_attached(void);
+extern int wacom_i2c_modecheck(struct wacom_i2c *wac_i2c);
 #endif /* _LINUX_WACOM_I2C_H */
