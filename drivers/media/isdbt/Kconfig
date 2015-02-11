@@ -5,7 +5,7 @@ config ISDBT
 choice
 	depends on ISDBT
 	prompt "isdbt driver"
-	default ISDBT_FC8150
+	default ISDBT_FC8300
 
 	config ISDBT_FC8150
 		bool "ISDBT_FC8150"
