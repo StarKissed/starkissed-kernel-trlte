@@ -65,7 +65,7 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
 	
 #ifdef CONFIG_TIMA_RKP_LAZY_MMU
 	do_lazy_mmu = 1;
-	if (do_lazy_mmu) {
+	if (do_lazy_mmu && boot_mode_security == 1) {
 		spin_lock(&init_mm.page_table_lock);
 		tima_send_cmd2((unsigned int)pmd, TIMA_LAZY_MMU_START, TIMA_LAZY_MMU_CMDID);
 		flush_tlb_l2_page(pmd);
@@ -80,7 +80,7 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 
 #ifdef CONFIG_TIMA_RKP_LAZY_MMU
-	if (do_lazy_mmu) {
+	if (do_lazy_mmu && boot_mode_security == 1) {
 		spin_lock(&init_mm.page_table_lock);
 		tima_send_cmd2((unsigned int)pmd, TIMA_LAZY_MMU_STOP, TIMA_LAZY_MMU_CMDID);
 		flush_tlb_l2_page(pmd);
@@ -152,7 +152,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 
 #ifdef CONFIG_TIMA_RKP_LAZY_MMU
 	do_lazy_mmu = 1;
-	if (do_lazy_mmu) {
+	if (do_lazy_mmu && boot_mode_security == 1) {
 		spin_lock(&init_mm.page_table_lock);
 		tima_send_cmd2((unsigned int)pmd, TIMA_LAZY_MMU_START, TIMA_LAZY_MMU_CMDID);
 		flush_tlb_l2_page(pmd);
@@ -172,7 +172,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 
 #ifdef CONFIG_TIMA_RKP_LAZY_MMU
-	if (do_lazy_mmu) {
+	if (do_lazy_mmu && boot_mode_security == 1) {
 		spin_lock(&init_mm.page_table_lock);
 		tima_send_cmd2((unsigned int)pmd, TIMA_LAZY_MMU_STOP, TIMA_LAZY_MMU_CMDID);
 		flush_tlb_l2_page(pmd);

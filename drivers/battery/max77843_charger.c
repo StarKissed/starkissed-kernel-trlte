@@ -113,7 +113,7 @@ static void max77843_test_read(struct max77843_charger_data *charger)
 {
 	u8 data = 0;
 	u32 addr = 0;
-	for (addr = 0xB0; addr <= 0xC3; addr++) {
+	for (addr = 0xB1; addr <= 0xC3; addr++) {
 		max77843_read_reg(charger->i2c, addr, &data);
 		pr_debug("MAX77843 addr : 0x%02x data : 0x%02x\n", addr, data);
 	}
@@ -122,11 +122,15 @@ static void max77843_test_read(struct max77843_charger_data *charger)
 static int max77843_get_vbus_state(struct max77843_charger_data *charger)
 {
 	u8 reg_data;
+	union power_supply_propval value;
 
 	max77843_read_reg(charger->i2c,
 			  MAX77843_CHG_REG_DETAILS_00, &reg_data);
 
-	if (charger->cable_type == POWER_SUPPLY_TYPE_WIRELESS)
+	psy_do_property("battery", get, POWER_SUPPLY_PROP_ONLINE,
+			value);
+
+	if (value.intval == POWER_SUPPLY_TYPE_WIRELESS)
 		reg_data = ((reg_data & MAX77843_WCIN_DTLS) >>
 			    MAX77843_WCIN_DTLS_SHIFT);
 	else
@@ -814,37 +818,37 @@ static void max77843_charger_function_control(
 			charger->pdata->charging_current
 			[charger->cable_type].fast_charging_current;
 #ifdef CONFIG_FORCE_FAST_CHARGE
-        /* Yank555 : Use Fast charge currents accroding to user settings */
-        if (force_fast_charge == FAST_CHARGE_FORCE_AC) {/* We are in basic Fast Charge mode, so we substitute AC to USB levels */
-            switch(charger->cable_type) {
-                case POWER_SUPPLY_TYPE_USB:	/* These are low current USB connections, apply usual 1A/h AC levels to USB */
-                case POWER_SUPPLY_TYPE_USB_ACA:
-                case POWER_SUPPLY_TYPE_CARDOCK:
-                case POWER_SUPPLY_TYPE_OTG:	charger->charging_current_max = USB_CHARGE_1000;
-                    charger->charging_current     = USB_CHARGE_1000;
-                    break;
-                default:			/* Don't do anything for any other kind of connections and don't touch when type is unknown */
-                    break;
-            }
-        } else if (force_fast_charge == FAST_CHARGE_FORCE_CUSTOM_MA) { /* We are in custom current Fast Charge mode for both AC and USB */
-            switch(charger->cable_type) {
-                case POWER_SUPPLY_TYPE_USB:
-                case POWER_SUPPLY_TYPE_USB_DCP:
-                case POWER_SUPPLY_TYPE_USB_CDP:
-                case POWER_SUPPLY_TYPE_USB_ACA:
-                case POWER_SUPPLY_TYPE_CARDOCK:
-                case POWER_SUPPLY_TYPE_OTG:	/* These are USB connections, apply custom USB current for all of them */
-                    charger->charging_current_max = usb_charge_level;
-                    charger->charging_current     = usb_charge_level;
-                    break;
-                case POWER_SUPPLY_TYPE_MAINS:	/* These are AC connections, apply custom AC current for all of them */
-                    charger->charging_current_max = ac_charge_level;
-                    charger->charging_current     = min(ac_charge_level+300, MAX_CHARGE_LEVEL); /* Keep the 300mA/h delta, but never go above 2.1A/h */
-                    break;
-                default:			/* Don't do anything for any other kind of connections and don't touch when type is unknown */
-                    break;
-            }
-        }
+		/* Yank555 : Use Fast charge currents accroding to user settings */
+		if (force_fast_charge == FAST_CHARGE_FORCE_AC) {/* We are in basic Fast Charge mode, so we substitute AC to USB levels */
+			switch(charger->cable_type) {
+				case POWER_SUPPLY_TYPE_USB:	/* These are low current USB connections, apply usual 1A/h AC levels to USB */
+				case POWER_SUPPLY_TYPE_USB_ACA:
+				case POWER_SUPPLY_TYPE_CARDOCK:
+				case POWER_SUPPLY_TYPE_OTG:	charger->charging_current_max = USB_CHARGE_1000;
+					charger->charging_current     = USB_CHARGE_1000;
+					break;
+				default:			/* Don't do anything for any other kind of connections and don't touch when type is unknown */
+					break;
+			}
+		} else if (force_fast_charge == FAST_CHARGE_FORCE_CUSTOM_MA) { /* We are in custom current Fast Charge mode for both AC and USB */
+			switch(charger->cable_type) {
+				case POWER_SUPPLY_TYPE_USB:
+				case POWER_SUPPLY_TYPE_USB_DCP:
+				case POWER_SUPPLY_TYPE_USB_CDP:
+				case POWER_SUPPLY_TYPE_USB_ACA:
+				case POWER_SUPPLY_TYPE_CARDOCK:
+				case POWER_SUPPLY_TYPE_OTG:	/* These are USB connections, apply custom USB current for all of them */
+					charger->charging_current_max = usb_charge_level;
+					charger->charging_current     = usb_charge_level;
+					break;
+				case POWER_SUPPLY_TYPE_MAINS:	/* These are AC connections, apply custom AC current for all of them */
+					charger->charging_current_max = ac_charge_level;
+					charger->charging_current     = min(ac_charge_level+300, MAX_CHARGE_LEVEL); /* Keep the 300mA/h delta, but never go above 2.1A/h */
+					break;
+				default:			/* Don't do anything for any other kind of connections and don't touch when type is unknown */
+					break;
+			}
+		}
 #endif // CONFIG_FORCE_FAST_CHARGE
 #if defined(CONFIG_MUIC_SUPPORT_MULTIMEDIA_DOCK)
 		if (charger->is_mdock) { /* if mdock was already inserted, then check OTG, or NOTG state */
@@ -1308,7 +1312,7 @@ static int max77843_debugfs_show(struct seq_file *s, void *data)
 
 	seq_printf(s, "MAX77843 CHARGER IC :\n");
 	seq_printf(s, "===================\n");
-	for (reg = 0xB0; reg <= 0xC3; reg++) {
+	for (reg = 0xB1; reg <= 0xC3; reg++) {
 		max77843_read_reg(charger->i2c, reg, &reg_data);
 		seq_printf(s, "0x%02x:\t0x%02x\n", reg, reg_data);
 	}

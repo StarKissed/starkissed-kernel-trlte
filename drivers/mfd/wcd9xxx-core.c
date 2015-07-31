@@ -31,7 +31,7 @@
 #include <sound/soc.h>
 
 #define WCD9XXX_REGISTER_START_OFFSET 0x800
-#define WCD9XXX_SLIM_RW_MAX_TRIES 3
+#define WCD9XXX_SLIM_RW_MAX_TRIES 10
 #define SLIMBUS_PRESENT_TIMEOUT 100
 
 #define MAX_WCD9XXX_DEVICE	4
@@ -274,7 +274,7 @@ static int wcd9xxx_slim_read_device(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		mutex_unlock(&wcd9xxx->xfer_lock);
 		if (likely(ret == 0) || (--slim_read_tries == 0))
 			break;
-		usleep_range(5000, 5100);
+		usleep_range(10000, 10100);
 	}
 
 	if (ret)
@@ -376,7 +376,7 @@ static int wcd9xxx_slim_write_device(struct wcd9xxx *wcd9xxx,
 		mutex_unlock(&wcd9xxx->xfer_lock);
 		if (likely(ret == 0) || (--slim_write_tries == 0))
 			break;
-		usleep_range(5000, 5100);
+		usleep_range(10000, 10100);
 	}
 
 	if (ret)
@@ -470,7 +470,12 @@ static const struct wcd9xxx_codec_type wcd9xxx_codecs[] = {
 	},
 	{
 		TOMTOM_MAJOR, cpu_to_le16(0x0), tomtom_devs,
-		ARRAY_SIZE(tomtom_devs), TOMTOM_NUM_IRQS, -1,
+		ARRAY_SIZE(tomtom_devs), TOMTOM_NUM_IRQS, 1,
+		WCD9XXX_SLIM_SLAVE_ADDR_TYPE_TAIKO, 0x01
+	},
+	{
+		TOMTOM_MAJOR, cpu_to_le16(0x1), tomtom_devs,
+		ARRAY_SIZE(tomtom_devs), TOMTOM_NUM_IRQS, 2,
 		WCD9XXX_SLIM_SLAVE_ADDR_TYPE_TAIKO, 0x01
 	},
 };

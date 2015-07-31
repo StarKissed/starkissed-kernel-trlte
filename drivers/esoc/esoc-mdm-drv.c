@@ -171,7 +171,15 @@ static int mdm_subsys_powerup(const struct subsys_desc *crashed_subsys)
 			return ret;
 		}
 	}
+#if 0
 	wait_for_completion(&mdm_drv->boot_done);
+#else
+	if (!wait_for_completion_timeout(&mdm_drv->boot_done,
+		msecs_to_jiffies(60000))) {
+		dev_err(&esoc_clink->dev, "Unable to boot\n");
+		BUG_ON(1);
+	}
+#endif
 	if (mdm_drv->boot_fail) {
 		dev_err(&esoc_clink->dev, "booting failed\n");
 		return -EIO;

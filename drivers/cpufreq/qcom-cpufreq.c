@@ -176,12 +176,12 @@ static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq,
 
 	rate = new_freq * 1000;
 #ifdef CONFIG_SEC_PM
-#if defined(CONFIG_SEC_TRLTE_CHNDUOS)
+#if defined(CONFIG_SEC_TRLTE_CHNDUOS) || defined(CONFIG_MACH_TRLTE_LDU) || defined(CONFIG_MACH_TBLTE_LDU)
 #define JIG_LIMIT_CLK	1574400 * 1000
 #define JIG_LIMIT_TIME	300
 #else
 #define JIG_LIMIT_CLK	1574400 * 1000
-#define JIG_LIMIT_TIME	50
+#define JIG_LIMIT_TIME	300
 #endif
 	if (jig_boot_clk_limit == 1) { //limit 1.5Ghz to block whitescreen during 50 secs on JIG
 		unsigned long long t = sched_clock();
@@ -353,26 +353,26 @@ extern bool lmf_screen_state;
 
 static void msm_cpu_early_suspend(struct early_suspend *h)
 {
-    
+	
 #ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-    lmf_screen_state = false;
+	lmf_screen_state = false;
 #endif
-    
+	
 }
 
 static void msm_cpu_late_resume(struct early_suspend *h)
 {
-    
+	
 #ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-    lmf_screen_state = true;
+	lmf_screen_state = true;
 #endif
-    
+	
 }
 
 static struct early_suspend msm_cpu_early_suspend_handler = {
-    .level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,
-    .suspend = msm_cpu_early_suspend,
-    .resume = msm_cpu_late_resume,
+	.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,
+	.suspend = msm_cpu_early_suspend,
+	.resume = msm_cpu_late_resume,
 };
 #endif
 
@@ -628,16 +628,16 @@ static int cpufreq_parse_dt(struct device *dev)
 
 	freq_table[i].driver_data = i;
 	freq_table[i].frequency = CPUFREQ_TABLE_END;
-
+	
 #ifdef CONFIG_CPU_VOLTAGE_CONTROL
 	/* Create frequence table with unrounded values */
 	krait_freq_table = devm_kzalloc(dev, (nf + 1) * sizeof(*krait_freq_table),
-					GFP_KERNEL);
+									GFP_KERNEL);
 	if (!krait_freq_table)
 		return -ENOMEM;
-
+	
 	*krait_freq_table = *freq_table;
-
+	
 	for (i = 0, j = 0; i < nf; i++, j += 3)
 		krait_freq_table[i].frequency = data[j];
 	krait_freq_table[i].frequency = CPUFREQ_TABLE_END;
@@ -691,10 +691,10 @@ const struct file_operations msm_cpufreq_fops = {
 int use_for_scaling(unsigned int freq)
 {
 	unsigned int i, cpu_freq;
-
+	
 	if (!krait_freq_table)
 		return -EINVAL;
-
+	
 	for (i = 0; krait_freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
 		cpu_freq = krait_freq_table[i].frequency;
 		if (cpu_freq == CPUFREQ_ENTRY_INVALID)
@@ -702,7 +702,7 @@ int use_for_scaling(unsigned int freq)
 		if (freq == cpu_freq)
 			return freq;
 	}
-
+	
 	return -EINVAL;
 }
 #endif

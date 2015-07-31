@@ -302,6 +302,12 @@ config SND_SOC_3MIC_SUPPORT
 	help
 		To add support for ES705 3MI
 
+config SND_SOC_ES705_FOR_VOIP
+	tristate "ES705 VOIP"
+	default n
+	help
+		To add support for ES705 VOIP
+
 config SND_SOC_MAXIM_DSM
 	bool "Support MAXIM DSM"
 	depends on SND_SOC_MAX98504 || SND_SOC_MAX98505

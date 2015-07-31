@@ -212,7 +212,7 @@ static int ext4_file_mmap(struct file *file, struct vm_area_struct *vma)
 		return -ENOEXEC;
 	file_accessed(file);
 #ifdef CONFIG_TIMA_RKP
-	if (vma->vm_end - vma->vm_start) {
+	if ((vma->vm_end - vma->vm_start) && (boot_mode_security == 1)) {
 		/* iommu optimization- needs to be turned ON from
 		* the tz side.
 		*/

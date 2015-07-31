@@ -27,15 +27,11 @@
 
 on init
     write /sys/class/android_usb/android0/f_rndis/wceis 1
->>>> ORIGINAL //IMPORT/Qualcomm/APQ8084/android/device/qcom/common/rootdir/etc/init.qcom.usb.rc#8
-==== THEIRS //IMPORT/Qualcomm/APQ8084/android/device/qcom/common/rootdir/etc/init.qcom.usb.rc#9
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
-==== YOURS //SYSSW_USB_AQUIE_DEV-KK-MSM8974_HIMALAYA/PATCH/APQ8084/android/device/qcom/common/rootdir/etc/init.qcom.usb.rc
     chown system system /sys/class/android_usb/android0/usb30en
     chmod 0660 /sys/class/android_usb/android0/usb30en
     chown system system /sys/class/android_usb/android0/terminal_version
     chmod 0660 /sys/class/android_usb/android0/terminal_version
-<<<<
 
 on charger
     setprop sys.usb.config mass_storage
@@ -45,6 +41,8 @@ on fs
     mkdir /dev/usb-ffs/adb 0770 shell shell
     mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000
     write /sys/class/android_usb/android0/f_ffs/aliases adb
+    mkdir /dev/bus 0755 root root
+    mkdir /dev/bus/usb 0755 root root
 
 service qcom-usb-sh /system/bin/sh /init.qcom.usb.sh
     class core

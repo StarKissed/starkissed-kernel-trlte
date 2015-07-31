@@ -104,7 +104,7 @@ switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	  struct task_struct *tsk)
 {
 	
-#ifdef	CONFIG_TIMA_RKP
+#ifdef CONFIG_TIMA_RKP_DEBUG
 	unsigned long flags;
 #endif
 #ifdef CONFIG_TIMA_RKP_DEBUG
@@ -124,7 +124,7 @@ switch_mm(struct mm_struct *prev, struct mm_struct *next,
 #endif
 	if (!cpumask_test_and_set_cpu(cpu, mm_cpumask(next)) || prev != next) {
 		check_and_switch_context(next, tsk);
-#ifdef	CONFIG_TIMA_RKP
+#ifdef	CONFIG_TIMA_RKP_DEBUG
 		spin_lock_irqsave(&tima_switch_count_lock, flags);
 		tima_switch_count++;
 		spin_unlock_irqrestore(&tima_switch_count_lock, flags);

@@ -70,10 +70,11 @@ if [ -d /sys/bus/esoc/devices ]; then
 for f in /sys/bus/esoc/devices/*; do
     if [ -d $f ]; then
         esoc_name=`cat $f/esoc_name`
-        if [ "$esoc_name" = "MDM9x25" -o "$esoc_name" = "MDM9x35" ]; then
-            esoc_link=`cat $f/esoc_link`
-            break
-        fi
+        case "$esoc_name" in
+            MDM*)
+                esoc_link=`cat $f/esoc_link`
+            ;;
+        esac
     fi
 done
 fi

@@ -328,16 +328,12 @@ static int max77843_rgb_blink(struct device *dev,
 
 	pr_info("leds-max77843-rgb: %s\n", __func__);
 
-	if( delay_on > 3250 || delay_off > 12000 )
-		return -EINVAL;
-	else {
-		value = (LEDBLNK_ON(delay_on) << 4) | LEDBLNK_OFF(delay_off);
-		ret = max77843_write_reg(max77843_rgb->i2c,
+	value = (LEDBLNK_ON(delay_on) << 4) | LEDBLNK_OFF(delay_off);
+	ret = max77843_write_reg(max77843_rgb->i2c,
 					MAX77843_LED_REG_LEDBLNK, value);
-		if (IS_ERR_VALUE(ret)) {
-			dev_err(dev, "can't write REG_LEDBLNK : %d\n", ret);
-			return -EINVAL;
-		}
+	if (IS_ERR_VALUE(ret)) {
+		dev_err(dev, "can't write REG_LEDBLNK : %d\n", ret);
+		return -EINVAL;
 	}
 
 	return ret;

@@ -65,6 +65,7 @@
 #include "apq8084-pinctrl.dtsi"
 #include "apq8084-camera.dtsi"
 #include "apq8084-ipcrouter.dtsi"
+#include "msm-rdbg.dtsi"
 
 &soc {
 	#address-cells = <1>;
@@ -269,8 +270,6 @@
 
 		qcom,tx-gpio = <&msmgpio 112 0>;
 		qcom,rx-gpio = <&msmgpio 113 0>;
-		qcom,inject-rx-on-wakeup = <1>;
-		qcom,rx-char-to-inject = <0x18>;
 
 		qcom,wakeup_irq = <2>;
 		qcom,bam-tx-ep-pipe-index = <8>;
@@ -649,7 +648,7 @@
 		qcom,mdm1ptr = <&mdm1>;
 	};
 	mhi: qcom,mhi {
-		compatible = "qcom,msm_pcie";
+		compatible = "qcom,mhi";
 	};
 
 	spmi_bus: qcom,spmi@fc4c0000 {
@@ -696,27 +695,6 @@
 		qcom,bam-pipe-pair = <2>;
 		qcom,ce-hw-instance = <1>;
 		qcom,ce-device = <0>;
-		qcom,clk-mgmt-sus-res;
-                qcom,msm-bus,name = "qcrypto-noc";
-		qcom,msm-bus,num-cases = <2>;
-		qcom,msm-bus,num-paths = <1>;
-		qcom,use-sw-aes-cbc-ecb-ctr-algo;
-		qcom,use-sw-aes-xts-algo;
-		qcom,use-sw-ahash-algo;
-		qcom,msm-bus,vectors-KBps =
-				<56 512 0 0>,
-				<56 512 3936000 393600>;
-	};
-
-	qcom,qcrypto1@fd440000 {
-		compatible = "qcom,qcrypto";
-		reg = <0xfd440000 0x20000>,
-		      <0xfd444000 0x1b000>;
-		reg-names = "crypto-base","crypto-bam-base";
-		interrupts = <0 236 0>;
-		qcom,bam-pipe-pair = <0>;
-		qcom,ce-hw-instance = <1>;
-		qcom,ce-device = <1>;
 		qcom,clk-mgmt-sus-res;
                 qcom,msm-bus,name = "qcrypto-noc";
 		qcom,msm-bus,num-cases = <2>;
@@ -2398,8 +2376,7 @@
 			< 2265600000 1095000  733 >,
 			< 2342400000 1110000  768 >,
 			< 2419200000 1125000  804 >,
-			< 2457600000 1130000  820 >,
-			< 2496000000 1145000  856 >;
+			< 2457600000 1130000  820 >;
 
 		qcom,speed1-pvs3-bin-v1 =
 			<          0       0    0 >,
@@ -2763,6 +2740,7 @@
 			< 2342400000 1000000  768 >,
 			< 2419200000 1015000  804 >,
 			< 2457600000 1020000  820 >;
+
 		qcom,speed1-pvs14-bin-v1 =
 			<          0       0    0 >,
 			<  300000000  670000   76 >,
@@ -3356,8 +3334,7 @@
 			< 2265600000  925000  700 >,
 			< 2342400000  935000  734 >,
 			< 2419200000  945000  769 >,
-			< 2457600000  950000  785 >,
-			< 2496000000  965000  856 >;
+			< 2457600000  950000  785 >;
 
 		/*   2.3GHz RC1   */
 		qcom,speed0-pvs0-bin-v1 =
@@ -4335,7 +4312,7 @@
 			<  3051 /*  200 MHz */ >,
 			<  3952 /*  259 MHz */ >,
 			<  4684 /*  307 MHz */ >,
-			<  5859 /*  384 MHz */ >,
+			<  5996 /*  393 MHz */ >,
 			<  7019 /*  460 MHz */ >,
 			<  8056 /*  528 MHz */ >,
 			< 10101 /*  662 MHz */ >,
@@ -4499,30 +4476,37 @@
 			tx-fifo-resize;
 			usb-phy = <&hsphy0>, <&ssphy0>;
 		};
+	};
 
-		usb3_sec: ssusb@f9400000 {
-			compatible = "qcom,dwc-usb3-msm";
+	usb3_sec: ssusb@f9400000 {
+		compatible = "qcom,dwc-usb3-msm";
+		reg = <0xf9400000 0xfc000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		interrupt-parent = <&intc>;
+		interrupts = <0 261 4>;
+		interrupt-names = "hs_phy_irq";
+		USB3_GDSC-supply = <&gdsc_usb30_sec>;
+		qcom,restore-sec-cfg-for-scm-dev-id = <10>;
+		qcom,charging-disabled;
+		status = "disabled";
+
+		qcom,msm-bus,name = "usb3_sec";
+		qcom,msm-bus,num-cases = <2>;
+		qcom,msm-bus,num-paths = <1>;
+		qcom,msm-bus,vectors-KBps =
+				<61 512 0 0>,
+				<61 512 240000 1920000>;
+
+		dwc3@f9400000 {
+			compatible = "synopsys,dwc3";
 			reg = <0xf9400000 0xfc000>;
-			#address-cells = <1>;
-			#size-cells = <1>;
-			ranges;
 			interrupt-parent = <&intc>;
-			interrupts = <0 261 4>;
-			interrupt-names = "hs_phy_irq";
-			USB3_GDSC-supply = <&gdsc_usb30_sec>;
-			qcom,restore-sec-cfg-for-scm-dev-id = <10>;
-			qcom,charging-disabled;
-			status = "disabled";
-
-			dwc3@f9400000 {
-				compatible = "synopsys,dwc3";
-				reg = <0xf9400000 0xfc000>;
-				interrupt-parent = <&intc>;
-				interrupts = <0 258 4>, <0 262 4>;
-				interrupt-names = "irq", "otg_irq";
-				usb-phy = <&hsphy1>, <&ssphy1>;
-				host-only-mode;
-			};
+			interrupts = <0 258 4>, <0 262 4>;
+			interrupt-names = "irq", "otg_irq";
+			usb-phy = <&hsphy1>, <&ssphy0>;
+			host-only-mode;
 		};
 	};
 
@@ -4570,16 +4554,6 @@
 		qcom,ext-vbus-id;
 		qcom,num-ports = <3>;
 		qcom,primary-phy = <&hsphy0>;
-		status = "disabled";
-	};
-
-	ssphy1: ssphy@f94f8800 {
-		compatible = "qcom,usb-ssphy";
-		reg = <0xf94f8800 0x3ff>;
-		vdd-supply = <&pma8084_s1>;
-		vdda18-supply = <&pma8084_l6>;
-		qcom,vdd-voltage-level = <0 900000 1050000>;
-		qcom,primary-phy = <&ssphy0>;
 		status = "disabled";
 	};
 
@@ -5002,6 +4976,7 @@
 		venus-core1-supply = <&gdsc_venus_core1>;
 		qcom,clock-names= "core_clk", "core0_clk", "core1_clk", "iface_clk", "bus_clk", "mem_clk";
 		qcom,clock-configs = <0x3 0x0 0x0 0x0 0x0 0x0>;
+		qcom,sw-power-collapse;
 		qcom,load-freq-tbl = <979200 465000000>,
 			<783360 465000000>,
 			<489600 266670000>,
@@ -5223,6 +5198,10 @@
 
 	qcom,msm-cpe-lsm {
 		compatible = "qcom,msm-cpe-lsm";
+	};
+
+	qcom,msm-voice-svc {
+		compatible = "qcom,msm-voice-svc";
 	};
 
 	qcom,msm-dai-stub {
@@ -5452,6 +5431,7 @@
 		wlan-en-gpio = <&msmgpio 82 0>;
 		vdd-wlan-supply = <&wlan_vreg>;
 		qcom,notify-modem-status;
+		wlan-soc-swreg-supply = <&pma8084_l27>;
 
 		qcom,msm-bus,name = "msm-cnss";
 		qcom,msm-bus,num-cases = <4>;
@@ -5461,6 +5441,13 @@
 					  <45 512 6250 200000>,   /* 50 Mbps */
 					  <45 512 25000 200000>,  /* 200 Mbps */
 					  <45 512 100000 200000>; /* 800 Mbps */
+	};
+
+	qcom,avtimer {
+		compatible = "qcom,avtimer";
+		reg = <0xFE0C900C  0x4>,
+		      <0xFE0C9010  0x4>;
+		reg-names = "avtimer_lsb_addr", "avtimer_msb_addr";
 	};
 };
 
@@ -5524,6 +5511,7 @@
 };
 
 &gdsc_usb30_sec{
+	parent-supply = <&gdsc_usb30>;
 	status = "ok";
 };
 

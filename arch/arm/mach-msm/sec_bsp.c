@@ -113,7 +113,8 @@ void sec_boot_stat_add(const char * c)
 	{
 		if(strcmp(c, boot_events[i].string) == 0)
 		{
-			boot_events[i].time = get_boot_stat_time();
+			if (boot_events[i].time == 0)
+				boot_events[i].time = get_boot_stat_time();
 			break;
 		}
 		i = i + 1;

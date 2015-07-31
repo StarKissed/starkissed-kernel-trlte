@@ -11,6 +11,11 @@
  * 2014.07.21 : Release Version 2.1.1
  *    - Add sdcardfs_copy_inode_attr() to fix permission issue
  *    - Delete mmap_sem lock in sdcardfs_setattr() to avoid deadlock
+ * 2014.11.12 : Release Version 2.1.2
+ *    - Add get_lower_file function pointer in file_operations
+ * 2014.11.25 : Release Version 2.1.3
+ *    - Add error handling routine in sdcardfs_d_revalidate 
+ *          when dentry is equal to lower_dentry
  */
 
-#define SDCARDFS_VERSION "2.1.1"
+#define SDCARDFS_VERSION "2.1.3"

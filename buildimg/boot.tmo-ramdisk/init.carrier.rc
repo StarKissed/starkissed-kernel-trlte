@@ -49,6 +49,9 @@ on boot
     chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
     chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
 
+# DualWave
+    chown system system /sys/kernel/DualWave/sound/DUALWAVE_CONFIG
+
 # bluetooth LPM
     chmod 0660 /proc/bluetooth/sleep/lpm
     chmod 0220 /proc/bluetooth/sleep/btwrite
@@ -56,19 +59,6 @@ on boot
     chown bluetooth net_bt_stack /proc/bluetooth/sleep/btwrite
     chmod 0600 /dev/btlock
     chown bluetooth bluetooth /dev/btlock
-
-# Define TCP buffer sizes for various networks
-#   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
-    setprop net.tcp.buffersize.default 6144,131070,1056768,6144,24576,165312
-    setprop net.tcp.buffersize.wifi    524288,1048576,4525824,524288,1048576,4525824
-    setprop net.tcp.buffersize.lte     786432,1572864,3840000,786432,1572864,3840000
-    setprop net.tcp.buffersize.umts    21135,131070,1056768,6144,24576,165312
-    setprop net.tcp.buffersize.hspa    18300,131070,1056768,6144,24576,393216
-    setprop net.tcp.buffersize.hsupa   6141,131070,1056768,6144,24576,393216
-    setprop net.tcp.buffersize.hsdpa   18300,131070,1056768,6144,24576,393216
-    setprop net.tcp.buffersize.hspap   31455,131070,1830912,6144,24576,1830912
-    setprop net.tcp.buffersize.edge    12288,39420,1056768,6144,24576,165312
-    setprop net.tcp.buffersize.gprs    12288,45000,1056768,6144,13140,165312
 
 # IPSec for VOLTE
     chown root system /dev/socket

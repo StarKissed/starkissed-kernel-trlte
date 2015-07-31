@@ -153,7 +153,7 @@ int ion_carveout_heap_map_user(struct ion_heap *heap, struct ion_buffer *buffer,
 {
 	int ret_value = 0;
 #ifdef CONFIG_TIMA_RKP
-        if (buffer->size) {
+        if ((buffer->size) && (boot_mode_security == 1)) {
         /* iommu optimization- needs to be turned ON from
          * the tz side.
          */

@@ -32,6 +32,7 @@
 baseband=`getprop ro.baseband`
 sgltecsfb=`getprop persist.radio.sglte_csfb`
 datamode=`getprop persist.data.mode`
+netmgr=`getprop ro.use_data_netmgrd`
 
 case "$baseband" in
     "apq")
@@ -74,9 +75,10 @@ case "$baseband" in
         "tethered")
             start qti
             start port-bridge
-            ;;
-        *)
-            start netmgrd
-            ;;
+    esac
+
+    case "$netmgr" in
+        "true")
+        start netmgrd
     esac
 esac

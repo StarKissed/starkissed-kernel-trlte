@@ -35,6 +35,10 @@
 #define fh_to_private(__fh) \
 	container_of(__fh, struct camera_v4l2_private, fh)
 
+extern pid_t qdaemon_pid;
+extern pid_t qdaemon_tgid;
+#define QDAEMON "mm-qcamera"
+
 struct camera_v4l2_private {
 	struct v4l2_fh fh;
 	unsigned int stream_id;
@@ -564,6 +568,7 @@ static int camera_v4l2_open(struct file *filep)
 	int rc = 0;
 	struct v4l2_event event;
 	struct msm_video_device *pvdev = video_drvdata(filep);
+	struct task_struct *qdaemon_task;
 	BUG_ON(!pvdev);
 
 	rc = camera_v4l2_fh_open(filep);
@@ -598,6 +603,19 @@ static int camera_v4l2_open(struct file *filep)
 		rc = msm_post_event(&event, MSM_POST_EVT_TIMEOUT);
 		if (rc < 0) {
 		    pr_err("%s, __dbg: post fail \n",__FUNCTION__);
+		    pr_err("%s, pid: %d, tgid: %d\n",__FUNCTION__, qdaemon_pid, qdaemon_tgid);
+		    qdaemon_task = pid_task(find_get_pid(qdaemon_tgid), PIDTYPE_PID);
+		    if (qdaemon_task) {
+			if (!strncmp(qdaemon_task->comm, QDAEMON, strlen(QDAEMON))) {
+			    pr_err("%s, kill daemon", __func__);
+			    send_sig(SIGKILL, qdaemon_task, 0);
+			    pr_err("%s, kill this", __func__);
+			    send_sig(SIGKILL, current, 0);
+			} else
+			    pr_err("%s, now (%s : %d)", __func__,
+				    qdaemon_task->comm, task_pid_nr(qdaemon_task));
+		    } else
+			pr_err("error!! can't look for daemon");
 		    goto post_fail;
 		}
 		rc = camera_check_event_status(&event);

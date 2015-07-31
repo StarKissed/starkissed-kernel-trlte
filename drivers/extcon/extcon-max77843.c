@@ -134,6 +134,7 @@ struct max77843_muic_info {
 
 	enum extcon_cable_name	cable_name;
 	struct delayed_work	init_work;
+	struct delayed_work	afc_err_detect_work;
 	struct mutex		mutex;
 #if !defined(CONFIG_MUIC_MAX77843_SUPPORT_CAR_DOCK)
 	bool			is_factory_start;
@@ -566,6 +567,71 @@ static int max77843_muic_set_adcmode(struct max77843_muic_info *info,
 }
 #endif
 
+static void max77843_muic_afc_err_detect(struct work_struct *work)
+{
+	struct max77843_muic_info *info =
+	    container_of(work, struct max77843_muic_info, afc_err_detect_work.work);
+	u32 new_state=0;
+	u8 status3;
+	u8 hvctrl1;
+	int ret;
+
+	if(gInfo->cable_name != EXTCON_HV_PREPARE)
+		return;
+	
+	switch(info->qc_hv_mode) {
+	case MAX77843_MVBUS_QC_9V:
+		hvctrl1 = 0x3d;
+		break;
+	case MAX77843_MVBUS_QC_12V:
+		hvctrl1 = 0x35;
+		break;
+	case MAX77843_MVBUS_QC_20V:
+		hvctrl1 = 0x3f;
+		break;
+	default:
+		hvctrl1 = 0x33;
+		break;
+	}
+	dev_info(info->dev, "%s: set Voltage value 0x%x.\n", __func__, hvctrl1);
+	max77843_write_reg(info->muic, MAX77843_MUIC_REG_HVCTRL1, hvctrl1);
+	
+	/* Wait for voltage rising */
+	mdelay(300);
+
+	ret = max77843_read_reg(info->muic, MAX77843_MUIC_REG_STATUS3, &status3);
+	if(IS_ERR_VALUE(ret))
+	{
+		dev_err(info->dev, "%s: cannot read STATUS3: %d\n", __func__, ret);
+		return;
+	}
+
+	if(((status3 & 0x0F) >= MAX77843_MVBUS_8V_9V) && ((status3 & 0x0F) <= MAX77843_MVBUS_9V_10V))
+	{
+		dev_info(info->dev, "%s: VbADC is right QC 2.0 value.\n", __func__);
+		new_state = BIT(EXTCON_HV_TA);
+		gInfo->cable_name = EXTCON_HV_TA;
+	} else if(((status3 & 0x0F) >= MAX77843_MVBUS_4V_5V) && ((status3 & 0x0F) <= MAX77843_MVBUS_5V_6V)) {
+		dev_info(info->dev, "%s: VbADC is in normal voltage value.(adc=0x%x)\n", __func__, (status3&0x0F));
+		max77843_write_reg(info->muic, MAX77843_MUIC_REG_HVCTRL1, 0x33);
+		new_state = BIT(EXTCON_TA);
+		gInfo->cable_name = EXTCON_TA;
+	} else {
+		dev_info(info->dev, "%s: VbADC is out of QC 2.0 range value.(%x)\n", __func__, (status3&0x0F));
+#if defined(CONFIG_ADC_ONESHOT)
+		max77843_muic_set_adcmode(info, MAX77843_ADC_ONESHOT);
+#endif
+		return;
+	}
+
+#if defined(CONFIG_ADC_ONESHOT)
+	max77843_muic_set_adcmode(info, MAX77843_ADC_ONESHOT);
+#endif
+	_detected(info, new_state);
+	max77843_update_jig_state(info);
+	return;
+}
+
 static bool is_muic_check_hv(struct max77843_muic_info *info)
 {
 	return (info->is_check_hv ? true : false);
@@ -667,6 +733,9 @@ static void max77843_muic_set_hv(struct max77843_muic_info *info)
 	if (IS_ERR_VALUE(ret))
 		pr_err("%s: Can't write INTMASK3 : %d\n", __func__, ret);
 
+	/* WA for MPing Fail case(Not exist ACK/NACK) */
+	schedule_delayed_work(&info->afc_err_detect_work, msecs_to_jiffies(2000));
+
 	/* Send prepare for boost the voltage */
 	pr_info("%s: Send HV_PREPARE\n", __func__);
 	gInfo->cable_name = EXTCON_HV_PREPARE;
@@ -684,6 +753,7 @@ static void max77843_muic_check_qc_hv(struct max77843_muic_info *info)
 
 	dev_info(info->dev, "%s: QC 2.0 charger is detected.\n", __func__);
 
+	cancel_delayed_work(&info->afc_err_detect_work);
 	ret = max77843_read_reg(info->muic, MAX77843_MUIC_REG_STATUS3, &status3);
 	if(IS_ERR_VALUE(ret))
 	{
@@ -771,6 +841,7 @@ static void max77843_muic_check_handshaking(struct max77843_muic_info *info)
 	u8 value;
 	u8 vbadc;
 
+	cancel_delayed_work(&info->afc_err_detect_work);
 	if (info->cable_name == EXTCON_HV_TA_1A){
 		dev_info(info->dev, "%s: Already Undifined cable is attached. end here\n", __func__);
 		max77843_write_reg(client, MAX77843_MUIC_REG_INTMASK3, 0x00);
@@ -889,6 +960,7 @@ static void max77843_muic_check_vbus_input(struct max77843_muic_info *info)
 
 	dev_info(info->dev, "%s. cable %d\n", __func__, info->cable_name);
 
+	cancel_delayed_work(&info->afc_err_detect_work);
 	if (info->cable_name == EXTCON_NONE) {
 		/* Set INTMASK3 = 0x00 */
 		max77843_write_reg(client, MAX77843_MUIC_REG_INTMASK3,0x00);
@@ -2343,6 +2415,7 @@ static int max77843_muic_probe(struct platform_device *pdev)
 	/* initial cable detection */
 	INIT_DELAYED_WORK(&info->init_work, max77843_muic_init_detect);
 	schedule_delayed_work(&info->init_work, msecs_to_jiffies(3000));
+	INIT_DELAYED_WORK(&info->afc_err_detect_work, max77843_muic_afc_err_detect);
 
 	/* init jig state */
 	max77843_update_jig_state(info);

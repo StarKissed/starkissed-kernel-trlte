@@ -298,13 +298,13 @@ static struct gpiomux_setting gpio_uart_rx_config = {
 	.drv  = GPIOMUX_DRV_16MA,
 	.pull = GPIOMUX_PULL_DOWN,
 };
-
+#if defined (CONFIG_SND_SOC_ES705)
 static struct gpiomux_setting es705_gpio_uart_rx_config = {
 	.func = GPIOMUX_FUNC_2,
 	.drv  = GPIOMUX_DRV_16MA,
 	.pull = GPIOMUX_PULL_UP,
 };
-
+#endif
 static struct msm_gpiomux_config msm_synaptics_configs[] __initdata = {
 	{
 		.gpio = 143,
@@ -1208,7 +1208,21 @@ static struct gpiomux_setting lcd_en_sus_cfg = {
 	.drv = GPIOMUX_DRV_2MA,
 	.pull = GPIOMUX_PULL_DOWN,
 };
+#endif
+static struct gpiomux_setting lcd_te_act_cfg = {
+	.func = GPIOMUX_FUNC_1,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_DOWN,
+	.dir = GPIOMUX_IN,
+};
 
+static struct gpiomux_setting lcd_te_sus_cfg = {
+	.func = GPIOMUX_FUNC_1,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_DOWN,
+	.dir = GPIOMUX_IN,
+};
+#if 0
 static struct msm_gpiomux_config msm_lcd_configs[] __initdata = {
 	{
 		.gpio = 96,			/* LCD RESET */
@@ -1237,6 +1251,17 @@ static struct msm_gpiomux_config msm_lcd_configs[] __initdata = {
 #endif
 };
 #endif
+static struct msm_gpiomux_config msm_lcd_te_configs[] __initdata = {
+	{
+		.gpio = 12,			/* TEAR ENABLE */
+		.settings = {
+			[GPIOMUX_ACTIVE]    = &lcd_te_act_cfg,
+			[GPIOMUX_SUSPENDED] = &lcd_te_sus_cfg,
+		},
+	},
+};
+
+
 static struct gpiomux_setting auxpcm_act_cfg = {
 	.func = GPIOMUX_FUNC_1,
 	.drv = GPIOMUX_DRV_8MA,
@@ -1421,7 +1446,7 @@ static struct msm_gpiomux_config msm_fpga_configs[] __initdata = {
 #endif
 
 static struct msm_gpiomux_config msm_sensor_configs[] __initdata = {
-#if defined(CONFIG_SEC_KCCAT6_PROJECT)
+#if defined(CONFIG_SEC_KCCAT6_PROJECT) || defined(CONFIG_SEC_LENTIS_PROJECT)
 	{
 		.gpio = 13, /* VT_CAM_IO_EN :CAM_VT_VIO */
 		.settings = {
@@ -2304,8 +2329,39 @@ static struct msm_gpiomux_config ssp_configs[] __initdata = {
 };
 #endif
 
-#if defined(CONFIG_SENSORS_MAX86900) || defined(CONFIG_SENSORS_MAX86902) || \
-	defined(CONFIG_SENSORS_ADPD142)
+#if defined(CONFIG_SENSORS_MAX86900)
+static struct gpiomux_setting gpio_hrm_int_config = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_NONE,
+};
+
+static struct gpiomux_setting gpio_hrm_hrm_en_config = {
+	.func = GPIOMUX_FUNC_GPIO,
+	.drv = GPIOMUX_DRV_2MA,
+	.pull = GPIOMUX_PULL_DOWN,
+	.dir = GPIOMUX_OUT_LOW,
+};
+
+static struct msm_gpiomux_config apq8084_hrm_configs[] __initdata = {
+	{
+		.gpio = 78,
+		.settings = {
+			[GPIOMUX_SUSPENDED] = &gpio_suspend_config[1],
+			[GPIOMUX_ACTIVE] = &gpio_hrm_int_config,
+		},
+	},
+	{
+		.gpio = 96,
+		.settings = {
+			[GPIOMUX_SUSPENDED] = &gpio_suspend_config[1],
+			[GPIOMUX_ACTIVE] = &gpio_hrm_hrm_en_config,
+		},
+	},
+};
+#endif
+
+#if defined(CONFIG_SENSORS_MAX86902)
 static struct gpiomux_setting gpio_hrm_int_config = {
     .func = GPIOMUX_FUNC_GPIO,
     .drv = GPIOMUX_DRV_2MA,
@@ -3072,13 +3128,13 @@ static struct msm_gpiomux_config gpio_nc_configs[] __initdata = {
 	GPIOMUX_SET_NC(146),	/* CHINA: AP_CP_SUBSRDY */
 #endif
 
-
-
 	/* non PCIe */
 #if defined(CONFIG_MACH_TRLTE_ATT) || defined(CONFIG_MACH_TRLTE_TMO) || \
 	defined(CONFIG_MACH_TRLTE_VZW) || defined(CONFIG_MACH_TRLTE_USC) || \
 	defined(CONFIG_MACH_TRLTE_CAN) || defined(CONFIG_MACH_TBLTE_VZW) || \
-	defined(CONFIG_MACH_TBLTE_ATT) || defined(CONFIG_MACH_TBLTE_CHN)
+	defined(CONFIG_MACH_TBLTE_ATT) || defined(CONFIG_MACH_TBLTE_TMO) || \
+	defined(CONFIG_MACH_TBLTE_CHN) || defined(CONFIG_MACH_TBLTE_USC) || \
+	defined(CONFIG_MACH_TRLTE_SPR)
 
 	/* CTI_PAIR2 */
 	GPIOMUX_SET_NC(123),
@@ -3092,8 +3148,6 @@ static struct msm_gpiomux_config gpio_nc_configs[] __initdata = {
 
 #if defined(CONFIG_SEC_TBLTE_JPN)
 	GPIOMUX_SET_NC(8),	
-	GPIOMUX_SET_NC(65),
-	GPIOMUX_SET_NC(66),
 	GPIOMUX_SET_NC(72),
 	GPIOMUX_SET_NC(74),
 	GPIOMUX_SET_NC(116),
@@ -3200,6 +3254,9 @@ void __init apq8084_init_gpiomux(void)
 	msm_gpiomux_install_nowrite(msm_lcd_configs,
 			ARRAY_SIZE(msm_lcd_configs));
 #endif
+	msm_gpiomux_install(msm_lcd_te_configs,
+			ARRAY_SIZE(msm_lcd_te_configs));
+
 	msm_gpiomux_install(apq8084_pri_ter_auxpcm_configs,
 			ARRAY_SIZE(apq8084_pri_ter_auxpcm_configs));
 
@@ -3342,8 +3399,12 @@ void __init apq8084_init_gpiomux(void)
         }
 #endif
 #endif
-#if defined(CONFIG_SENSORS_MAX86900) || defined(CONFIG_SENSORS_MAX86902) || \
-	defined(CONFIG_SENSORS_ADPD142)
+#if defined(CONFIG_SENSORS_MAX86900)
+	msm_gpiomux_install(apq8084_hrm_configs,
+		ARRAY_SIZE(apq8084_hrm_configs));
+
+#endif
+#if defined(CONFIG_SENSORS_MAX86902)
 	if (system_rev < 10)
 	msm_gpiomux_install(apq8084_hrm_configs,
 		ARRAY_SIZE(apq8084_hrm_configs));

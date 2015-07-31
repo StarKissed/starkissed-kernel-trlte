@@ -17,6 +17,7 @@ struct sec_param_data {
 #if defined(CONFIG_MACH_APEXQ) || defined(CONFIG_MACH_AEGIS2)
 	unsigned int slideCount;
 #endif
+
 	unsigned int cp_debuglevel;
 #ifdef CONFIG_GSM_MODEM_SPRD6500
 	unsigned int update_cp_bin;

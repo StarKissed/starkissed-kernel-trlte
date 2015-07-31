@@ -40,9 +40,9 @@ else
     starkissed Verifying
 fi
 
-make -j$CPU_JOB_NUM -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX
-make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_"$TYPE"_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig TIMA_DEFCONFIG=tima_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX
-make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX
+make -j$CPU_JOB_NUM -C $(pwd) clean CROSS_COMPILE=$TOOLCHAIN_PREFIX ARCH=arm
+make -j$CPU_JOB_NUM -C $(pwd) VARIANT_DEFCONFIG=apq8084_sec_trlte_"$TYPE"_defconfig apq8084_sec_defconfig SELINUX_DEFCONFIG=selinux_defconfig TIMA_DEFCONFIG=tima_defconfig CROSS_COMPILE=$TOOLCHAIN_PREFIX ARCH=arm
+make -j$CPU_JOB_NUM -C $(pwd) CROSS_COMPILE=$TOOLCHAIN_PREFIX ARCH=arm
 
 if [ -e arch/arm/boot/zImage ]; then
 
@@ -79,7 +79,7 @@ if [ -e arch/arm/boot/zImage ]; then
     ./img.sh "$TYPE"
     cd ../
 
-    LOCALZIP=$HANDLE"_StarKissed-KK44-trlte"$TYPE".zip"
+    LOCALZIP=$HANDLE"_StarKissed-LP51-trlte"$TYPE".zip"
     cp -r buildimg/boot.img skrecovery/"$TYPE"/boot.img
 
     starkissed Packaging

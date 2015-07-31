@@ -35,6 +35,7 @@
 #define B_FRAME_QP 30
 #define MAX_INTRA_REFRESH_MBS 300
 #define MAX_NUM_B_FRAMES 4
+#define MAX_LTR_FRAME_COUNT 10
 
 #define L_MODE V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_DISABLED_AT_SLICE_BOUNDARY
 #define CODING V4L2_MPEG_VIDEO_MPEG4_PROFILE_ADVANCED_CODING_EFFICIENCY
@@ -46,23 +47,22 @@
 #define MAX_TIME_RESOLUTION 0xFFFFFF
 #define DEFAULT_TIME_RESOLUTION 0x7530
 
-/* Default 601 to 709 conversion coefficients for resolution: 176x144
- * negative coeffs are converted to s4.9 format
- * e.g. -22 converted to ((1<<13) - 22)
+/*
+ * Default 601 to 709 conversion coefficients for resolution: 176x144 negative
+ * coeffs are converted to s4.9 format (e.g. -22 converted to ((1<<13) - 22)
+ * 3x3 transformation matrix coefficients in s4.9 fixed point format
  */
-#define MAX_MATRIX_COEFFS 9
-#define MAX_BIAS_COEFFS 3
-#define MAX_LIMIT_COEFFS 6
-/* 3x3 transformation matrix coefficients in s4.9 fixed point format */
-static u32 vpe_csc_601_to_709_matrix_coeff[MAX_MATRIX_COEFFS] = {
-	0x1B8, 0x1FCC, 0x1FA2, 0, 0x1CC, 0x34, 0, 0x22, 0x1CF
+static u32 vpe_csc_601_to_709_matrix_coeff[HAL_MAX_MATRIX_COEFFS] = {
+    0x1B8, 0x1FCC, 0x1FA2, 0, 0x1CC, 0x34, 0, 0x22, 0x1CF
 };
+
 /* offset coefficients in s9 fixed point format */
-static u32 vpe_csc_601_to_709_bias_coeff[MAX_BIAS_COEFFS] = {
+static u32 vpe_csc_601_to_709_bias_coeff[HAL_MAX_BIAS_COEFFS] = {
     0x34, 0, 0x4
 };
+
 /* clamping value for Y/U/V([min,max] for Y/U/V) */
-static u32 vpe_csc_601_to_709_limit_coeff[MAX_LIMIT_COEFFS] = {
+static u32 vpe_csc_601_to_709_limit_coeff[HAL_MAX_LIMIT_COEFFS] = {
     0x10, 0xEB, 0, 0xFF, 0, 0xFF
 };
 
@@ -772,18 +772,19 @@ static struct msm_vidc_ctrl msm_venc_ctrls[] = {
 	{
 		.id = V4L2_CID_MPEG_VIDC_VIDEO_USELTRFRAME,
 		.name = "H264 Use LTR",
-		.type = V4L2_CTRL_TYPE_BUTTON,
+		.type = V4L2_CTRL_TYPE_INTEGER,
 		.minimum = 0,
-		.maximum = 1,
+		.maximum = (MAX_LTR_FRAME_COUNT - 1),
 		.default_value = 0,
 		.step = 1,
+		.qmenu = NULL,
 	},
 	{
 		.id = V4L2_CID_MPEG_VIDC_VIDEO_LTRCOUNT,
 		.name = "Ltr Count",
 		.type = V4L2_CTRL_TYPE_INTEGER,
 		.minimum = 0,
-		.maximum = 1,
+		.maximum = MAX_LTR_FRAME_COUNT,
 		.default_value = 0,
 		.step = 1,
 		.qmenu = NULL,
@@ -801,11 +802,12 @@ static struct msm_vidc_ctrl msm_venc_ctrls[] = {
 	{
 		.id = V4L2_CID_MPEG_VIDC_VIDEO_MARKLTRFRAME,
 		.name = "H264 Mark LTR",
-		.type = V4L2_CTRL_TYPE_BUTTON,
+		.type = V4L2_CTRL_TYPE_INTEGER,
 		.minimum = 0,
-		.maximum = 0,
+		.maximum = (MAX_LTR_FRAME_COUNT - 1),
 		.default_value = 0,
-		.step = 0,
+		.step = 1,
+		.qmenu = NULL,
 	},
 	{
 		.id = V4L2_CID_MPEG_VIDC_VIDEO_HIER_P_NUM_LAYERS,
@@ -1052,6 +1054,39 @@ static int msm_venc_queue_setup(struct vb2_queue *q,
 	return rc;
 }
 
+static int msm_venc_toggle_hier_p(struct msm_vidc_inst *inst, bool enable)
+{
+	int num_enh_layers = 0;
+	u32 property_id = 0;
+	struct hfi_device *hdev = NULL;
+	int rc = 0;
+
+	if (!inst || !inst->core || !inst->core->device) {
+		dprintk(VIDC_ERR, "%s invalid parameters\n", __func__);
+		return -EINVAL;
+	}
+
+	if (inst->fmts[CAPTURE_PORT]->fourcc != V4L2_PIX_FMT_VP8)
+		return 0;
+
+	num_enh_layers = enable ? inst->capability.hier_p.max - 1 : 0;
+
+	dprintk(VIDC_DBG, "%s Hier-P in firmware\n",
+			num_enh_layers ? "Enable" : "Disable");
+
+	hdev = inst->core->device;
+	property_id = HAL_PARAM_VENC_HIER_P_MAX_ENH_LAYERS;
+
+	rc = call_hfi_op(hdev, session_set_property,
+			(void *)inst->session, property_id,
+			(void *)&num_enh_layers);
+	if (rc) {
+		dprintk(VIDC_ERR,
+			"%s: failed with error = %d\n", __func__, rc);
+	}
+	return rc;
+}
+
 static inline int start_streaming(struct msm_vidc_inst *inst)
 {
 	int rc = 0;
@@ -1087,9 +1122,7 @@ static inline int start_streaming(struct msm_vidc_inst *inst)
 		goto fail_start;
 	}
 
-	mutex_lock(&inst->core->sync_lock);
 	msm_comm_scale_clocks_and_bus(inst);
-	mutex_unlock(&inst->core->sync_lock);
 
 	rc = msm_comm_try_state(inst, MSM_VIDC_START_DONE);
 	if (rc) {
@@ -1166,9 +1199,7 @@ static int msm_venc_stop_streaming(struct vb2_queue *q)
 		break;
 	}
 
-	mutex_lock(&inst->core->sync_lock);
 	msm_comm_scale_clocks_and_bus(inst);
-	mutex_unlock(&inst->core->sync_lock);
 
 	if (rc)
 		dprintk(VIDC_ERR,
@@ -2228,19 +2259,22 @@ static int try_set_ctrl(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 		break;
 	case V4L2_CID_MPEG_VIDC_VIDEO_USELTRFRAME:
 		property_id = HAL_CONFIG_VENC_USELTRFRAME;
-		useltr.refltr = 0x1;
+		useltr.refltr = (1 << ctrl->val);
 		useltr.useconstrnt = false;
 		useltr.frames = 0;
 		pdata = &useltr;
 		break;
 	case V4L2_CID_MPEG_VIDC_VIDEO_MARKLTRFRAME:
 		property_id = HAL_CONFIG_VENC_MARKLTRFRAME;
-		markltr.markframe = 0x1;
+		markltr.markframe = ctrl->val;
 		pdata = &markltr;
 		break;
 	case V4L2_CID_MPEG_VIDC_VIDEO_HIER_P_NUM_LAYERS:
-		property_id = HAL_PARAM_VENC_HIER_P_NUM_FRAMES;
+		property_id = HAL_CONFIG_VENC_HIER_P_NUM_FRAMES;
 		hier_p_layers = ctrl->val;
+		rc = msm_venc_toggle_hier_p(inst, hier_p_layers ? true : false);
+		if (rc)
+			break;
 		if (hier_p_layers > (inst->capability.hier_p.max - 1)) {
 			dprintk(VIDC_ERR,
 				"Error setting hier p num layers = %d max supported by f/w = %d\n",
@@ -2278,6 +2312,7 @@ static int try_set_ext_ctrl(struct msm_vidc_inst *inst,
 	struct hal_ltrmode ltrmode;
 	u32 property_id = 0;
 	void *pdata = NULL;
+	struct msm_vidc_core_capability *cap = NULL;
 	struct hal_initial_quantization quant;
 
 	if (!inst || !inst->core || !inst->core->device || !ctrl) {
@@ -2286,50 +2321,63 @@ static int try_set_ext_ctrl(struct msm_vidc_inst *inst,
 	}
 
 	hdev = inst->core->device;
+	cap = &inst->capability;
 
-	if (ctrl->count) {
-		control = ctrl->controls;
-		for (i = 0; i < ctrl->count; i++) {
-			switch (control[i].id) {
-			case V4L2_CID_MPEG_VIDC_VIDEO_LTRMODE:
-				ltrmode.ltrmode = control[i].value;
-				ltrmode.trustmode = 1;
-				property_id = HAL_PARAM_VENC_LTRMODE;
-				pdata = &ltrmode;
-				break;
-			case V4L2_CID_MPEG_VIDC_VIDEO_LTRCOUNT:
-				ltrmode.ltrcount =  control[i].value;
-				ltrmode.trustmode = 1;
-				property_id = HAL_PARAM_VENC_LTRMODE;
-				pdata = &ltrmode;
-				break;
-			case V4L2_CID_MPEG_VIDC_VIDEO_ENABLE_INITIAL_QP:
-				property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
-				quant.init_qp_enable = control[i].value;
-				pdata = &quant;
-				break;
-			case V4L2_CID_MPEG_VIDC_VIDEO_I_FRAME_QP:
-				quant.qpi = control[i].value;
-				property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
-				pdata = &quant;
-				break;
-			case V4L2_CID_MPEG_VIDC_VIDEO_P_FRAME_QP:
-				quant.qpp = control[i].value;
-				property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
-				pdata = &quant;
-				break;
-			case V4L2_CID_MPEG_VIDC_VIDEO_B_FRAME_QP:
-				quant.qpb = control[i].value;
-				property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
-				pdata = &quant;
-				break;
-			default:
-				dprintk(VIDC_ERR, "Invalid id set: %d\n",
-					control[i].id);
-				rc = -ENOTSUPP;
-				break;
+	control = ctrl->controls;
+	for (i = 0; i < ctrl->count; i++) {
+		switch (control[i].id) {
+		case V4L2_CID_MPEG_VIDC_VIDEO_LTRMODE:
+			ltrmode.ltrmode = control[i].value;
+			ltrmode.trustmode = 1;
+			property_id = HAL_PARAM_VENC_LTRMODE;
+			pdata = &ltrmode;
+			break;
+		case V4L2_CID_MPEG_VIDC_VIDEO_LTRCOUNT:
+			ltrmode.ltrcount =  control[i].value;
+			if (ltrmode.ltrcount > cap->ltr_count.max) {
+				dprintk(VIDC_ERR,
+					"Invalid LTR count %d. Supported max: %d\n",
+					ltrmode.ltrcount,
+					cap->ltr_count.max);
+				/*
+				 * FIXME: Return an error (-EINVALID)
+				 * here once VP8 supports LTR count
+				 * capability
+				 */
+				ltrmode.ltrcount = 1;
 			}
+			ltrmode.trustmode = 1;
+			property_id = HAL_PARAM_VENC_LTRMODE;
+			pdata = &ltrmode;
+			break;
+		case V4L2_CID_MPEG_VIDC_VIDEO_ENABLE_INITIAL_QP:
+			property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
+			quant.init_qp_enable = control[i].value;
+			pdata = &quant;
+			break;
+		case V4L2_CID_MPEG_VIDC_VIDEO_I_FRAME_QP:
+			quant.qpi = control[i].value;
+			property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
+			pdata = &quant;
+			break;
+		case V4L2_CID_MPEG_VIDC_VIDEO_P_FRAME_QP:
+			quant.qpp = control[i].value;
+			property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
+			pdata = &quant;
+			break;
+		case V4L2_CID_MPEG_VIDC_VIDEO_B_FRAME_QP:
+			quant.qpb = control[i].value;
+			property_id = HAL_PARAM_VENC_ENABLE_INITIAL_QP;
+			pdata = &quant;
+			break;
+		default:
+			dprintk(VIDC_ERR, "Invalid id set: %d\n",
+				control[i].id);
+			rc = -ENOTSUPP;
+			break;
 		}
+		if (rc)
+			break;
 	}
 
 	if (!rc && property_id) {
@@ -2589,27 +2637,24 @@ int msm_venc_s_parm(struct msm_vidc_inst *inst, struct v4l2_streamparm *a)
 			dprintk(VIDC_WARN,
 				"Failed to set frame rate %d\n", rc);
 		}
-		mutex_lock(&inst->core->sync_lock);
+
 		msm_comm_scale_clocks_and_bus(inst);
-		mutex_unlock(&inst->core->sync_lock);
 	}
 exit:
 	return rc;
 }
 
-int msm_venc_s_csc(struct msm_vidc_inst *inst)
+int msm_venc_set_csc(struct msm_vidc_inst *inst)
 {
 	int rc = 0;
 	int count = 0;
 	struct hal_vpe_color_space_conversion vpe_csc;
 
-	dprintk(VIDC_DBG, "%s\n", __func__);
-
-	while (count < MAX_MATRIX_COEFFS) {
-		if (count < MAX_BIAS_COEFFS)
+	while (count < HAL_MAX_MATRIX_COEFFS) {
+		if (count < HAL_MAX_BIAS_COEFFS)
 			vpe_csc.csc_bias[count] =
 				vpe_csc_601_to_709_bias_coeff[count];
-		if (count < MAX_LIMIT_COEFFS)
+		if (count < HAL_MAX_LIMIT_COEFFS)
 			vpe_csc.csc_limit[count] =
 				vpe_csc_601_to_709_limit_coeff[count];
 		vpe_csc.csc_matrix[count] =
@@ -2618,12 +2663,12 @@ int msm_venc_s_csc(struct msm_vidc_inst *inst)
 	}
 	rc = msm_comm_try_set_prop(inst,
 			HAL_PARAM_VPE_COLOR_SPACE_CONVERSION, &vpe_csc);
-	if (rc) {
-		dprintk(VIDC_ERR, "%s vpe csc set_prop failed\n",
-					__func__);
-	}
+	if (rc)
+		dprintk(VIDC_ERR, "Setting VPE coefficients failed\n");
+
 	return rc;
 }
+
 int msm_venc_s_fmt(struct msm_vidc_inst *inst, struct v4l2_format *f)
 {
 	struct msm_vidc_format *fmt = NULL;
@@ -2642,9 +2687,9 @@ int msm_venc_s_fmt(struct msm_vidc_inst *inst, struct v4l2_format *f)
 	}
 	hdev = inst->core->device;
 
-//	if (msm_vidc_vpe_csc_601_to_709) {
-		msm_venc_s_csc(inst);
-//	}
+	//if (msm_vidc_vpe_csc_601_to_709) {
+		msm_venc_set_csc(inst);
+	//}
 
 	if (f->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
 		fmt = msm_comm_get_pixel_fmt_fourcc(venc_formats,
@@ -2880,6 +2925,14 @@ int msm_venc_prepare_buf(struct msm_vidc_inst *inst,
 
 	hdev = inst->core->device;
 
+	if (inst->state == MSM_VIDC_CORE_INVALID ||
+			inst->core->state == VIDC_CORE_INVALID) {
+		dprintk(VIDC_ERR,
+			"Core %p in bad state, ignoring prepare buf\n",
+				inst->core);
+		goto exit;
+	}
+	
 	switch (b->type) {
 	case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
 		break;
@@ -2925,6 +2978,7 @@ int msm_venc_prepare_buf(struct msm_vidc_inst *inst,
 			"Buffer type not recognized: %d\n", b->type);
 		break;
 	}
+exit:	
 	return rc;
 }
 

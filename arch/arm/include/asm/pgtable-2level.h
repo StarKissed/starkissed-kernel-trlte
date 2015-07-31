@@ -246,6 +246,11 @@ static inline void pmd_clear(pmd_t *pmdp)
 	unsigned long cmd_id = 0x3f80a221;
 	unsigned long tima_wr_out;
 
+	if (tima_is_pg_protected((unsigned long) pmdp) == 0 && boot_mode_security == 0) {
+		pmdp[0] = __pmd(0);
+		pmdp[1] = __pmd(0);
+		clean_pmd_entry(pmdp);
+	} else {
 	cpu_dcache_clean_area(pmdp, 8);	
 	__asm__ __volatile__ (
 		"stmfd  sp!,{r0, r1, r11}\n"
@@ -274,6 +279,7 @@ static inline void pmd_clear(pmd_t *pmdp)
 		if (pmdp[0] != 0 || pmdp[1] != 0 || tima_wr_out!=0)
 			printk(KERN_ERR"pmdp[0] %lx - pmdp[1] %lx in tima_wr_out = %lx\n", (unsigned long)pmdp[0], (unsigned long)pmdp[1], tima_wr_out);
 		clean_pmd_entry(pmdp);
+	}
 }
 #else
 #define pmd_clear(pmdp)			\

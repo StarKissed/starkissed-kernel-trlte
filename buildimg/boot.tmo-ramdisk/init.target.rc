@@ -30,6 +30,7 @@
 on early-init
     mkdir /firmware 0771 system system
     mkdir /firmware-modem 0771 system system
+    mkdir /cpdump 0771 system system
     symlink /data/tombstones /tombstones
 
 on fs
@@ -54,8 +55,9 @@ on fs
     chown system radio /efs
     chmod 0771 /efs
     rm -rf /efs/dmverity
+    chmod 0644 /dev/hw_random
 
-on fs_selinux
+on fs_sec_selinux
     wait /dev/block/bootdevice/by-name/modem
     mount vfat /dev/block/bootdevice/by-name/modem /firmware-modem ro shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337,context=u:object_r:firmware:s0
 
@@ -63,14 +65,13 @@ on fs_selinux
     mount vfat /dev/block/bootdevice/by-name/apnhlos /firmware ro shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337,context=u:object_r:firmware:s0
     write /sys/kernel/boot_adsp/boot 1
 
-on fs_selinux_disable
+on fs_selinux
     wait /dev/block/bootdevice/by-name/modem
     mount vfat /dev/block/bootdevice/by-name/modem /firmware-modem ro shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337
 
     wait /dev/block/bootdevice/by-name/apnhlos
     mount vfat /dev/block/bootdevice/by-name/apnhlos /firmware ro shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337
     write /sys/kernel/boot_adsp/boot 1
-
 
 on post-fs-data
     mkdir /data/tombstones 0771 system system
@@ -93,6 +94,12 @@ on post-fs
 
 #     export LD_PRELOAD /vendor/lib/libNimsWrap.so
 
+#start gpu_snapshotd for gpu hang issue debugging
+service gpu_snapshotd /system/bin/gpu_snapshotd -s /sys/class/kgsl/kgsl-3d0/snapshot -d /data/log/ -m 0700
+    class late_start
+    user system
+    group system  
+ 
 # Allow usb charging to be disabled peristently
 on property:persist.usb.chgdisabled=1
     write /sys/class/power_supply/battery/charging_enabled 0
@@ -100,10 +107,11 @@ on property:persist.usb.chgdisabled=1
 on property:persist.usb.chgdisabled=0
     write /sys/class/power_supply/battery/charging_enabled 1
 
-service qrngd /system/bin/qrngd -f
+service qfipsverify /system/bin/qfipsverify
    class main
    user root
    group root
+   oneshot
 
 service qseecomd /system/bin/qseecomd
    class core
@@ -111,13 +119,25 @@ service qseecomd /system/bin/qseecomd
    group root
 
 service mpdecision /system/bin/mpdecision --avg_comp
+   class main
    user root
    disabled
 
 service thermal-engine /system/bin/thermal-engine
    class main
    user root
+   socket thermal-send-client stream 0666 system system
+   socket thermal-recv-client stream 0660 system system
+   socket thermal-recv-passive-client stream 0666 system system
    group root
+
+service security-check1 /sbin/security_boot_check system
+    class core
+    oneshot
+
+service security-check2 /sbin/security_boot_check recovery
+    class core
+    oneshot
 
 service time_daemon /system/bin/time_daemon
    class late_start
@@ -175,20 +195,27 @@ service usf-post-boot /system/bin/sh /system/etc/usf_post_boot.sh
     disabled
     oneshot
 
-service prepare-mobicore /system/bin/mcStarter tbase300
+service mcStarter /system/bin/mcStarter tbase300
     class core
-	user root
-	group root
-	oneshot
+    user root
+    group root
+    disabled
+    oneshot
 
-service run-mobicore /system/bin/sh /system/bin/mobicore-startup.sh
-	class core
-	user system
-	group system
+service run-mobicore /system/bin/mcDriverDaemon
+    class core
+    user system
+    group system
+    disabled
+
+on property:sys.qseecomd.enable=true
+    start mcStarter
+
+on property:sys.mobicore.loaded=true
+    start run-mobicore
 
 on property:init.svc.bootanim=stopped
     start usf-post-boot
-    start run-mobicore
 
 on property:sys.qseecomd.enable=true
     start imsqmidaemon
@@ -206,22 +233,30 @@ service imsqmidaemon /system/bin/imsqmidaemon
 # imsdatadaemon starts with root and UID will be downgraded to SYSTEM.
 service imsdatadaemon /system/bin/imsdatadaemon
     class main
-    user root
+    user system
     socket ims_datad stream 0660 system radio
-    group ims radio wifi net_raw log qcom_diag net_admin
+    group system ims wifi radio inet net_raw log qcom_diag net_admin
     disabled
 
 service mdm_helper /system/bin/mdm_helper
     class core
     onrestart setprop ro.service.mdm_helper_restarted "true"
+    user root
+    group root system
     disabled
 
 service mdm_helper_proxy /system/bin/mdm_helper_proxy
     class core
+    user system
+    group system
     disabled
 
 service mdm_launcher /system/bin/sh /init.mdm.sh
     class core
+    oneshot
+
+service umount_cpdump /system/bin/umount /cpdump
+    disabled
     oneshot
 
 service qcamerasvr /system/bin/mm-qcamera-daemon
@@ -281,26 +316,25 @@ service ims_rtp_daemon /system/bin/ims_rtp_daemon
 on property:sys.ims.DATA_DAEMON_STATUS=1
     start ims_rtp_daemon
 
-# service ppd /system/bin/mm-pp-daemon
-#     class late_start
-#     user system
-#     socket pps stream 0660 system system
-#     group system graphics
-#
-# on property:init.svc.surfaceflinger=stopped
-#     stop ppd
-
-#start GNSS/Sensor interface daemon
-service gsiff_daemon /system/bin/gsiff_daemon
+service ppd /system/bin/mm-pp-daemon
     class late_start
-    user gps
-    group gps net_raw misc
+    disabled
+    user system
+    socket pps stream 0660 system system
+    group system graphics
 
 #start gpu_snapshotd for gpu hang issue debugging
 service gpu_snapshotd /system/bin/gpu_snapshotd -s /sys/class/kgsl/kgsl-3d0/snapshot -d /data/log/ -m 0700
     class late_start
     user system
     group system
+
+#
+# on property:init.svc.surfaceflinger=stopped
+#     stop ppd
+
+on property:init.svc.surfaceflinger=running
+    start ppd
 
 service nqs /system/bin/nqs
     class late_start
@@ -329,26 +363,29 @@ on property:ro.SecEDS.enable=false
     stop TvoutService_C
 
 # Secure Storage startup
-#service secure_storage /system/bin/secure_storage_daemon
-#    class core
-#    user system
-#    group system
-#    disabled
+service secure_storage /system/bin/secure_storage_daemon
+    class core
+    user system
+    group system
+    disabled
 
-#on property:ro.securestorage.support=true
-#    mkdir /dev/.secure_storage
-#    chmod 0711 /dev/.secure_storage
-#    chown system system /dev/.secure_storage
-#    restorecon -R /dev/.secure_storage
-#    start secure_storage
+on property:ro.securestorage.support=true
+    mkdir /dev/.secure_storage
+    chmod 0711 /dev/.secure_storage
+    chown system system /dev/.secure_storage
+    restorecon -R /dev/.secure_storage
+    start secure_storage
 
-#on property:ro.securestorage.knox=true
-#    mkdir /dev/.secure_storage
-#    chmod 0711 /dev/.secure_storage
-#    chown system system /dev/.secure_storage
-#    restorecon -R /dev/.secure_storage
-#    start secure_storage
+on property:ro.securestorage.knox=true
+    mkdir /dev/.secure_storage
+    chmod 0711 /dev/.secure_storage
+    chown system system /dev/.secure_storage
+    restorecon -R /dev/.secure_storage
+    start secure_storage
 
 on property:dev.bootcomplete=1
     write /sys/module/rmnet_usb/parameters/dump_ctrl_msg 2
     write /sys/module/mhi/parameters/mhi_uci_dump 2
+
+on property:vold.decrypt=1
+    mount tmpfs tmpfs /cpdump size=150M,mode=0700,uid=0,gid=0

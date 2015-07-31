@@ -945,7 +945,9 @@ bufq_error:
 static int msm_isp_deinit_isp_buf_mgr(
 	struct msm_isp_buf_mgr *buf_mgr)
 {
-	if (--buf_mgr->open_count)
+	if (buf_mgr->open_count > 0)
+		buf_mgr->open_count--;
+	if (buf_mgr->open_count)
 		return 0;
 	msm_isp_release_all_bufq(buf_mgr);
 	ion_client_destroy(buf_mgr->client);

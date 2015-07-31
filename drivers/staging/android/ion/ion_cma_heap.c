@@ -162,7 +162,7 @@ static int ion_cma_mmap(struct ion_heap *mapper, struct ion_buffer *buffer,
 	struct device *dev = buffer->heap->priv;
 	struct ion_cma_buffer_info *info = buffer->priv_virt;
 #ifdef CONFIG_TIMA_RKP
-        if (buffer->size) {
+        if ((buffer->size) && (boot_mode_security == 1)) {
         /* iommu optimization- needs to be turned ON from
          * the tz side.
          */

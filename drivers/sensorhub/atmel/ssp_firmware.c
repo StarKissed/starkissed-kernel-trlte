@@ -20,10 +20,10 @@
 #endif
 
 #if defined(CONFIG_SEC_TRLTE_PROJECT) || defined(CONFIG_SEC_TBLTE_PROJECT)
-#define SSP_FIRMWARE_REVISION		14100200
+#define SSP_FIRMWARE_REVISION		15041500
 #define BL_FW_NAME			"ssp_at_tr.fw"
 #else
-#define SSP_FIRMWARE_REVISION		14071000
+#define SSP_FIRMWARE_REVISION		14111900
 #define BL_FW_NAME			"ssp_at.fw"
 #endif
 
@@ -426,7 +426,7 @@ static int change_to_bootmode(struct ssp_data *data)
 
 	if (gpio_get_value(data->mcu_int2))
 	{
-		pr_err("[SSP]: Failed to enter bootmode in %s", __func__);
+		pr_err("[SSP]: Failed to enter bootmode in %s\n", __func__);
 		return -EIO;
 	}
 	return 0;
@@ -442,9 +442,8 @@ void toggle_mcu_reset(struct ssp_data *data)
 
 	msleep(50);
 
-	if (!gpio_get_value(data->mcu_int2)) {
-		pr_err("[SSP]: SH has entered bootloader in %s !!!!!", __func__);
-	}
+	if (!gpio_get_value(data->mcu_int2))
+		pr_err("[SSP]: SH has entered bootloader in %s!\n", __func__);
 }
 
 #if SSP_STATUS_MONITOR
@@ -452,7 +451,7 @@ void toggle_mcu_hw_reset(struct ssp_data *data)
 {
 	gpio_set_value_cansleep(data->rst, 0);
 	usleep_range(1000, 1200);
-	pr_err("[SSP]:%s !!", __func__);
+	pr_err("[SSP]:%s !\n", __func__);
 
 	gpio_set_value_cansleep(data->ap_int, 0); //MCU request
 
@@ -618,3 +617,4 @@ int check_fwbl(struct ssp_data *data)
 
 	return FW_DL_STATE_NONE;
 }
+
